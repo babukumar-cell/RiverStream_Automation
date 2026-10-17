@@ -1,0 +1,658 @@
+[
+  {
+    "id": "TC_SETT_068",
+    "desc": "Verify setting field",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click on Settings",
+    "data": null,
+    "expected": "The list should display both Users and Organizations."
+  },
+  {
+    "id": "TC_SETT_069",
+    "desc": "Verify Users page loads successfully",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Navigate to the Users page.",
+    "data": null,
+    "expected": "Users page should load successfully and display the list of users."
+  },
+  {
+    "id": "TC_SETT_070",
+    "desc": "Verify search user functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enter a user name in the Search Users field.",
+    "data": "Existing user name",
+    "expected": "Matching user records should be displayed."
+  },
+  {
+    "id": "TC_SETT_071",
+    "desc": "Verify Add User button functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click the Add User button.",
+    "data": null,
+    "expected": "Create User popup should open successfully."
+  },
+  {
+    "id": "TC_SETT_072",
+    "desc": "Verify user details display",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open the Users page.",
+    "data": "Existing users",
+    "expected": "User name, email, organization, and role should be displayed correctly."
+  },
+  {
+    "id": "TC_SETT_073",
+    "desc": "Verify View icon functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click the View icon for a user.",
+    "data": "Existing user",
+    "expected": "User details should be displayed successfully."
+  },
+  {
+    "id": "TC_SETT_074",
+    "desc": "Verify Create User with valid data",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Create User popup.\n2. Enter all required details.\n3. Click Create User.",
+    "data": "Valid user details",
+    "expected": "User should be created successfully and displayed in the users list."
+  },
+  {
+    "id": "TC_SETT_075",
+    "desc": "Verify mandatory field validation",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Leave required fields empty.\n2. Click Create User.",
+    "data": "Empty required fields",
+    "expected": "Validation messages should be displayed for mandatory fields."
+  },
+  {
+    "id": "TC_SETT_076",
+    "desc": "Verify password reset email is sent after user creation",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Create a new user.\n2. Complete the user creation process.",
+    "data": "Valid user details",
+    "expected": "A password reset email should be sent to the registered email address."
+  },
+  {
+    "id": "TC_SETT_077",
+    "desc": "Verify password reset link functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open the password reset email.\n2. Click the password reset link.",
+    "data": "Valid reset email",
+    "expected": "Password reset page should open successfully."
+  },
+  {
+    "id": "TC_SETT_078",
+    "desc": "Verify user can reset password successfully",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open the password reset page.\n2. Enter and confirm a new password.\n3. Click on reset form.",
+    "data": "Valid password",
+    "expected": "Password should be reset successfully and a confirmation message should be displayed."
+  },
+  {
+    "id": "TC_SETT_079",
+    "desc": "Verify login with newly created user credentials",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Log out of the application.\n2. Navigate to the login page.\n3. Enter the created user's email and new password.\n4. Click Login.",
+    "data": "Created user email and reset password",
+    "expected": "User should be logged in successfully."
+  },
+  {
+    "id": "TC_SETT_080",
+    "desc": "Verify logout functionality after login",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Log in with the created user credentials.2. Click Logout.",
+    "data": "Valid user account",
+    "expected": "User should be logged out successfully and redirected to the login page."
+  },
+  {
+    "id": "TC_SETT_081",
+    "desc": "Verify re-login after logout",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Log out from the application.\n2. Log in again using the same credentials.",
+    "data": "Created user email and reset password",
+    "expected": "User should be able to log in successfully after logout."
+  },
+  {
+    "id": "TC_SETT_082",
+    "desc": "Verify Role dropdown functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open the Role dropdown.\n2. Select a role.",
+    "data": "Admin / Viewer",
+    "expected": "Selected role should be assigned to the user."
+  },
+  {
+    "id": "TC_SETT_083",
+    "desc": "Verify popup close functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click the Close (X) icon.",
+    "data": null,
+    "expected": "Create User popup should close successfully."
+  },
+  {
+    "id": "TC_SETT_084",
+    "desc": "Verify Organization Name field is displayed",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Create Organization page.\n2. Locate Organization Name field.",
+    "data": "Organization Name: Acme Corp",
+    "expected": "Organization Name field is displayed with mandatory * indicator."
+  },
+  {
+    "id": "TC_SETT_085",
+    "desc": "Verify valid Organization Name can be entered",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click Organization Name field.\n2. Enter a valid organization name.",
+    "data": "Acme Corp",
+    "expected": "Organization name is accepted and displayed correctly."
+  },
+  {
+    "id": "TC_SETT_086",
+    "desc": "Verify Organization Name is mandatory",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Leave Organization Name blank.\n2. Fill other mandatory fields.\n3. Observe the Create Organization button",
+    "data": null,
+    "expected": "Button should be disable."
+  },
+  {
+    "id": "TC_SETT_087",
+    "desc": "Verify Domain field is displayed",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Create Organization page.\n2. Locate Domain field.",
+    "data": null,
+    "expected": "Domain field should display with mandatory * indicator."
+  },
+  {
+    "id": "TC_SETT_088",
+    "desc": "Verify valid Domain is accepted",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enter a valid domain.\n2. Proceed with organization creation.",
+    "data": null,
+    "expected": "Valid domain should accept without validation error."
+  },
+  {
+    "id": "TC_SETT_089",
+    "desc": "Verify invalid Domain validation",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enter an invalid domain.\n2. Attempt to create organization.",
+    "data": "enter : @",
+    "expected": "Appropriate domain validation should display and organization should not create."
+  },
+  {
+    "id": "TC_SETT_090",
+    "desc": "Verify Document Type options are displayed",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Create Organization page.\n2. Locate Select Document Type section.",
+    "data": "N/A",
+    "expected": "PURCHASE_ORDER, QUOTE_REQUEST, and PO-ACK RECON options should display with checkboxes."
+  },
+  {
+    "id": "TC_SETT_091",
+    "desc": "Verify multiple Document Types can be selected",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Select PURCHASE_ORDER.\n2. Select QUOTE_REQUEST.\n3. Select PO-ACK RECON.",
+    "data": "All three options",
+    "expected": "Multiple document types can be selected simultaneously."
+  },
+  {
+    "id": "TC_SETT_092",
+    "desc": "Verify Document Type can be deselected",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Select a document type.\n2. Click the same checkbox again.",
+    "data": "PURCHASE_ORDER",
+    "expected": "Previously selected document type should deselect."
+  },
+  {
+    "id": "TC_SETT_093",
+    "desc": "Verify Document Type is mandatory",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Leave all document types unchecked.\n2. Fill other mandatory fields.\n3. Click Create Organization.",
+    "data": "No document type selected",
+    "expected": "Validation message should display and organization is not created."
+  },
+  {
+    "id": "TC_SETT_094",
+    "desc": "Verify Direct Estimate Creation toggle",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Locate Direct Estimate Creation toggle.",
+    "data": null,
+    "expected": "Toggle should be defaut OFF state."
+  },
+  {
+    "id": "TC_SETT_095",
+    "desc": "Verify Direct Estimate Creation can be disabled",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
+    "data": "Toggle: ON \u2192 OFF",
+    "expected": "Toggle should returns to disabled state."
+  },
+  {
+    "id": "TC_SETT_096",
+    "desc": "Verify Life Line Tracking toggle",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Locate Life Line Tracking toggle.",
+    "data": null,
+    "expected": "Toggle should be defaut ON state."
+  },
+  {
+    "id": "TC_SETT_097",
+    "desc": "Verify Life Line Traking can be disabled",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
+    "data": "Toggle: ON \u2192 OFF",
+    "expected": "Toggle should returns to disabled state."
+  },
+  {
+    "id": "TC_SETT_098",
+    "desc": "Verify the UI Changes when the Life Line Tracking toggle is ON for Existing Organization.",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Naviage to the Organization page.\n2. Click on edit icon.\n3. Observe the UI when toggle is ON.",
+    "data": "Toggle: ON",
+    "expected": "subscription plan should visible."
+  },
+  {
+    "id": "TC_SETT_099",
+    "desc": "Verify the UI Changes when the Life Line Tracking toggle is OFF for Existing Organization.",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Naviage to the Organization page.\n2. Click on edit icon.\n3. Observe the UI when toggle is ON.\n4. Click on Edit button.\n5. Turn the toggle is OFF.\n6. Click on Save button.\n7. Observe the UI when toggle is OFF.",
+    "data": "Toggle: OFF",
+    "expected": "subscription plan should Hide."
+  },
+  {
+    "id": "TC_SETT_100",
+    "desc": "Verify Starter subscription is displayed",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open subscription section.",
+    "data": "N/A",
+    "expected": "STARTER plan should displayed with price $799.00/month."
+  },
+  {
+    "id": "TC_SETT_101",
+    "desc": "Verify Enterprise subscription is displayed",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open subscription section.",
+    "data": "N/A",
+    "expected": "ENTERPRISE plan should displayed with price $1499.00/month."
+  },
+  {
+    "id": "TC_SETT_102",
+    "desc": "Verify subscription plan can be selected",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click STARTER subscription card.\n2. Observe selection state.",
+    "data": "STARTER",
+    "expected": "STARTER plan should selected/highlighted."
+  },
+  {
+    "id": "TC_SETT_103",
+    "desc": "Verify only one subscription plan can be selected",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Select STARTER.\n2. Select ENTERPRISE.",
+    "data": "STARTER, ENTERPRISE",
+    "expected": "ENTERPRISE should selected and STARTER is deselected, if subscription is single-select."
+  },
+  {
+    "id": "TC_SETT_104",
+    "desc": "Verify Starter plan document limit",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Review STARTER subscription details.",
+    "data": "N/A",
+    "expected": "UI displays up to 300 documents/month and $6/document overage."
+  },
+  {
+    "id": "TC_SETT_105",
+    "desc": "Verify Enterprise plan includes SIF",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Review ENTERPRISE plan Includes section.",
+    "data": "N/A",
+    "expected": "Enterprise plan should display SIF in addition to the listed supported document formats/features."
+  },
+  {
+    "id": "TC_SETT_106",
+    "desc": "Verify Custom Docs section is displayed",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Scroll below subscription plans.",
+    "data": "N/A",
+    "expected": "Custom Docs section should display as optional."
+  },
+  {
+    "id": "TC_SETT_107",
+    "desc": "Verify Address File upload accepts supported formats",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Locate Address File upload area.\n2. Click Browse.\n3. Upload supported file.",
+    "data": "addresses.xlsx",
+    "expected": "Supported .json, .xls, and .xlsx files are accepted."
+  },
+  {
+    "id": "TC_SETT_108",
+    "desc": "Verify Custom Docs uploads are optional",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Fill all mandatory fields.\n2. Do not upload Address File or Product Codes File.\n3. Click Create Organization.",
+    "data": "Valid mandatory data",
+    "expected": "Organization should be creat without optional custom documents."
+  },
+  {
+    "id": "TC_SETT_109",
+    "desc": "Verify Create Organization button is displayed",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Scroll to bottom of the form.",
+    "data": "N/A",
+    "expected": "Create Organization button should visible and accessible."
+  },
+  {
+    "id": "TC_SETT_110",
+    "desc": "Verify successful organization creation with valid data",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enter valid Organization Name.\n2. Enter valid Domain.\n3. Select document type(s).\n4. Select subscription.\n5. Click Create Organization.",
+    "data": "Acme Corp\nacme.com\nPURCHASE_ORDER\nSTARTER",
+    "expected": "Organization should successfully create and appropriate success confirmation/next page should displayed."
+  },
+  {
+    "id": "TC_SETT_111",
+    "desc": "Verify Create Organization button prevents duplicate submissions",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Fill all mandatory fields.\n2. Click Create Organization multiple times quickly.",
+    "data": "Valid organization data",
+    "expected": "Only one organization creation request should processed."
+  },
+  {
+    "id": "TC_SETT_112",
+    "desc": "Verify special characters in Organization Name",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enter organization name containing supported special characters.2. Submit form.",
+    "data": "Acme & Co. Pvt. Ltd.",
+    "expected": "Application handles the value according to the allowed character rules without UI issues."
+  },
+  {
+    "id": "TC_SETT_113",
+    "desc": "Verify subscription is mandatory",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Fill Organization Name, Domain, and Document Type.<br>2. Do not select a subscription.<br>3. Click Create Organization.",
+    "data": "Valid mandatory fields, no subscription",
+    "expected": "Validation should display for subscription selection and organization is not created."
+  },
+  {
+    "id": "TC_SETT_114",
+    "desc": "Verify page scrolling and bottom controls",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open the page.\n2. Scroll from top to bottom.",
+    "data": null,
+    "expected": "All sections are accessible, including Custom Docs and Create Organization button, without layout overlap or clipping."
+  },
+  {
+    "id": "TC_SETT_115",
+    "desc": "Verify Search with invalid organization name",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enter a non-existing organization name.",
+    "data": "ABC123",
+    "expected": "No matching records should be displayed."
+  },
+  {
+    "id": "TC_SETT_116",
+    "desc": "Verify All tab",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click All tab.",
+    "data": null,
+    "expected": "All organizations should be displayed."
+  },
+  {
+    "id": "TC_SETT_117",
+    "desc": "Verify Active tab",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click Active tab.",
+    "data": "Active organizations",
+    "expected": "Only active organizations should be displayed."
+  },
+  {
+    "id": "TC_SETT_118",
+    "desc": "Verify Inactive tab",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click Inactive tab.",
+    "data": "Inactive organizations",
+    "expected": "Only inactive organizations should be displayed."
+  },
+  {
+    "id": "TC_SETT_119",
+    "desc": "Verify View Organization details",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click the View (Eye) icon.",
+    "data": "Corpdesign",
+    "expected": "Organization details page should open."
+  },
+  {
+    "id": "TC_SETT_120",
+    "desc": "Verify Delete Organization",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click the Delete icon.",
+    "data": "Corpdesign",
+    "expected": "Confirmation popup should be displayed."
+  },
+  {
+    "id": "TC_SETT_121",
+    "desc": "Verify Organization deletion",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1.Confirm deletion.",
+    "data": "Corpdesign",
+    "expected": "Organization should be removed from the list."
+  },
+  {
+    "id": "TC_SETT_122",
+    "desc": "Verify cancellation of deletion",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1.Click Delete and then Cancel.",
+    "data": "Corpdesign",
+    "expected": "Organization should remain in the list."
+  },
+  {
+    "id": "TC_SETT_123",
+    "desc": "Verify Organization Name display",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Observe organization names in the list.",
+    "data": null,
+    "expected": "Correct organization names should be displayed."
+  },
+  {
+    "id": "TC_SETT_124",
+    "desc": "Verify Domain display",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Observe domain values.",
+    "data": null,
+    "expected": "Correct domain names should be displayed."
+  },
+  {
+    "id": "TC_SETT_125",
+    "desc": "Verify Document Usage display",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Observe document usage count.",
+    "data": "26/300",
+    "expected": "Correct usage and limit should be displayed."
+  },
+  {
+    "id": "TC_SETT_126",
+    "desc": "Verify Status display",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Observe organization status.",
+    "data": "Active",
+    "expected": "Correct status badge should be displayed."
+  },
+  {
+    "id": "TC_SETT_127",
+    "desc": "Verify organization list refresh",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Refresh the page.",
+    "data": null,
+    "expected": "Organization list should load correctly without data loss."
+  },
+  {
+    "id": "TC_SETT_128",
+    "desc": "Verify Edit button functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click the Edit button.",
+    "data": "Existing Organization",
+    "expected": "All editable fields except plan, Expires At, Last Payment, Created at, Updated at) should become enabled for modification."
+  },
+  {
+    "id": "TC_SETT_129",
+    "desc": "Verify Save button functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page.\n2. Click on Edit button.\n3. edit the existing data.\n4. Click on the Save button.",
+    "data": "Existing Organization",
+    "expected": "Edited data should be Updated."
+  },
+  {
+    "id": "TC_SETT_130",
+    "desc": "Verify Delete button functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click the Delete button. \n3. Confirm deletion in the popup.",
+    "data": "Existing Organization",
+    "expected": "The organization should be deleted successfully and removed from the organization list."
+  },
+  {
+    "id": "TC_SETT_131",
+    "desc": "Verify Pay Now button functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click Pay Now button.",
+    "data": null,
+    "expected": "Payment details should be displayed."
+  },
+  {
+    "id": "TC_SETT_132",
+    "desc": "Validate Payment confirmed popup",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click Pay Now button.\n3. Update all the valid data in the details.\n4. Click on payment.\n5. Observe the System behaviour.",
+    "data": null,
+    "expected": "Payment Confirmed popup should display for 5 seconds."
+  },
+  {
+    "id": "TC_SETT_133",
+    "desc": "Verify Bill History button",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click Bill History button.",
+    "data": "Existing invoices",
+    "expected": "Billing history should be displayed."
+  },
+  {
+    "id": "TC_SETT_134",
+    "desc": "Verify Upload Custom Documents",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click Upload Custom Docs. \n3. Select a valid PDF file. \n4. Upload the file.",
+    "data": "Quote_Template.pdf",
+    "expected": "File should be uploaded successfully and displayed immediately."
+  },
+  {
+    "id": "TC_SETT_135",
+    "desc": "Verify multiple upload custom Documents",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click Upload Custom Docs. \n3. Select Multiple PDF file.",
+    "data": "Quote_Template.pdf",
+    "expected": "System should not allow user to select multle files."
+  },
+  {
+    "id": "TC_SETT_136",
+    "desc": "Verify overwriting an existing uploaded file",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open the Organization Details page. \n2. Upload a custom document (File_A.pdf). \n3. Save the changes. \n4. Upload another document with the same name.\n 5. Save the changes.",
+    "data": "Existing File: File_A.pdf, New File: File_A.pdf (updated version)",
+    "expected": "The existing file should be replaced with the newly uploaded file, and only the latest version should be displayed in the Custom Documents section."
+  },
+  {
+    "id": "TC_SETT_137",
+    "desc": "Verify upload without Edit mode",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. 2. Do not click Edit. 3. Attempt to upload a custom document.",
+    "data": "Quote.pdf",
+    "expected": "System should not allow document upload."
+  },
+  {
+    "id": "TC_SETT_138",
+    "desc": "Verify Custom Documents section when no files are uploaded",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Create a new organization without uploading any documents. \n2. Open Edit Organization page.",
+    "data": "New Organization",
+    "expected": "Custom Documents section should be empty."
+  },
+  {
+    "id": "TC_SETT_139",
+    "desc": "Verify at least one Document Type must remain selected",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open the Organization Details page. \n2. Click Edit. \n3. Deselect Quote Request. \n4. Deselect Purchase Order. \n5. Save the changes.",
+    "data": "Enabled Document Types: Quote Request, Purchase Order",
+    "expected": "The system should not allow all document types to be deselected. At least one document type must remain selected, and an appropriate validation message should be displayed."
+  },
+  {
+    "id": "TC_SETT_140",
+    "desc": "Verify Delete icon for non-existing documents",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Create an organization without uploading documents. 2. Open Edit Organization page. 3. Check Custom Documents section.",
+    "data": "New Organization",
+    "expected": "Delete icon should not be displayed."
+  },
+  {
+    "id": "TC_SETT_141",
+    "desc": "Verify Add User functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Click Add User. \n3. Enter user details. \n4. Save.",
+    "data": "Name: Test User, Email: testuser@gmail.com, Role: Viewer",
+    "expected": "User should be added successfully."
+  },
+  {
+    "id": "TC_SETT_142",
+    "desc": "Verify Search User functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enter a username in the search box.",
+    "data": "Divya",
+    "expected": "Matching user should be displayed."
+  },
+  {
+    "id": "TC_SETT_143",
+    "desc": "Verify Edit User functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
+    "data": "Viewer \u2192 Admin",
+    "expected": "User role should be updated successfully."
+  },
+  {
+    "id": "TC_SETT_144",
+    "desc": "Verify Delete User functionality",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click Delete icon for a user. \n2. Confirm deletion.",
+    "data": null,
+    "expected": "User should be removed successfully."
+  },
+  {
+    "id": "TC_SETT_145",
+    "desc": "Verify Organization Details update",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
+    "data": "Corpdesign \u2192 Corpdesign QA",
+    "expected": "Updated organization details should be displayed."
+  },
+  {
+    "id": "TC_SETT_146",
+    "desc": "Verify Direct Estimate Creation toggle",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Enable/Disable the toggle. \n2. Save changes if applicable.",
+    "data": "ON/OFF",
+    "expected": "Toggle state should be saved successfully."
+  },
+  {
+    "id": "TC_SETT_147",
+    "desc": "Verify Document Quota display",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Subscription section.",
+    "data": "Monthly Limit: 300",
+    "expected": "Correct quota and usage should be displayed."
+  },
+  {
+    "id": "TC_SETT_148",
+    "desc": "Verify Unauthorized Access",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Login as Viewer user. \n2. Open Organization Details page.",
+    "data": "Viewer User",
+    "expected": "Edit/Delete actions should be restricted."
+  },
+  {
+    "id": "TC_SETT_149",
+    "desc": "Verify page refresh retains data",
+    "pre": "Logged in to River Stream Dashboard (Riverstone Org)",
+    "steps": "1. Open Organization Details page. \n2. Refresh the browser.",
+    "data": "Existing Organization",
+    "expected": "All organization data should remain unchanged."
+  }
+]

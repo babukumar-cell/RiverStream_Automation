@@ -1,0 +1,88 @@
+{
+  "subject": "RE: Testing",
+  "from": "\"riverstream qa\" <riverstream.qa@riverstonetech.in>",
+  "to": "\"River Stream\" <riverstreamautomation@gmail.com>",
+  "date": "2026-10-15T09:44:28.000Z",
+  "text": "ERP Sales Order Processing Summary Document Usage: 28/150 (Monthly)\n------------------------------\n\nReview in Stream\n<https://riverstream-qa.azurewebsites.net/review/6ad0a0430c1928225822f60e>\n*File:* PURCHASE ORDER BH12415CD-3.pdf  *Status:* SalesOrder_partial\n\n*Customer Name:* Office Furniture Solutions of Miami, LLC\n\n*Project Name:*\n\n*Message:* Sales Order created successfully in ERP.\n*Sales Order Number:* SAL-ORD-2026-00038 - View in ERP\n<http://52.1.188.248/app/sales-order/SAL-ORD-2026-00038> *Document Date:*\n06/30/2026\nOrder Line Items\nProduct Code Description Qty Unit Price Amount Frappe Status Comments\nCD-P3422L-1-G - 2 270.00 540.00 Failed SKU not found\nCD-P7236-GM-W-G - 1 337.50 337.50 Failed SKU not found\nCD-P42CB-G - 1 86.40 86.40 Failed SKU not found\nCD-P22FF-G - 1 147.60 147.60 Success -\nCD-P22BBF-G - 1 151.20 151.20 Success -\nCD-P7224C-G - 2 167.40 334.80 Success -\nCD-P72HG-G - 1 489.60 489.60 Failed SKU not found\n\nDISCLAIMER: The deliverables shared are preliminary drafts prepared based\non the inputs and references provided. Please review all files carefully\nfor any corrections or updates required.\n\nThanks,\nRiver Stream\n\nOn Thu, Oct 15, 2026 at 9:40 AM UTC, River Stream <\nriverstreamautomation@gmail.com> wrote:\n",
+  "html": "<p class=\"editor-paragraph\"><html>\n<body style=\"font-family:Arial,sans-serif;font-size:13px;color:#222;margin:0;padding:16px\">\n<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"margin-bottom:4px\">\n  <tr>\n    <td valign=\"middle\"><h2 style=\"margin:0;font-size:16px\">ERP Sales Order Processing Summary</h2></td>\n    <td align=\"right\" valign=\"middle\" style=\"font-size:12px;color:#666;white-space:nowrap\">Document Usage: 28/150 (Monthly)</td>\n  </tr>\n</table>\n<hr style=\"border:none;border-top:1px solid #ccc;margin:0 0 10px 0\">\n\n<p style=\"margin:0 0 10px 0\">\n<a href=\"https://riverstream-qa.azurewebsites.net/review/6ad0a0430c1928225822f60e\" style=\"display:inline-block;padding:8px 16px;background:#5b4fe5;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold\">\nReview in Stream\n</a>\n</p>\n\n<div style=\"border:1px solid #ddd;padding:6px 10px;font-size:12px;margin-bottom:6px\">\n  <b>File:</b> PURCHASE ORDER BH12415CD-3.pdf  <b>Status:</b> SalesOrder_partial\n</div>\n\n<div style=\"border:1px solid #ddd;padding:10px;margin-bottom:6px\">\n  <p style=\"margin:0 0 4px 0\"><b>Customer Name:</b> Office Furniture Solutions of Miami, LLC</p>\n  <p style=\"margin:0 0 4px 0\"><b>Project Name:</b> </p>\n  <p style=\"margin:0\"><b>Message:</b> Sales Order created successfully in ERP.</p>\n</div>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\" style=\"border-collapse:collapse;border:1px solid #ddd;margin-bottom:6px\">\n  <tr>\n    <td width=\"50%\" style=\"border:1px solid #ddd\">\n      <b>Sales Order Number:</b> SAL-ORD-2026-00038 - <a href=\"http://52.1.188.248/app/sales-order/SAL-ORD-2026-00038\" style=\"color:#1a73e8\">View in ERP</a>\n    </td>\n    <td width=\"50%\" style=\"border:1px solid #ddd\">\n      <b>Document Date:</b> 06/30/2026\n    </td>\n  </tr>\n</table>\n<br>\n<h3 style=\"margin:10px 0 6px 0;font-size:13px\">Order Line Items</h3>\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" width=\"100%\" style=\"border-collapse:collapse;font-size:12px\">\n  <tr style=\"background-color:#d9eaf7\">\n    <th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Product Code</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Description</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Qty</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Unit Price</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Amount</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Frappe Status</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Comments</th>\n  </tr>\n  <tr style=\"background:#fff\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P3422L-1-G</td><td style=\"border:1px solid #ddd;padding:6px\">-</td><td style=\"border:1px solid #ddd;padding:6px\">2</td><td style=\"border:1px solid #ddd;padding:6px\">270.00</td><td style=\"border:1px solid #ddd;padding:6px\">540.00</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#c0392b\">Failed</span></td><td style=\"border:1px solid #ddd;padding:6px\">SKU not found</td></tr><tr style=\"background:#f9f9f9\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P7236-GM-W-G</td><td style=\"border:1px solid #ddd;padding:6px\">-</td><td style=\"border:1px solid #ddd;padding:6px\">1</td><td style=\"border:1px solid #ddd;padding:6px\">337.50</td><td style=\"border:1px solid #ddd;padding:6px\">337.50</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#c0392b\">Failed</span></td><td style=\"border:1px solid #ddd;padding:6px\">SKU not found</td></tr><tr style=\"background:#fff\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P42CB-G</td><td style=\"border:1px solid #ddd;padding:6px\">-</td><td style=\"border:1px solid #ddd;padding:6px\">1</td><td style=\"border:1px solid #ddd;padding:6px\">86.40</td><td style=\"border:1px solid #ddd;padding:6px\">86.40</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#c0392b\">Failed</span></td><td style=\"border:1px solid #ddd;padding:6px\">SKU not found</td></tr><tr style=\"background:#f9f9f9\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P22FF-G</td><td style=\"border:1px solid #ddd;padding:6px\">-</td><td style=\"border:1px solid #ddd;padding:6px\">1</td><td style=\"border:1px solid #ddd;padding:6px\">147.60</td><td style=\"border:1px solid #ddd;padding:6px\">147.60</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#27ae60\">Success</span></td><td style=\"border:1px solid #ddd;padding:6px\">-</td></tr><tr style=\"background:#fff\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P22BBF-G</td><td style=\"border:1px solid #ddd;padding:6px\">-</td><td style=\"border:1px solid #ddd;padding:6px\">1</td><td style=\"border:1px solid #ddd;padding:6px\">151.20</td><td style=\"border:1px solid #ddd;padding:6px\">151.20</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#27ae60\">Success</span></td><td style=\"border:1px solid #ddd;padding:6px\">-</td></tr><tr style=\"background:#f9f9f9\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P7224C-G</td><td style=\"border:1px solid #ddd;padding:6px\">-</td><td style=\"border:1px solid #ddd;padding:6px\">2</td><td style=\"border:1px solid #ddd;padding:6px\">167.40</td><td style=\"border:1px solid #ddd;padding:6px\">334.80</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#27ae60\">Success</span></td><td style=\"border:1px solid #ddd;padding:6px\">-</td></tr><tr style=\"background:#fff\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P72HG-G</td><td style=\"border:1px solid #ddd;padding:6px\">-</td><td style=\"border:1px solid #ddd;padding:6px\">1</td><td style=\"border:1px solid #ddd;padding:6px\">489.60</td><td style=\"border:1px solid #ddd;padding:6px\">489.60</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#c0392b\">Failed</span></td><td style=\"border:1px solid #ddd;padding:6px\">SKU not found</td></tr>\n</table>\n<br>\n<p style=\"font-size:11px;color:gray;margin:12px 0 0 0\">\n  DISCLAIMER: The deliverables shared are preliminary drafts prepared based on the inputs and\n  references provided. Please review all files carefully for any corrections or updates required.\n</p>\n<div style=\"margin:24px 0 16px 0\"></div>\n<p style=\"margin:0\">Thanks,<br>River Stream</p>\n<div><p>On Thu, Oct 15, 2026 at 9:40 AM UTC, River Stream &lt;<a href=\"mailto:riverstreamautomation@gmail.com\" target=\"_blank\">riverstreamautomation@gmail.com</a>&gt; wrote:</p>\n<blockquote style=\"border:none;border-left:solid #cccccc 1.0pt;padding:0in 0in 0in 6.0pt;margin-left:4.8pt;margin-right:0in\"><div><div dir=\"ltr\"><br></div>\n</div></blockquote></div></body></html></p>\n",
+  "quotaInfo": "28/150 (Monthly)",
+  "reviewLink": "https://riverstream-qa.azurewebsites.net/review/6ad0a0430c1928225822f60e",
+  "fields": {
+    "header": "ERP Sales Order Processing Summary",
+    "documentUsage": "28/150 (Monthly)",
+    "reviewInStreamUrl": "https://riverstream-qa.azurewebsites.net/review/6ad0a0430c1928225822f60e",
+    "fileName": "PURCHASE ORDER BH12415CD-3.pdf",
+    "status": "SalesOrder_partial",
+    "customerName": "Office Furniture Solutions of Miami, LLC",
+    "projectName": "",
+    "message": "Sales Order created successfully in ERP.",
+    "salesOrderNumber": "SAL-ORD-2026-00038",
+    "erpViewUrl": "http://52.1.188.248/app/sales-order/SAL-ORD-2026-00038",
+    "documentDate": "06/30/2026",
+    "orderLineItems": [
+      {
+        "productCode": "CD-P3422L-1-G",
+        "description": "-",
+        "qty": "2",
+        "unitPrice": "270.00",
+        "amount": "540.00",
+        "frappeStatus": "Failed",
+        "comments": "SKU not found"
+      },
+      {
+        "productCode": "CD-P7236-GM-W-G",
+        "description": "-",
+        "qty": "1",
+        "unitPrice": "337.50",
+        "amount": "337.50",
+        "frappeStatus": "Failed",
+        "comments": "SKU not found"
+      },
+      {
+        "productCode": "CD-P42CB-G",
+        "description": "-",
+        "qty": "1",
+        "unitPrice": "86.40",
+        "amount": "86.40",
+        "frappeStatus": "Failed",
+        "comments": "SKU not found"
+      },
+      {
+        "productCode": "CD-P22FF-G",
+        "description": "-",
+        "qty": "1",
+        "unitPrice": "147.60",
+        "amount": "147.60",
+        "frappeStatus": "Success",
+        "comments": "-"
+      },
+      {
+        "productCode": "CD-P22BBF-G",
+        "description": "-",
+        "qty": "1",
+        "unitPrice": "151.20",
+        "amount": "151.20",
+        "frappeStatus": "Success",
+        "comments": "-"
+      },
+      {
+        "productCode": "CD-P7224C-G",
+        "description": "-",
+        "qty": "2",
+        "unitPrice": "167.40",
+        "amount": "334.80",
+        "frappeStatus": "Success",
+        "comments": "-"
+      },
+      {
+        "productCode": "CD-P72HG-G",
+        "description": "-",
+        "qty": "1",
+        "unitPrice": "489.60",
+        "amount": "489.60",
+        "frappeStatus": "Failed",
+        "comments": "SKU not found"
+      }
+    ]
+  }
+}

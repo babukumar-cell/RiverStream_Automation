@@ -1,0 +1,51 @@
+{
+  "name": "riverstream-automation",
+  "version": "1.0.0",
+  "description": "Enterprise test automation framework for River Stream using Playwright and TypeScript",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:auth": "playwright test tests/auth",
+    "test:left-side": "playwright test tests/left-side",
+    "test:upload": "playwright test tests/upload",
+    "test:upload:sif": "playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_007\"",
+    "test:upload:sif:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_007\" && npm run allure:generate && npm run allure:open",
+    "test:upload:sif:headed:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_007\" --headed && npm run allure:generate && npm run allure:open",
+    "test:upload:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts && npm run allure:generate && npm run allure:open",
+    "test:upload:headed:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts --headed && npm run allure:generate && npm run allure:open",
+    "test:upload:batch": "npm run allure:clean && playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_Batch\" --headed && npm run allure:generate && npm run allure:open",
+    "test:review": "playwright test tests/review",
+    "test:recon": "playwright test tests/po-ack-recon",
+    "test:recon:headed": "playwright test tests/po-ack-recon --headed",
+    "test:documents": "playwright test tests/documents",
+    "test:settings": "playwright test tests/settings",
+    "test:main": "playwright test tests/auth tests/left-side tests/upload tests/documents tests/po-ack-recon tests/review tests/email",
+    "test:full": "playwright test",
+    "test:all": "playwright test",
+    "email:send": "ts-node --transpile-only src/scripts/send-sif-email.ts",
+    "report": "playwright show-report",
+    "report:email": "ts-node src/utils/send-test-report-email.ts",
+    "report:email:preview": "ts-node src/utils/send-test-report-email.ts --dry-run",
+    "allure:clean": "node -e \"const fs = require('fs'); if (fs.existsSync('allure-results')) fs.rmSync('allure-results', { recursive: true, force: true }); if (fs.existsSync('allure-report')) fs.rmSync('allure-report', { recursive: true, force: true });\"",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report",
+    "allure:serve": "allure serve allure-results"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1",
+    "@types/imap-simple": "^4.2.9",
+    "@types/mailparser": "^3.9.0",
+    "@types/node": "^22.10.1",
+    "@types/nodemailer": "^6.4.17",
+    "allure-commandline": "^2.46.1",
+    "allure-playwright": "^2.15.1",
+    "dotenv": "^16.4.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "imap-simple": "^5.1.0",
+    "mailparser": "^3.9.36",
+    "nodemailer": "^6.10.0"
+  }
+}

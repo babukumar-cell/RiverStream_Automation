@@ -1,0 +1,59 @@
+{
+  "subject": "RE: Testing_17-10-26",
+  "from": "\"riverstream qa\" <riverstream.qa@riverstonetech.in>",
+  "to": "riverstreamautomation@gmail.com",
+  "date": "2026-10-17T10:42:30.000Z",
+  "text": " ERP Sales Order Processing Summary Document Usage: 37/150 (Monthly)\n------------------------------\n\nReview in Stream\n<https://riverstream-qa.azurewebsites.net/review/6ad350f12c60e6ac2dbd7197>\n*File:* PURCHASE ORDER BH12415CD-3_171026_3410.pdf  *Status:* SalesOrder_partial\n\n*Customer Name:* Office Furniture Solutions of Miami, LLC\n\n*Project Name:*\n\n*Message:* Sales Order created successfully in ERP.\n*Sales Order Number:* SAL-ORD-2026-00049 - View in ERP\n<http://52.1.188.248/app/sales-order/SAL-ORD-2026-00049> *Document Date:*\n10/17/2026\nOrder Line Items\nProduct Code Description Qty Unit Price Amount Frappe Status Comments\nCD-P3422L-1-G Executive Desk 34x22 Left 2 270.00 540.00 Failed SKU not found\nCD-P22FF-G File / File Pedestal Grey 1 147.60 147.60 Success -\nCD-P22BBF-G Box / Box / File Pedestal Grey 1 151.20 151.20 Success -\nCD-P7224C-G Credenza 72x24 Grey 2 167.40 334.80 Success -\n\nDISCLAIMER: The deliverables shared are preliminary drafts prepared based\non the inputs and references provided. Please review all files carefully\nfor any corrections or updates required.\n\nThanks,\nRiver Stream\n",
+  "html": "<p class=\"editor-paragraph\"><html><body style=\"font-family:Arial,sans-serif;font-size:13px;color:#222;margin:0;padding:16px\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"margin-bottom:4px\"><tr><td valign=\"middle\"><h2 style=\"margin:0;font-size:16px\">ERP Sales Order Processing Summary</h2></td><td align=\"right\" valign=\"middle\" style=\"font-size:12px;color:#666;white-space:nowrap\">Document Usage: 37/150 (Monthly)</td></tr></table><hr style=\"border:none;border-top:1px solid #ccc;margin:0 0 10px 0\"><p style=\"margin:0 0 10px 0\"><a href=\"https://riverstream-qa.azurewebsites.net/review/6ad350f12c60e6ac2dbd7197\" style=\"display:inline-block;padding:8px 16px;background:#5b4fe5;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold\">Review in Stream</a></p><div style=\"border:1px solid #ddd;padding:6px 10px;font-size:12px;margin-bottom:6px\"><b>File:</b> PURCHASE ORDER BH12415CD-3_171026_3410.pdf&nbsp;&nbsp;<b>Status:</b> SalesOrder_partial</div><div style=\"border:1px solid #ddd;padding:10px;margin-bottom:6px\"><p style=\"margin:0 0 4px 0\"><b>Customer Name:</b> Office Furniture Solutions of Miami, LLC</p><p style=\"margin:0 0 4px 0\"><b>Project Name:</b> </p><p style=\"margin:0\"><b>Message:</b> Sales Order created successfully in ERP.</p></div><table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\" style=\"border-collapse:collapse;border:1px solid #ddd;margin-bottom:6px\"><tr><td width=\"50%\" style=\"border:1px solid #ddd\"><b>Sales Order Number:</b> SAL-ORD-2026-00049 - <a href=\"http://52.1.188.248/app/sales-order/SAL-ORD-2026-00049\" style=\"color:#1a73e8\">View in ERP</a></td><td width=\"50%\" style=\"border:1px solid #ddd\"><b>Document Date:</b> 10/17/2026</td></tr></table><br><h3 style=\"margin:10px 0 6px 0;font-size:13px\">Order Line Items</h3><table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" width=\"100%\" style=\"border-collapse:collapse;font-size:12px\"><tr style=\"background-color:#d9eaf7\"><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Product Code</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Description</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Qty</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Unit Price</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Amount</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Frappe Status</th><th style=\"border:1px solid #ddd;padding:6px;text-align:left\">Comments</th></tr><tr style=\"background:#fff\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P3422L-1-G</td><td style=\"border:1px solid #ddd;padding:6px\">Executive Desk 34x22 Left</td><td style=\"border:1px solid #ddd;padding:6px\">2</td><td style=\"border:1px solid #ddd;padding:6px\">270.00</td><td style=\"border:1px solid #ddd;padding:6px\">540.00</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#c0392b\">Failed</span></td><td style=\"border:1px solid #ddd;padding:6px\">SKU not found</td></tr><tr style=\"background:#f9f9f9\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P22FF-G</td><td style=\"border:1px solid #ddd;padding:6px\">File / File Pedestal Grey</td><td style=\"border:1px solid #ddd;padding:6px\">1</td><td style=\"border:1px solid #ddd;padding:6px\">147.60</td><td style=\"border:1px solid #ddd;padding:6px\">147.60</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#27ae60\">Success</span></td><td style=\"border:1px solid #ddd;padding:6px\">-</td></tr><tr style=\"background:#fff\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P22BBF-G</td><td style=\"border:1px solid #ddd;padding:6px\">Box / Box / File Pedestal Grey</td><td style=\"border:1px solid #ddd;padding:6px\">1</td><td style=\"border:1px solid #ddd;padding:6px\">151.20</td><td style=\"border:1px solid #ddd;padding:6px\">151.20</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#27ae60\">Success</span></td><td style=\"border:1px solid #ddd;padding:6px\">-</td></tr><tr style=\"background:#f9f9f9\"><td style=\"border:1px solid #ddd;padding:6px\">CD-P7224C-G</td><td style=\"border:1px solid #ddd;padding:6px\">Credenza 72x24 Grey</td><td style=\"border:1px solid #ddd;padding:6px\">2</td><td style=\"border:1px solid #ddd;padding:6px\">167.40</td><td style=\"border:1px solid #ddd;padding:6px\">334.80</td><td style=\"border:1px solid #ddd;padding:6px\"><span style=\"color:#27ae60\">Success</span></td><td style=\"border:1px solid #ddd;padding:6px\">-</td></tr></table><br><p style=\"font-size:11px;color:gray;margin:12px 0 0 0\">DISCLAIMER: The deliverables shared are preliminary drafts prepared based on the inputs and references provided. Please review all files carefully for any corrections or updates required.</p><div style=\"margin:24px 0 16px 0\"></div><p style=\"margin:0\">Thanks,<br>River Stream</p></body></html>",
+  "fields": {
+    "header": "ERP Sales Order Processing Summary",
+    "documentUsage": "37/150 (Monthly)",
+    "reviewInStreamUrl": "https://riverstream-qa.azurewebsites.net/review/6ad350f12c60e6ac2dbd7197",
+    "fileName": "PURCHASE ORDER BH12415CD-3_171026_3410.pdf",
+    "status": "SalesOrder_partial",
+    "customerName": "Office Furniture Solutions of Miami, LLC",
+    "projectName": "",
+    "message": "Sales Order created successfully in ERP.",
+    "salesOrderNumber": "SAL-ORD-2026-00049",
+    "erpViewUrl": "http://52.1.188.248/app/sales-order/SAL-ORD-2026-00049",
+    "documentDate": "10/17/2026",
+    "orderLineItems": [
+      {
+        "productCode": "CD-P3422L-1-G",
+        "description": "Executive Desk 34x22 Left",
+        "qty": "2",
+        "unitPrice": "270.00",
+        "amount": "540.00",
+        "frappeStatus": "Failed",
+        "comments": "SKU not found"
+      },
+      {
+        "productCode": "CD-P22FF-G",
+        "description": "File / File Pedestal Grey",
+        "qty": "1",
+        "unitPrice": "147.60",
+        "amount": "147.60",
+        "frappeStatus": "Success",
+        "comments": "-"
+      },
+      {
+        "productCode": "CD-P22BBF-G",
+        "description": "Box / Box / File Pedestal Grey",
+        "qty": "1",
+        "unitPrice": "151.20",
+        "amount": "151.20",
+        "frappeStatus": "Success",
+        "comments": "-"
+      },
+      {
+        "productCode": "CD-P7224C-G",
+        "description": "Credenza 72x24 Grey",
+        "qty": "2",
+        "unitPrice": "167.40",
+        "amount": "334.80",
+        "frappeStatus": "Success",
+        "comments": "-"
+      }
+    ]
+  }
+}
