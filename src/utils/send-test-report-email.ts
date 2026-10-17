@@ -497,8 +497,8 @@ export async function generateAndSendReport(): Promise<void> {
   fs.writeFileSync(localReportPath, emailHtml, 'utf-8');
   console.log(`[Info] Generated email report saved to: ${localReportPath}`);
 
-  // Subject line: "River Stream Automation Suite — [DD-MMM-YYYY] [TIME]" (User requested: no passed/failed in subject)
-  const emailSubject = `River Stream Automation Suite \u2014 ${dateFormatted} ${timeFormatted}`;
+  // Subject line: "River Stream Automation Suite Test Run— [DD-MMM-YYYY] [TIME]"
+  const emailSubject = `River Stream Automation Suite Test Run\u2014 ${dateFormatted} ${timeFormatted}`;
 
   // Recipients
   let rawRecipients = process.env.REPORT_RECIPIENTS || process.env.SENDER_EMAIL || 'riverstreamautomation@gmail.com';
