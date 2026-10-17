@@ -153,8 +153,19 @@ export class ReviewPage extends BasePage {
       }
     }
 
-    // Click Review on the first visible PDF row
-    const reviewBtn = this.page.locator('table tbody tr:has-text(".pdf") button:has-text("Review"), table tbody tr button:has-text("Review")').first();
+    // Search for a real Purchase Order document to ensure rich extracted line items are loaded
+    const searchInput = this.page.locator('input[placeholder*="Search" i], input[type="search"]').first();
+    if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await searchInput.fill('PURCHASE ORDER');
+      await searchInput.press('Enter');
+      await this.page.waitForTimeout(1500);
+    }
+
+    // Click Review on the matched Purchase Order row or first available PDF row
+    const poReviewBtn = this.page.locator('table tbody tr:has-text("BH12415") button:has-text("Review"), table tbody tr:has-text("PURCHASE ORDER") button:has-text("Review"), table tbody tr:has-text("Purchase Order") button:has-text("Review")').first();
+    const fallbackReviewBtn = this.page.locator('table tbody tr:has-text(".pdf") button:has-text("Review"), table tbody tr button:has-text("Review")').first();
+
+    const reviewBtn = (await poReviewBtn.isVisible({ timeout: 3000 }).catch(() => false)) ? poReviewBtn : fallbackReviewBtn;
     await reviewBtn.waitFor({ state: 'visible', timeout: 10000 });
     await reviewBtn.click();
     await this.page.waitForURL('**/review/**', { timeout: 15000 }).catch(() => {});
@@ -174,17 +185,23 @@ export class ReviewPage extends BasePage {
    * Expand Order Line Items modal
    */
   async expandOrderLineItems(): Promise<void> {
-    const expandBtn = this.page.locator('div:has-text("Order Line Items") button:has(svg), div:has-text("Order Line Items") svg, [aria-label*="expand" i]').last();
-    await expandBtn.scrollIntoViewIfNeeded().catch(() => {});
-    await expandBtn.click();
-    await this.lineItemsModal.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
-    await this.page.waitForTimeout(500);
+    const isAlreadyOpen = await this.lineItemsModal.isVisible().catch(() => false);
+    if (!isAlreadyOpen) {
+      const expandBtn = this.page.locator('div:has-text("Order Line Items") button:has(svg), div:has-text("Order Line Items") svg, [aria-label*="expand" i]').last();
+      await expandBtn.scrollIntoViewIfNeeded().catch(() => {});
+      await expandBtn.click();
+      await this.lineItemsModal.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+      await this.page.waitForTimeout(500);
+    }
   }
 
   /**
    * Close Order Line Items modal
    */
   async closeOrderLineItems(): Promise<void> {
+    const isModalOpen = await this.lineItemsModal.isVisible().catch(() => false);
+    if (!isModalOpen) return;
+
     const closeBtn = this.page.locator('[role="dialog"] button:has(svg.lucide-x), [role="dialog"] button:has-text("×"), [role="dialog"] button[aria-label*="close" i]').first();
     if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await closeBtn.click();
