@@ -45,14 +45,14 @@ interface FailedTestDetail {
 // Map spec file path to human-readable module name
 function getModuleName(filePath: string): string {
   const normalized = filePath.replace(/\\/g, '/').toLowerCase();
-  if (normalized.includes('auth')) return 'Authentication';
-  if (normalized.includes('left-side')) return 'Left Navigation';
-  if (normalized.includes('upload')) return 'File Upload & SIF';
-  if (normalized.includes('documents')) return 'Documents';
-  if (normalized.includes('po-ack-recon')) return 'PO-ACK Recon';
-  if (normalized.includes('review')) return 'Document Review';
-  if (normalized.includes('settings')) return 'Settings';
-  if (normalized.includes('email')) return 'Email Ingestion Flow';
+  if (normalized.includes('auth')) return 'Authentication & Session';
+  if (normalized.includes('left-side')) return 'Dashboard & Navigation';
+  if (normalized.includes('upload')) return 'Document Upload & Processing';
+  if (normalized.includes('documents')) return 'Documents Management';
+  if (normalized.includes('po-ack-recon')) return 'PO-ACK Reconciliation';
+  if (normalized.includes('review')) return 'Document Review & Verification';
+  if (normalized.includes('settings')) return 'Settings & Tenant Configuration';
+  if (normalized.includes('email')) return 'Email Order Ingestion & ERP Sync';
   
   // Fallback: extract base filename
   const base = path.basename(filePath, path.extname(filePath));
@@ -243,18 +243,12 @@ export async function generateAndSendReport(): Promise<void> {
   const reportDurationMs = reportData.stats?.duration || overallDurationMs;
   const overallPassRate = overallTotal > 0 ? Math.round((overallPassed / overallTotal) * 100) : 0;
 
-  // Determine suite status
-  let suiteStatus = 'PASSED';
-  let statusColor = '#2e7d32'; // Green
-  if (overallFailed > 0 && overallPassed > 0) {
-    suiteStatus = 'UNSTABLE';
-    statusColor = '#e65100'; // Amber/Orange
-  } else if (overallFailed > 0 && overallPassed === 0) {
-    suiteStatus = 'FAILED';
-    statusColor = '#d32f2f'; // Red
-  }
+  // Determine suite status: Only PASSED or FAILED (no UNSTABLE as requested)
+  const isAllPassed = overallFailed === 0;
+  const suiteStatus = isAllPassed ? 'PASSED' : 'FAILED';
+  const statusColor = isAllPassed ? '#2e7d32' : '#d32f2f';
 
-  // Date formatting with exact hyphenated DD-MMM-YYYY format
+  // Date and Time formatting
   const today = new Date();
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const day = String(today.getDate()).padStart(2, '0');
@@ -262,6 +256,15 @@ export async function generateAndSendReport(): Promise<void> {
   const year = today.getFullYear();
   const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
   const dateFormatted = `${day}-${month}-${year}`; // e.g. 17-Oct-2026
+
+  // 12-hour format with AM/PM (e.g. 11:03:10 PM IST)
+  const timeFormatted = today.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    timeZone: process.env.TIMEZONE || 'Asia/Kolkata',
+  });
 
   const targetUrl = process.env.BASE_URL || 'https://riverstream-qa.azurewebsites.net/';
   const environment = 'QA - Riverstone Org';
@@ -451,13 +454,16 @@ export async function generateAndSendReport(): Promise<void> {
 
     <!-- Reports Section -->
     <div style="margin-top: 35px; padding-top: 15px;">
-      <h3 style="color: #0b1b54; font-size: 15px; margin: 0 0 8px 0; font-weight: bold;">Reports</h3>
+      <h3 style="color: #0b1b54; font-size: 15px; margin: 0 0 8px 0; font-weight: bold;">Test Reports, Screenshots & Videos</h3>
       <div style="height: 1px; background-color: #0b1b54; margin-bottom: 12px;"></div>
-      <p style="margin: 0 0 10px 0; font-size: 13px; color: #4b5563;">
-        The full automation test results and video recordings are archived with each pipeline run:
+      <p style="margin: 0 0 8px 0; font-size: 13px; color: #4b5563;">
+        The interactive Playwright HTML report, failure screenshots, and full video recordings are archived with each pipeline run:
       </p>
-      <p style="margin: 0; font-size: 13px;">
-        &#128193; <a href="${runUrl}" style="color: #2563eb; text-decoration: underline; font-weight: 500;">Open CI/CD Execution Run & Artifacts</a>
+      <p style="margin: 0 0 6px 0; font-size: 13px;">
+        &#128193; <a href="${runUrl}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Open CI/CD Execution Run & Download Artifacts</a>
+      </p>
+      <p style="margin: 0; font-size: 12px; color: #6b7280; line-height: 1.4;">
+        <em>(Download the <strong>playwright-execution-artifacts</strong> ZIP file on the run page to open the interactive HTML report or watch failure video recordings).</em>
       </p>
     </div>
 
@@ -482,8 +488,8 @@ export async function generateAndSendReport(): Promise<void> {
   fs.writeFileSync(localReportPath, emailHtml, 'utf-8');
   console.log(`[Info] Generated email report saved to: ${localReportPath}`);
 
-  // Subject line matching user screenshot: "River Stream Automation Suite — [STATUS] — [DD-MMM-YYYY]"
-  const emailSubject = `River Stream Automation Suite \u2014 ${suiteStatus} \u2014 ${dateFormatted}`;
+  // Subject line: "River Stream Automation Suite — [PASSED / FAILED] — [DD-MMM-YYYY] [TIME]"
+  const emailSubject = `River Stream Automation Suite \u2014 ${suiteStatus} \u2014 ${dateFormatted} ${timeFormatted}`;
 
   // Recipients
   let rawRecipients = process.env.REPORT_RECIPIENTS || process.env.SENDER_EMAIL || 'riverstreamautomation@gmail.com';
