@@ -339,13 +339,16 @@ export async function generateAndSendReport(): Promise<void> {
     `;
   }
 
-  // CI/CD Run link if available
+  // CI/CD Run and Report Web links
   const githubServerUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
-  const githubRepo = process.env.GITHUB_REPOSITORY || '';
+  const githubRepo = process.env.GITHUB_REPOSITORY || 'babukumar-cell/RiverStream_Automation';
   const githubRunId = process.env.GITHUB_RUN_ID || '';
   const runUrl = githubRepo && githubRunId 
     ? `${githubServerUrl}/${githubRepo}/actions/runs/${githubRunId}` 
-    : '#';
+    : 'https://github.com/babukumar-cell/RiverStream_Automation/actions';
+
+  const reportWebUrl = process.env.REPORT_WEB_URL || 
+    (githubRepo ? `https://${githubRepo.split('/')[0]}.github.io/${githubRepo.split('/')[1]}/` : 'https://babukumar-cell.github.io/RiverStream_Automation/');
 
   // Compose Full Email HTML
   const emailHtml = `
@@ -454,16 +457,22 @@ export async function generateAndSendReport(): Promise<void> {
 
     <!-- Reports Section -->
     <div style="margin-top: 35px; padding-top: 15px;">
-      <h3 style="color: #0b1b54; font-size: 15px; margin: 0 0 8px 0; font-weight: bold;">Test Reports, Screenshots & Videos</h3>
-      <div style="height: 1px; background-color: #0b1b54; margin-bottom: 12px;"></div>
-      <p style="margin: 0 0 8px 0; font-size: 13px; color: #4b5563;">
-        The interactive Playwright HTML report, failure screenshots, and full video recordings are archived with each pipeline run:
-      </p>
-      <p style="margin: 0 0 6px 0; font-size: 13px;">
-        &#128193; <a href="${runUrl}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Open CI/CD Execution Run & Download Artifacts</a>
-      </p>
-      <p style="margin: 0; font-size: 12px; color: #6b7280; line-height: 1.4;">
-        <em>(Download the <strong>playwright-execution-artifacts</strong> ZIP file on the run page to open the interactive HTML report or watch failure video recordings).</em>
+      <h3 style="color: #0b1b54; font-size: 15px; margin: 0 0 8px 0; font-weight: bold;">Interactive Reports & Screenshots</h3>
+      <div style="height: 1px; background-color: #0b1b54; margin-bottom: 14px;"></div>
+
+      <!-- Direct HTML Report Button -->
+      <div style="margin-bottom: 18px; background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 14px 18px; border-radius: 6px;">
+        <span style="font-size: 14px; font-weight: bold; color: #166534;">&#128202; Interactive Playwright HTML Report:</span><br>
+        <p style="margin: 6px 0 10px 0; font-size: 13px; color: #15803d; line-height: 1.5;">
+          Click the button below to view the interactive test dashboard in Chrome with step-by-step screenshots, locator highlights, and video recordings:
+        </p>
+        <a href="${reportWebUrl}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: bold; padding: 9px 18px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+          Open Full HTML Report in Chrome &rarr;
+        </a>
+      </div>
+
+      <p style="margin: 0 0 6px 0; font-size: 12px; color: #6b7280;">
+        &#128193; CI/CD Pipeline Artifacts: <a href="${runUrl}" target="_blank" style="color: #2563eb; text-decoration: underline;">View GitHub Actions Execution Run</a>
       </p>
     </div>
 
@@ -488,8 +497,8 @@ export async function generateAndSendReport(): Promise<void> {
   fs.writeFileSync(localReportPath, emailHtml, 'utf-8');
   console.log(`[Info] Generated email report saved to: ${localReportPath}`);
 
-  // Subject line: "River Stream Automation Suite — [PASSED / FAILED] — [DD-MMM-YYYY] [TIME]"
-  const emailSubject = `River Stream Automation Suite \u2014 ${suiteStatus} \u2014 ${dateFormatted} ${timeFormatted}`;
+  // Subject line: "River Stream Automation Suite — [DD-MMM-YYYY] [TIME]" (User requested: no passed/failed in subject)
+  const emailSubject = `River Stream Automation Suite \u2014 ${dateFormatted} ${timeFormatted}`;
 
   // Recipients
   let rawRecipients = process.env.REPORT_RECIPIENTS || process.env.SENDER_EMAIL || 'riverstreamautomation@gmail.com';

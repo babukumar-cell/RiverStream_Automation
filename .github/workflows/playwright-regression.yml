@@ -21,7 +21,7 @@ on:
         default: ''
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 jobs:
@@ -75,6 +75,15 @@ jobs:
         run: |
           npm run allure:generate || echo "Allure generation skipped or completed with warnings"
 
+      - name: Deploy Playwright HTML Report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          keep_files: false
+
       - name: Send Execution Email Report
         if: always()
         env:
@@ -87,6 +96,7 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
+          REPORT_WEB_URL: https://babukumar-cell.github.io/RiverStream_Automation/
         run: |
           npm run report:email
 
