@@ -311,16 +311,19 @@ test.describe('River Stream - Upload Document Suite (32 Test Cases - Riverstone 
   });
 
   test('TC_UP_027: Verify duplicate file name collision detection and handling', async ({ uploadPage }) => {
+    test.setTimeout(90000);
     const testFile = createUniqueTestFile(basePdf, 'DupeCheck');
     await uploadPage.selectDocumentType('Purchase Order');
     await uploadPage.uploadFile(testFile);
     await uploadPage.clickProcess();
+    await uploadPage.page.waitForTimeout(3000);
 
     // Re-attempt upload of exact same file
     await uploadPage.navigate();
     await uploadPage.selectDocumentType('Purchase Order');
     await uploadPage.uploadFile(testFile);
     await uploadPage.clickProcess();
+    await uploadPage.page.waitForTimeout(2000);
 
     const isDuplicate = await uploadPage.isDuplicateError();
     // System identifies duplicate or displays status

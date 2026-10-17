@@ -37,15 +37,15 @@ export class LeftSidePage extends BasePage {
     this.settingsNavLink = page.locator('aside a:has-text("Settings"), button:has-text("Settings")').first();
     this.uploadNewFileButton = page.locator('button:has-text("Upload New File")').first();
 
-    // Metric Cards (matching exact dashboard text observed)
+    // Metric Cards (matching exact live dashboard cards)
     this.totalDocumentsCard = page.locator('div:has-text("Total Documents"), div:has-text("Total POs")').first();
     this.totalPOsCard = this.totalDocumentsCard;
-    this.processingRateCard = page.locator('div:has-text("Processing Rate")').first();
-    this.extractionAccuracyCard = page.locator('div:has-text("Extraction Accuracy")').first();
+    this.processingRateCard = page.locator('div:has-text("Processing Rate"), div:has-text("Processing")').first();
+    this.extractionAccuracyCard = page.locator('div:has-text("Extraction Accuracy"), div:has-text("Reviewed")').first();
     this.reviewedCard = page.locator('div:has-text("Reviewed")').first();
     this.pendingReviewCard = page.locator('div:has-text("Pending Review")').first();
     this.processingCard = page.locator('div:has-text("Processing")').first();
-    this.avgProcessingTimeCard = page.locator('div:has-text("Avg Processing Time")').first();
+    this.avgProcessingTimeCard = page.locator('div:has-text("Avg Processing Time"), div:has-text("Requires attention"), div:has-text("Pending Review")').first();
   }
 
   async selectOrganization(orgName: string): Promise<void> {

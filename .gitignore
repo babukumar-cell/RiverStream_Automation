@@ -5,6 +5,7 @@ blob-report/
 playwright/.cache/
 allure-results/
 allure-report/
+src/test-data/temp/
 .env
 *.log
 
