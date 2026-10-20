@@ -2,8 +2,8 @@ name: River Stream Regression Suite
 
 on:
   schedule:
-    # Runs daily at 02:00 UTC (07:30 AM IST)
-    - cron: '0 2 * * *'
+    # Runs weekly every Monday at 05:00 UTC (10:30 AM IST) so test suite finishes and report email arrives by 11:00 AM IST
+    - cron: '0 5 * * 1'
   workflow_dispatch:
     inputs:
       test_suite:
