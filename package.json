@@ -20,6 +20,7 @@
     "test:documents": "playwright test tests/documents",
     "test:settings": "playwright test tests/settings",
     "test:main": "playwright test tests/auth tests/left-side tests/upload tests/documents tests/po-ack-recon tests/review tests/email",
+    "test:main:email": "node -e \"const { execSync } = require('child_process'); try { execSync('npm run test:main', { stdio: 'inherit' }); } catch(e){} execSync('npm run report:email', { stdio: 'inherit' });\"",
     "test:full": "playwright test",
     "test:all": "playwright test",
     "email:send": "ts-node --transpile-only src/scripts/send-sif-email.ts",
