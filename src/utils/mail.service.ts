@@ -289,26 +289,8 @@ export class MailService {
         } catch (_) {}
       }
     } catch (imapErr) {
-      console.warn(`[MailService] IMAP connection / search warning: ${(imapErr as Error).message}`);
-      // Fallback to fixture if available
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        const fixturePath = path.resolve(__dirname, '../test-data/email-fixtures/latest-riverstream-reply.json');
-        if (fs.existsSync(fixturePath)) {
-          const fixtureData = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'));
-          const fallbackEmail: RetrievedEmail = {
-            ...fixtureData,
-            date: new Date(fixtureData.date),
-          };
-          if (!filterKeyword || filterKeyword.toLowerCase().includes('processing summary')) {
-            MailService.cachedReply = fallbackEmail;
-            MailService.cacheByKeyword.set(key, fallbackEmail);
-            return fallbackEmail;
-          }
-        }
-      } catch (_) {}
-      throw imapErr;
+      console.error(`[MailService] Live IMAP check failed: ${(imapErr as Error).message}`);
+      throw new Error(`[MailService] Failed to retrieve live RiverStream reply from inbox. Error: ${(imapErr as Error).message}`);
     }
   }
 
