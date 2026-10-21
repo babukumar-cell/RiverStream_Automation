@@ -38,6 +38,12 @@ interface PlaywrightSpec {
   }>;
 }
 
+interface MediaItem {
+  name: string;
+  type: 'image' | 'video';
+  src: string;
+}
+
 interface ProcessedTestCase {
   id: string;
   tcId: string;
@@ -51,7 +57,7 @@ interface ProcessedTestCase {
   error?: string;
   errorStack?: string;
   steps: Array<{ title: string; durationMs: number; ok: boolean }>;
-  screenshots: Array<{ name: string; base64: string; contentType: string }>;
+  media: MediaItem[];
 }
 
 interface ModuleInfo {
@@ -68,36 +74,47 @@ interface ModuleInfo {
   durationMs: number;
 }
 
+// Escape HTML special characters for attributes and text
+function escapeHtml(str: string | undefined | null): string {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Module mapping helper
 function resolveModuleInfo(filePath: string, title: string): { key: string; name: string; shortName: string; icon: string; order: number } {
   const norm = (filePath + ' ' + title).replace(/\\/g, '/').toLowerCase();
   
   if (norm.includes('auth') || norm.includes('sign-in') || norm.includes('login')) {
-    return { key: 'mod_01', name: 'Module 01: Authentication & Session', shortName: 'Authentication', icon: 'shield-check', order: 1 };
+    return { key: 'mod_01', name: 'Module 01: Authentication & Session', shortName: 'Authentication', icon: '🔐', order: 1 };
   }
   if (norm.includes('left-side') || norm.includes('navigation') || norm.includes('dashboard')) {
-    return { key: 'mod_02', name: 'Module 02: Dashboard & Navigation', shortName: 'Navigation', icon: 'compass', order: 2 };
+    return { key: 'mod_02', name: 'Module 02: Dashboard & Navigation', shortName: 'Navigation', icon: '🧭', order: 2 };
   }
   if (norm.includes('upload') || norm.includes('dropzone') || norm.includes('sif')) {
-    return { key: 'mod_03', name: 'Module 03: Document Upload & Processing', shortName: 'Upload & SIF', icon: 'cloud-arrow-up', order: 3 };
+    return { key: 'mod_03', name: 'Module 03: Document Upload & Processing', shortName: 'Upload & SIF', icon: '📤', order: 3 };
   }
   if (norm.includes('documents') && !norm.includes('po-ack')) {
-    return { key: 'mod_04', name: 'Module 04: Documents Management', shortName: 'Documents', icon: 'folder-open', order: 4 };
+    return { key: 'mod_04', name: 'Module 04: Documents Management', shortName: 'Documents', icon: '📑', order: 4 };
   }
   if (norm.includes('po-ack-recon') || norm.includes('recon')) {
-    return { key: 'mod_05', name: 'Module 05: PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: 'scale', order: 5 };
+    return { key: 'mod_05', name: 'Module 05: PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: '⚖️', order: 5 };
   }
   if (norm.includes('review')) {
-    return { key: 'mod_06', name: 'Module 06: Document Review & Verification', shortName: 'Doc Review', icon: 'file-search', order: 6 };
+    return { key: 'mod_06', name: 'Module 06: Document Review & Verification', shortName: 'Doc Review', icon: '🔍', order: 6 };
   }
   if (norm.includes('settings') || norm.includes('organization') || norm.includes('tenant')) {
-    return { key: 'mod_07', name: 'Module 07: Settings & Tenant Configuration', shortName: 'Settings', icon: 'sliders-horizontal', order: 7 };
+    return { key: 'mod_07', name: 'Module 07: Settings & Tenant Configuration', shortName: 'Settings', icon: '⚙️', order: 7 };
   }
   if (norm.includes('email') || norm.includes('riverstone-email')) {
-    return { key: 'mod_08', name: 'Module 08: Riverstone Email Order Ingestion', shortName: 'Email Flow', icon: 'mail-check', order: 8 };
+    return { key: 'mod_08', name: 'Module 08: Riverstone Email Order Ingestion', shortName: 'Email Flow', icon: '✉️', order: 8 };
   }
 
-  return { key: 'mod_00', name: 'General Test Suite', shortName: 'General', icon: 'check-circle-2', order: 99 };
+  return { key: 'mod_00', name: 'General Test Suite', shortName: 'General', icon: '📁', order: 99 };
 }
 
 // Extract standard Test Case ID from title
@@ -138,12 +155,12 @@ function collectPlaywrightSpecs(suite: any, list: PlaywrightSpec[] = []): Playwr
   return list;
 }
 
-// Inlines local image as Base64 data URL
-function readImageAsBase64(imgPath: string): string {
+// Inlines local file as Base64 data URL
+function readFileAsBase64(filePath: string, mimeType: string): string {
   try {
-    if (fs.existsSync(imgPath)) {
-      const buffer = fs.readFileSync(imgPath);
-      return `data:image/png;base64,${buffer.toString('base64')}`;
+    if (fs.existsSync(filePath)) {
+      const buffer = fs.readFileSync(filePath);
+      return `data:${mimeType};base64,${buffer.toString('base64')}`;
     }
   } catch (err) {
     // ignore
@@ -161,13 +178,11 @@ export function generateElegantReport(
   console.log('[ElegantReport] Initiating Dark & Colorful Report Generation...');
 
   let rawSpecs: PlaywrightSpec[] = [];
-  let reportStats: any = {};
 
   if (fs.existsSync(summaryJsonPath)) {
     try {
       const jsonContent = fs.readFileSync(summaryJsonPath, 'utf-8');
       const parsed = JSON.parse(jsonContent);
-      reportStats = parsed.stats || {};
       rawSpecs = collectPlaywrightSpecs(parsed);
       console.log(`[ElegantReport] Found ${rawSpecs.length} specs in ${summaryJsonPath}`);
     } catch (e: any) {
@@ -175,10 +190,18 @@ export function generateElegantReport(
     }
   }
 
+  // Ensure media directory in report output
+  const outputDir = path.dirname(outputHtmlPath);
+  const mediaDir = path.join(outputDir, 'media');
+  if (!fs.existsSync(mediaDir)) {
+    fs.mkdirSync(mediaDir, { recursive: true });
+  }
+
   const processedCases: ProcessedTestCase[] = [];
   const moduleMap: Map<string, ModuleInfo> = new Map();
 
-  for (const spec of rawSpecs) {
+  for (let idx = 0; idx < rawSpecs.length; idx++) {
+    const spec = rawSpecs[idx];
     const modInfo = resolveModuleInfo(spec.file, spec.title);
     if (!moduleMap.has(modInfo.key)) {
       moduleMap.set(modInfo.key, {
@@ -226,18 +249,37 @@ export function generateElegantReport(
       errorStack = (err.stack || err.message || '').replace(/\u001b\[[0-9;]*m/g, '').trim();
     }
 
-    // Screenshots
-    const screenshots: Array<{ name: string; base64: string; contentType: string }> = [];
+    // Media (Screenshots & Videos)
+    const media: MediaItem[] = [];
     if (latestResult?.attachments) {
       for (const att of latestResult.attachments) {
-        if (att.contentType && att.contentType.startsWith('image/') && att.path) {
-          const b64 = readImageAsBase64(att.path);
+        if (!att.path || !fs.existsSync(att.path)) continue;
+
+        const isImage = (att.contentType && att.contentType.startsWith('image/')) || att.path.endsWith('.png') || att.path.endsWith('.jpg');
+        const isVideo = (att.contentType && att.contentType.startsWith('video/')) || att.path.endsWith('.webm') || att.path.endsWith('.mp4');
+
+        if (isImage) {
+          const b64 = readFileAsBase64(att.path, att.contentType || 'image/png');
           if (b64) {
-            screenshots.push({
+            media.push({
               name: att.name || 'Screenshot',
-              base64: b64,
-              contentType: att.contentType,
+              type: 'image',
+              src: b64,
             });
+          }
+        } else if (isVideo) {
+          // Copy video to report media folder for seamless browser playback
+          const videoName = `vid_${idx}_${path.basename(att.path)}`;
+          const destPath = path.join(mediaDir, videoName);
+          try {
+            fs.copyFileSync(att.path, destPath);
+            media.push({
+              name: att.name || 'Video Recording',
+              type: 'video',
+              src: `media/${videoName}`,
+            });
+          } catch (e) {
+            // ignore
           }
         }
       }
@@ -254,13 +296,13 @@ export function generateElegantReport(
         });
       }
     } else {
-      steps.push({ title: 'Before Hooks & Browser Context Init', durationMs: Math.min(250, durationMs), ok: true });
-      steps.push({ title: `Execute: ${spec.title}`, durationMs: Math.max(0, durationMs - 300), ok: status === 'passed' });
-      steps.push({ title: 'After Hooks & Screenshot Teardown', durationMs: 50, ok: true });
+      steps.push({ title: 'Before Hooks & Browser Setup', durationMs: Math.min(200, durationMs), ok: true });
+      steps.push({ title: `Execute: ${spec.title}`, durationMs: Math.max(0, durationMs - 250), ok: status === 'passed' });
+      steps.push({ title: 'After Hooks & Teardown', durationMs: 50, ok: true });
     }
 
     processedCases.push({
-      id: spec.id || `tc_${processedCases.length + 1}`,
+      id: `case_${idx}`,
       tcId: extractTcId(spec.title),
       title: spec.title,
       moduleKey: modInfo.key,
@@ -272,20 +314,20 @@ export function generateElegantReport(
       error: errorReason,
       errorStack,
       steps,
-      screenshots,
+      media,
     });
   }
 
   // Ensure all 8 canonical modules exist in navigation
   const canonicalModules = [
-    { key: 'mod_01', name: 'Module 01: Authentication & Session', shortName: 'Authentication', icon: 'shield-check', order: 1 },
-    { key: 'mod_02', name: 'Module 02: Dashboard & Navigation', shortName: 'Navigation', icon: 'compass', order: 2 },
-    { key: 'mod_03', name: 'Module 03: Document Upload & Processing', shortName: 'Upload & SIF', icon: 'cloud-arrow-up', order: 3 },
-    { key: 'mod_04', name: 'Module 04: Documents Management', shortName: 'Documents', icon: 'folder-open', order: 4 },
-    { key: 'mod_05', name: 'Module 05: PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: 'scale', order: 5 },
-    { key: 'mod_06', name: 'Module 06: Document Review & Verification', shortName: 'Doc Review', icon: 'file-search', order: 6 },
-    { key: 'mod_07', name: 'Module 07: Settings & Tenant Configuration', shortName: 'Settings', icon: 'sliders-horizontal', order: 7 },
-    { key: 'mod_08', name: 'Module 08: Riverstone Email Order Ingestion', shortName: 'Email Flow', icon: 'mail-check', order: 8 },
+    { key: 'mod_01', name: 'Module 01: Authentication & Session', shortName: 'Authentication', icon: '🔐', order: 1 },
+    { key: 'mod_02', name: 'Module 02: Dashboard & Navigation', shortName: 'Navigation', icon: '🧭', order: 2 },
+    { key: 'mod_03', name: 'Module 03: Document Upload & Processing', shortName: 'Upload & SIF', icon: '📤', order: 3 },
+    { key: 'mod_04', name: 'Module 04: Documents Management', shortName: 'Documents', icon: '📑', order: 4 },
+    { key: 'mod_05', name: 'Module 05: PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: '⚖️', order: 5 },
+    { key: 'mod_06', name: 'Module 06: Document Review & Verification', shortName: 'Doc Review', icon: '🔍', order: 6 },
+    { key: 'mod_07', name: 'Module 07: Settings & Tenant Configuration', shortName: 'Settings', icon: '⚙️', order: 7 },
+    { key: 'mod_08', name: 'Module 08: Riverstone Email Order Ingestion', shortName: 'Email Flow', icon: '✉️', order: 8 },
   ];
 
   for (const cm of canonicalModules) {
@@ -308,7 +350,6 @@ export function generateElegantReport(
   const passedTests = processedCases.filter(c => c.status === 'passed').length;
   const failedTests = processedCases.filter(c => c.status === 'failed').length;
   const skippedTests = processedCases.filter(c => c.status === 'skipped').length;
-  const flakyTests = processedCases.filter(c => c.status === 'flaky').length;
   const totalDurationMs = processedCases.reduce((acc, c) => acc + c.durationMs, 0);
   const passRate = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 100;
 
@@ -317,7 +358,7 @@ export function generateElegantReport(
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
   const htmlReport = `<!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -345,7 +386,6 @@ export function generateElegantReport(
       --color-fail-glow: rgba(239, 68, 68, 0.3);
       --color-skip: #f59e0b;
       --color-skip-glow: rgba(245, 158, 11, 0.25);
-      --color-flaky: #ec4899;
       --color-brand: #6366f1;
       --color-cyan: #06b6d4;
     }
@@ -489,14 +529,14 @@ export function generateElegantReport(
       border: 1px solid transparent;
     }
     .nav-item:hover {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.06);
       color: #fff;
     }
     .nav-item.active {
-      background: linear-gradient(90deg, rgba(99, 102, 241, 0.16) 0%, rgba(6, 182, 212, 0.08) 100%);
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.2) 0%, rgba(6, 182, 212, 0.1) 100%);
       color: #fff;
-      border-color: rgba(99, 102, 241, 0.35);
-      box-shadow: inset 2px 0 0 #6366f1;
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: inset 3px 0 0 #6366f1;
     }
     .nav-item-left {
       display: flex;
@@ -516,12 +556,12 @@ export function generateElegantReport(
     .nav-badge.fail {
       background: rgba(239, 68, 68, 0.2);
       color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.35);
     }
     .nav-badge.pass {
       background: rgba(16, 185, 129, 0.15);
       color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
     .sidebar-footer {
@@ -565,7 +605,7 @@ export function generateElegantReport(
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     /* Filter Pills */
@@ -591,7 +631,7 @@ export function generateElegantReport(
       gap: 6px;
       transition: all 0.2s ease;
     }
-    .pill-btn:hover { color: #fff; }
+    .pill-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
     .pill-btn.active[data-filter="all"] {
       background: var(--color-brand);
       color: #fff;
@@ -629,11 +669,13 @@ export function generateElegantReport(
       overflow: hidden;
       backdrop-filter: blur(12px);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
     .kpi-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.16);
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.22);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     }
     .kpi-card::before {
       content: '';
@@ -652,6 +694,9 @@ export function generateElegantReport(
       color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .kpi-value-row {
       display: flex;
@@ -717,6 +762,7 @@ export function generateElegantReport(
       display: flex;
       align-items: center;
       gap: 6px;
+      cursor: pointer;
     }
     .legend-dot {
       width: 8px;
@@ -732,20 +778,55 @@ export function generateElegantReport(
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .test-list-title {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
       color: #fff;
       display: flex;
       align-items: center;
+      gap: 10px;
+    }
+    .active-filter-badge {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .clear-filter-btn {
+      background: none;
+      border: none;
+      color: #f87171;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .action-controls {
+      display: flex;
       gap: 8px;
     }
-    .count-indicator {
-      font-size: 12px;
+    .mini-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
       color: var(--text-muted);
-      font-weight: 500;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .mini-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
     }
 
     .test-cards-wrapper {
@@ -772,6 +853,7 @@ export function generateElegantReport(
       justify-content: space-between;
       cursor: pointer;
       gap: 16px;
+      user-select: none;
     }
     .test-card-left {
       display: flex;
@@ -826,8 +908,15 @@ export function generateElegantReport(
     .test-card-right {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       white-space: nowrap;
+    }
+    .media-indicator {
+      font-size: 13px;
+      color: var(--color-cyan);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .mod-tag {
       font-size: 11px;
@@ -844,7 +933,8 @@ export function generateElegantReport(
     .chevron {
       color: var(--text-dim);
       transition: transform 0.25s ease;
-      font-size: 16px;
+      font-size: 13px;
+      display: inline-block;
     }
     .test-card.open .chevron {
       transform: rotate(180deg);
@@ -889,11 +979,12 @@ export function generateElegantReport(
       color: #fca5a5;
       font-size: 11px;
       font-weight: 600;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 4px;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
-    .copy-btn:hover { background: rgba(239, 68, 68, 0.3); }
+    .copy-btn:hover { background: rgba(239, 68, 68, 0.35); }
     .error-stack {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
@@ -943,11 +1034,11 @@ export function generateElegantReport(
       color: var(--text-dim);
     }
 
-    /* Screenshots View */
-    .screenshots-box {
+    /* Screenshots & Media */
+    .media-box {
       margin-top: 14px;
     }
-    .screenshots-box h4 {
+    .media-box h4 {
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
@@ -955,12 +1046,12 @@ export function generateElegantReport(
       color: var(--text-dim);
       margin-bottom: 10px;
     }
-    .screenshot-thumb-container {
+    .media-container {
       display: flex;
-      gap: 14px;
+      gap: 16px;
       flex-wrap: wrap;
     }
-    .screenshot-thumb {
+    .media-thumb {
       max-width: 320px;
       max-height: 200px;
       border-radius: 8px;
@@ -968,9 +1059,15 @@ export function generateElegantReport(
       cursor: pointer;
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
-    .screenshot-thumb:hover {
+    .media-thumb:hover {
       transform: scale(1.02);
       border-color: var(--color-cyan);
+    }
+    .video-player {
+      max-width: 480px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      background: #000;
     }
 
     /* Lightbox Modal */
@@ -978,7 +1075,7 @@ export function generateElegantReport(
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.88);
+      background: rgba(0, 0, 0, 0.9);
       backdrop-filter: blur(8px);
       z-index: 100;
       align-items: center;
@@ -1000,6 +1097,17 @@ export function generateElegantReport(
       font-size: 32px;
       color: #fff;
       cursor: pointer;
+      user-select: none;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-dim);
+      background: var(--bg-card);
+      border-radius: 12px;
+      border: 1px dashed var(--border-subtle);
     }
 
     /* Responsive */
@@ -1025,13 +1133,13 @@ export function generateElegantReport(
     <div class="sidebar-search">
       <div class="search-input-wrapper">
         <span class="search-icon">🔍</span>
-        <input type="text" id="sidebarSearch" placeholder="Search test cases, ID, errors..." oninput="onSearchChange(this.value)">
+        <input type="text" id="sidebarSearch" placeholder="Search test cases, ID, errors...">
       </div>
     </div>
 
     <div class="sidebar-menu">
       <div class="menu-category">Views</div>
-      <div class="nav-item active" data-nav="overview" onclick="navigateView('overview')">
+      <div class="nav-item active" data-nav="overview">
         <div class="nav-item-left">
           <span>📊</span>
           <span>Executive Overview</span>
@@ -1039,7 +1147,7 @@ export function generateElegantReport(
         <span class="nav-badge pass">${passedTests}/${totalTests}</span>
       </div>
 
-      <div class="nav-item" data-nav="failures" onclick="navigateView('failures')">
+      <div class="nav-item" data-nav="failures">
         <div class="nav-item-left">
           <span>🚨</span>
           <span>Failures Hub</span>
@@ -1047,7 +1155,7 @@ export function generateElegantReport(
         <span class="nav-badge ${failedTests > 0 ? 'fail' : 'pass'}">${failedTests}</span>
       </div>
 
-      <div class="nav-item" data-nav="gallery" onclick="navigateView('gallery')">
+      <div class="nav-item" data-nav="gallery">
         <div class="nav-item-left">
           <span>📸</span>
           <span>Evidence Gallery</span>
@@ -1056,10 +1164,10 @@ export function generateElegantReport(
 
       <div class="menu-category">Modules (Clickable Navigation)</div>
       ${sortedModules.map(m => `
-        <div class="nav-item" data-nav="module_${m.key}" onclick="filterByModule('${m.key}')">
+        <div class="nav-item" data-nav="module" data-module-key="${m.key}">
           <div class="nav-item-left">
-            <span>📁</span>
-            <span title="${m.name}">${m.shortName}</span>
+            <span>${m.icon}</span>
+            <span title="${escapeHtml(m.name)}">${escapeHtml(m.shortName)}</span>
           </div>
           <span class="nav-badge ${m.failed > 0 ? 'fail' : 'pass'}">${m.passed}/${m.total}</span>
         </div>
@@ -1079,62 +1187,70 @@ export function generateElegantReport(
     <header class="top-header">
       <div class="header-titles">
         <h2 id="viewHeading">Execution Dashboard</h2>
-        <p>Automated regression run executed on <strong>${dateStr}</strong> at <strong>${timeStr}</strong> against RiverStream QA</p>
+        <p id="viewSubheading">Automated regression run executed on <strong>${dateStr}</strong> at <strong>${timeStr}</strong> against RiverStream QA</p>
       </div>
 
       <div class="header-actions">
         <!-- Colorful Status Split Pills -->
         <div class="filter-pills">
-          <button class="pill-btn active" data-filter="all" onclick="applyStatusFilter('all')">
+          <button class="pill-btn active" data-filter="all">
             All (${totalTests})
           </button>
-          <button class="pill-btn" data-filter="passed" onclick="applyStatusFilter('passed')">
+          <button class="pill-btn" data-filter="passed">
             ● Passed (${passedTests})
           </button>
-          <button class="pill-btn" data-filter="failed" onclick="applyStatusFilter('failed')">
+          <button class="pill-btn" data-filter="failed">
             ● Failed (${failedTests})
           </button>
-          <button class="pill-btn" data-filter="skipped" onclick="applyStatusFilter('skipped')">
+          <button class="pill-btn" data-filter="skipped">
             ● Skipped (${skippedTests})
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Executive KPI Grid (Split metrics) -->
+    <!-- Executive KPI Grid (Split metrics, fully clickable!) -->
     <section class="kpi-grid">
-      <div class="kpi-card total">
-        <div class="kpi-title">Total Tests Executed</div>
-        <div class="kpi-value-row">
-          <span class="kpi-number">${totalTests}</span>
+      <div class="kpi-card total" data-filter="all" title="Click to view all test cases">
+        <div class="kpi-title">
+          <span>Total Tests Executed</span>
           <span>⚡</span>
         </div>
-        <div class="kpi-subtext">Across ${sortedModules.length} core test modules</div>
+        <div class="kpi-value-row">
+          <span class="kpi-number">${totalTests}</span>
+        </div>
+        <div class="kpi-subtext">Across ${sortedModules.length} core test modules · Click to view all</div>
       </div>
 
-      <div class="kpi-card passed">
-        <div class="kpi-title">Passed Cases</div>
+      <div class="kpi-card passed" data-filter="passed" title="Click to filter passed cases">
+        <div class="kpi-title">
+          <span>Passed Cases</span>
+          <span style="color: #10b981; font-size: 16px;">✓</span>
+        </div>
         <div class="kpi-value-row">
           <span class="kpi-number">${passedTests}</span>
-          <span style="color: #10b981; font-size: 20px;">✓</span>
         </div>
-        <div class="kpi-subtext">${passRate}% overall success rate</div>
+        <div class="kpi-subtext">${passRate}% overall success rate · Click to filter</div>
       </div>
 
-      <div class="kpi-card failed">
-        <div class="kpi-title">Failed Cases</div>
+      <div class="kpi-card failed" data-filter="failed" title="Click to filter failed cases">
+        <div class="kpi-title">
+          <span>Failed Cases</span>
+          <span style="color: #ef4444; font-size: 16px;">✗</span>
+        </div>
         <div class="kpi-value-row">
           <span class="kpi-number">${failedTests}</span>
-          <span style="color: #ef4444; font-size: 20px;">✗</span>
         </div>
-        <div class="kpi-subtext">${failedTests === 0 ? 'Zero regression defects' : 'Needs immediate QA review'}</div>
+        <div class="kpi-subtext">${failedTests === 0 ? 'Zero regression defects' : 'Needs immediate QA review · Click to filter'}</div>
       </div>
 
-      <div class="kpi-card rate">
-        <div class="kpi-title">Pass Rate & Duration</div>
+      <div class="kpi-card rate" data-filter="all" title="Total Execution Duration">
+        <div class="kpi-title">
+          <span>Pass Rate & Duration</span>
+          <span>⏱️</span>
+        </div>
         <div class="kpi-value-row">
           <span class="kpi-number">${passRate}%</span>
-          <span>⏱️</span>
         </div>
         <div class="kpi-subtext">Total time: ${formatDuration(totalDurationMs)}</div>
       </div>
@@ -1152,34 +1268,40 @@ export function generateElegantReport(
         <div class="prog-segment skip" style="width: ${totalTests > 0 ? (skippedTests / totalTests) * 100 : 0}%;" title="Skipped: ${skippedTests}"></div>
       </div>
       <div class="split-legend">
-        <div class="legend-item"><span class="legend-dot pass"></span> Passed (${passedTests})</div>
-        <div class="legend-item"><span class="legend-dot fail"></span> Failed (${failedTests})</div>
-        <div class="legend-item"><span class="legend-dot skip"></span> Skipped (${skippedTests})</div>
+        <div class="legend-item" data-filter="passed"><span class="legend-dot pass"></span> Passed (${passedTests})</div>
+        <div class="legend-item" data-filter="failed"><span class="legend-dot fail"></span> Failed (${failedTests})</div>
+        <div class="legend-item" data-filter="skipped"><span class="legend-dot skip"></span> Skipped (${skippedTests})</div>
       </div>
     </section>
 
     <!-- Test List Section -->
-    <section class="test-list-section">
+    <section class="test-list-section" id="testListSection">
       <div class="test-list-header">
         <div class="test-list-title">
           <span id="testListHeading">All Test Cases</span>
           <span class="count-indicator" id="testCountIndicator">(${totalTests} items)</span>
+          <span id="activeFilterBadgeContainer"></span>
+        </div>
+        <div class="action-controls">
+          <button class="mini-btn" id="expandAllBtn">Expand All</button>
+          <button class="mini-btn" id="collapseAllBtn">Collapse All</button>
         </div>
       </div>
 
       <div class="test-cards-wrapper" id="testCardsWrapper">
         ${processedCases.map(tc => `
-          <div class="test-card" data-id="${tc.id}" data-status="${tc.status}" data-module="${tc.moduleKey}" data-title="${tc.title.toLowerCase()} ${tc.tcId.toLowerCase()}">
-            <div class="test-card-summary" onclick="toggleCard('${tc.id}')">
+          <div class="test-card" data-id="${escapeHtml(tc.id)}" data-status="${escapeHtml(tc.status)}" data-module="${escapeHtml(tc.moduleKey)}" data-title="${escapeHtml(tc.title.toLowerCase())} ${escapeHtml(tc.tcId.toLowerCase())}">
+            <div class="test-card-summary">
               <div class="test-card-left">
-                <span class="status-badge ${tc.status}">
+                <span class="status-badge ${escapeHtml(tc.status)}">
                   ${tc.status === 'passed' ? '✓ PASS' : tc.status === 'failed' ? '✗ FAIL' : '● SKIP'}
                 </span>
-                <span class="tc-id">${tc.tcId}</span>
-                <span class="tc-title" title="${tc.title}">${tc.title}</span>
+                <span class="tc-id">${escapeHtml(tc.tcId)}</span>
+                <span class="tc-title" title="${escapeHtml(tc.title)}">${escapeHtml(tc.title)}</span>
               </div>
               <div class="test-card-right">
-                <span class="mod-tag">${tc.moduleName.split(':')[0]}</span>
+                ${tc.media.length > 0 ? `<span class="media-indicator" title="${tc.media.length} media attached">📸 ${tc.media.length}</span>` : ''}
+                <span class="mod-tag">${escapeHtml(tc.moduleName.split(':')[0])}</span>
                 <span class="duration-tag">${formatDuration(tc.durationMs)}</span>
                 <span class="chevron">▼</span>
               </div>
@@ -1191,9 +1313,9 @@ export function generateElegantReport(
                   <div class="failure-box">
                     <div class="failure-header">
                       <span>Assertion / Error Diagnostic:</span>
-                      <button class="copy-btn" onclick="navigator.clipboard.writeText('${tc.errorStack ? tc.errorStack.replace(/'/g, "\\'") : ''}')">Copy Stack</button>
+                      <button class="copy-btn">Copy Stack</button>
                     </div>
-                    <pre class="error-stack">${tc.errorStack || tc.error}</pre>
+                    <pre class="error-stack">${escapeHtml(tc.errorStack || tc.error)}</pre>
                   </div>
                 ` : ''}
 
@@ -1204,7 +1326,7 @@ export function generateElegantReport(
                       <li class="step-item">
                         <div class="step-left">
                           <span class="step-icon ${s.ok ? 'ok' : 'fail'}">${s.ok ? '✓' : '✗'}</span>
-                          <span>${s.title}</span>
+                          <span>${escapeHtml(s.title)}</span>
                         </div>
                         <span class="step-dur">${formatDuration(s.durationMs)}</span>
                       </li>
@@ -1212,12 +1334,17 @@ export function generateElegantReport(
                   </ul>
                 </div>
 
-                ${tc.screenshots.length > 0 ? `
-                  <div class="screenshots-box">
-                    <h4>Attached Screenshots (${tc.screenshots.length})</h4>
-                    <div class="screenshot-thumb-container">
-                      ${tc.screenshots.map(sc => `
-                        <img src="${sc.base64}" alt="${sc.name}" class="screenshot-thumb" onclick="openLightbox('${sc.base64}')" title="${sc.name}">
+                ${tc.media.length > 0 ? `
+                  <div class="media-box">
+                    <h4>Evidence & Attachments (${tc.media.length})</h4>
+                    <div class="media-container">
+                      ${tc.media.map(m => m.type === 'image' ? `
+                        <img src="${m.src}" alt="${escapeHtml(m.name)}" class="media-thumb" title="${escapeHtml(m.name)} (Click to zoom)">
+                      ` : `
+                        <video controls class="video-player">
+                          <source src="${m.src}" type="video/webm">
+                          Your browser does not support video playback.
+                        </video>
                       `).join('')}
                     </div>
                   </div>
@@ -1227,94 +1354,40 @@ export function generateElegantReport(
           </div>
         `).join('')}
       </div>
+
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <h3>No matching test cases found</h3>
+        <p style="margin-top: 8px;">Try clearing search keywords or changing the status filter.</p>
+      </div>
     </section>
 
   </main>
 
   <!-- Lightbox Modal -->
-  <div class="lightbox-modal" id="lightbox" onclick="closeLightbox()">
-    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-    <img src="" id="lightboxImg" class="lightbox-content" onclick="event.stopPropagation()">
+  <div class="lightbox-modal" id="lightbox">
+    <span class="lightbox-close">&times;</span>
+    <img src="" id="lightboxImg" class="lightbox-content">
   </div>
 
   <script>
+    // State management
     let currentFilter = 'all';
     let currentModule = 'all';
     let searchQuery = '';
 
-    function toggleCard(cardId) {
-      const card = document.querySelector(\`.test-card[data-id="\${cardId}"]\`);
-      if (card) {
-        card.classList.toggle('open');
-      }
-    }
-
-    function applyStatusFilter(status) {
-      currentFilter = status;
-      document.querySelectorAll('.filter-pills .pill-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.filter === status);
-      });
-      refreshFilteredList();
-    }
-
-    function filterByModule(moduleKey) {
-      currentModule = moduleKey;
-      document.querySelectorAll('.sidebar .nav-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.nav === 'module_' + moduleKey);
-      });
-      document.getElementById('viewHeading').innerText = 'Module Filter: ' + moduleKey.toUpperCase();
-      refreshFilteredList();
-    }
-
-    function navigateView(viewName) {
-      document.querySelectorAll('.sidebar .nav-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.nav === viewName);
-      });
-
-      if (viewName === 'overview') {
-        currentModule = 'all';
-        currentFilter = 'all';
-        applyStatusFilter('all');
-        document.getElementById('viewHeading').innerText = 'Execution Dashboard';
-      } else if (viewName === 'failures') {
-        currentModule = 'all';
-        applyStatusFilter('failed');
-        document.getElementById('viewHeading').innerText = 'Failures Hub';
-      } else if (viewName === 'gallery') {
-        currentModule = 'all';
-        document.getElementById('viewHeading').innerText = 'Evidence & Screenshots Gallery';
-        // Expand all cards that have screenshots
-        document.querySelectorAll('.test-card').forEach(card => {
-          const hasImg = card.querySelector('.screenshot-thumb');
-          if (hasImg) {
-            card.classList.add('open');
-            card.style.display = 'block';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-        return;
-      }
-      refreshFilteredList();
-    }
-
-    function onSearchChange(val) {
-      searchQuery = (val || '').toLowerCase().trim();
-      refreshFilteredList();
-    }
-
-    function refreshFilteredList() {
+    // Filter refresh logic
+    function refreshView() {
       const cards = document.querySelectorAll('.test-card');
       let visibleCount = 0;
 
       cards.forEach(card => {
-        const cardStatus = card.dataset.status;
-        const cardModule = card.dataset.module;
-        const cardTitle = card.dataset.title;
+        const cardStatus = card.getAttribute('data-status');
+        const cardModule = card.getAttribute('data-module');
+        const cardTitle = card.getAttribute('data-title') || '';
 
         const matchStatus = (currentFilter === 'all') || (cardStatus === currentFilter);
         const matchModule = (currentModule === 'all') || (cardModule === currentModule);
-        const matchSearch = (!searchQuery) || (cardTitle.includes(searchQuery));
+        const matchSearch = (!searchQuery) || (cardTitle.indexOf(searchQuery) !== -1);
 
         if (matchStatus && matchModule && matchSearch) {
           card.style.display = 'block';
@@ -1324,51 +1397,239 @@ export function generateElegantReport(
         }
       });
 
-      const indicator = document.getElementById('testCountIndicator');
-      if (indicator) {
-        indicator.innerText = \`(\${visibleCount} items displayed)\`;
+      // Update count indicator
+      const countEl = document.getElementById('testCountIndicator');
+      if (countEl) {
+        countEl.textContent = '(' + visibleCount + ' items displayed)';
+      }
+
+      // Empty state
+      const emptyEl = document.getElementById('emptyState');
+      if (emptyEl) {
+        emptyEl.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+
+      // Active filter badge
+      const badgeContainer = document.getElementById('activeFilterBadgeContainer');
+      if (badgeContainer) {
+        if (currentModule !== 'all') {
+          const modItem = document.querySelector('.nav-item[data-module-key="' + currentModule + '"]');
+          const modName = modItem ? modItem.querySelector('.nav-item-left span:last-child').textContent : currentModule;
+          badgeContainer.innerHTML = '<span class="active-filter-badge">Filter: ' + modName + ' <button class="clear-filter-btn" title="Clear module filter">&times;</button></span>';
+        } else {
+          badgeContainer.innerHTML = '';
+        }
       }
     }
 
-    function openLightbox(src) {
-      const lb = document.getElementById('lightbox');
-      const img = document.getElementById('lightboxImg');
-      img.src = src;
-      lb.classList.add('open');
+    // Set status filter
+    function setStatusFilter(status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-pills .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-filter') === status);
+      });
+      refreshView();
     }
 
-    function closeLightbox() {
-      document.getElementById('lightbox').classList.remove('open');
+    // Set module filter
+    function setModuleFilter(modKey) {
+      currentModule = modKey;
+      document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('data-module-key') === modKey);
+      });
+
+      const heading = document.getElementById('viewHeading');
+      if (heading) {
+        if (modKey === 'all') {
+          heading.textContent = 'Execution Dashboard';
+        } else {
+          const modItem = document.querySelector('.nav-item[data-module-key="' + modKey + '"]');
+          const name = modItem ? modItem.querySelector('.nav-item-left span:last-child').textContent : modKey;
+          heading.textContent = 'Module: ' + name;
+        }
+      }
+
+      refreshView();
+
+      // Scroll smoothly to test list section
+      const listSec = document.getElementById('testListSection');
+      if (listSec) {
+        listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
-    // Keyboard shortcut '/' to search
-    window.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== document.getElementById('sidebarSearch')) {
-        e.preventDefault();
-        document.getElementById('sidebarSearch').focus();
-      } else if (e.key === 'Escape') {
-        closeLightbox();
+    // Event Delegation: Global Click Handlers
+    document.addEventListener('click', function(e) {
+      // 1. Toggle Test Card
+      const summary = e.target.closest('.test-card-summary');
+      if (summary) {
+        const card = summary.closest('.test-card');
+        if (card) {
+          card.classList.toggle('open');
+        }
+        return;
+      }
+
+      // 2. Status Filter Pills
+      const pillBtn = e.target.closest('.pill-btn');
+      if (pillBtn) {
+        const filter = pillBtn.getAttribute('data-filter');
+        if (filter) setStatusFilter(filter);
+        return;
+      }
+
+      // 3. KPI Cards Click to Filter
+      const kpiCard = e.target.closest('.kpi-card');
+      if (kpiCard) {
+        const filter = kpiCard.getAttribute('data-filter');
+        if (filter) setStatusFilter(filter);
+        const listSec = document.getElementById('testListSection');
+        if (listSec) listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      // 4. Progress Legend Items Click to Filter
+      const legendItem = e.target.closest('.legend-item');
+      if (legendItem) {
+        const filter = legendItem.getAttribute('data-filter');
+        if (filter) setStatusFilter(filter);
+        return;
+      }
+
+      // 5. Sidebar Navigation Items
+      const navItem = e.target.closest('.sidebar .nav-item');
+      if (navItem) {
+        const nav = navItem.getAttribute('data-nav');
+        if (nav === 'overview') {
+          currentModule = 'all';
+          setStatusFilter('all');
+          document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+          navItem.classList.add('active');
+          document.getElementById('viewHeading').textContent = 'Execution Dashboard';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (nav === 'failures') {
+          currentModule = 'all';
+          setStatusFilter('failed');
+          document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+          navItem.classList.add('active');
+          document.getElementById('viewHeading').textContent = 'Failures Hub';
+          const listSec = document.getElementById('testListSection');
+          if (listSec) listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (nav === 'gallery') {
+          currentModule = 'all';
+          setStatusFilter('all');
+          document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+          navItem.classList.add('active');
+          document.getElementById('viewHeading').textContent = 'Evidence & Screenshots Gallery';
+
+          // Show & expand all cards that have media
+          document.querySelectorAll('.test-card').forEach(card => {
+            const hasMedia = card.querySelector('.media-thumb, .video-player');
+            if (hasMedia) {
+              card.classList.add('open');
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+          const listSec = document.getElementById('testListSection');
+          if (listSec) listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        } else if (nav === 'module') {
+          const modKey = navItem.getAttribute('data-module-key');
+          if (modKey) setModuleFilter(modKey);
+        }
+        return;
+      }
+
+      // 6. Clear Module Filter Button
+      const clearBtn = e.target.closest('.clear-filter-btn');
+      if (clearBtn) {
+        setModuleFilter('all');
+        return;
+      }
+
+      // 7. Copy Stack Trace Button
+      const copyBtn = e.target.closest('.copy-btn');
+      if (copyBtn) {
+        const stackPre = copyBtn.closest('.failure-box').querySelector('.error-stack');
+        if (stackPre) {
+          navigator.clipboard.writeText(stackPre.textContent || '');
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => { copyBtn.textContent = 'Copy Stack'; }, 1500);
+        }
+        return;
+      }
+
+      // 8. Image Lightbox Click
+      const thumb = e.target.closest('.media-thumb');
+      if (thumb) {
+        const lb = document.getElementById('lightbox');
+        const img = document.getElementById('lightboxImg');
+        if (lb && img) {
+          img.src = thumb.src;
+          lb.classList.add('open');
+        }
+        return;
+      }
+
+      // 9. Close Lightbox Click
+      if (e.target.id === 'lightbox' || e.target.classList.contains('lightbox-close')) {
+        const lb = document.getElementById('lightbox');
+        if (lb) lb.classList.remove('open');
       }
     });
+
+    // Expand All / Collapse All buttons
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    if (expandAllBtn) {
+      expandAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('.test-card').forEach(c => {
+          if (c.style.display !== 'none') c.classList.add('open');
+        });
+      });
+    }
+
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+    if (collapseAllBtn) {
+      collapseAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('.test-card').forEach(c => c.classList.remove('open'));
+      });
+    }
+
+    // Search Input Event
+    const searchInput = document.getElementById('sidebarSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function(e) {
+        searchQuery = (e.target.value || '').toLowerCase().trim();
+        refreshView();
+      });
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', function(e) {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        if (searchInput) searchInput.focus();
+      } else if (e.key === 'Escape') {
+        const lb = document.getElementById('lightbox');
+        if (lb) lb.classList.remove('open');
+      }
+    });
+
+    // Initial render
+    refreshView();
   </script>
 </body>
 </html>
 `;
 
-  // Write report to playwright-report/index.html
-  const outputDir = path.dirname(outputHtmlPath);
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
-
   fs.writeFileSync(outputHtmlPath, htmlReport, 'utf-8');
   console.log(`[ElegantReport] Report successfully generated at: ${outputHtmlPath} (${(htmlReport.length / 1024).toFixed(1)} KB)`);
 
-  // Also write a copy to test-results/elegant-report.html
   const copyPath = path.resolve(process.cwd(), 'test-results/elegant-report.html');
   try {
     fs.writeFileSync(copyPath, htmlReport, 'utf-8');
-    console.log(`[ElegantReport] Secondary copy saved to: ${copyPath}`);
   } catch (e) {
     // ignore
   }
