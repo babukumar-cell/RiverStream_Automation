@@ -16,8 +16,9 @@ export default defineConfig({
   },
   reporter: [
     ['list'],
+    ['./src/reporters/elegant-dark-reporter.ts'],
     ['allure-playwright', { outputFolder: 'allure-results' }],
-    ['html', { open: 'never', outputFolder: 'playwright-report' }],
+    ['html', { open: 'never', outputFolder: 'test-results/playwright-html' }],
     ['json', { outputFile: 'test-results/summary.json' }],
   ],
   use: {
