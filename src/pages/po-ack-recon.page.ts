@@ -40,6 +40,20 @@ export class PoAckReconPage extends BasePage {
   readonly docReviewButtons: Locator;
   readonly docUploadAckButtons: Locator;
 
+  // Upload Documents Modal
+  readonly uploadModal: Locator;
+  readonly uploadModalTitle: Locator;
+  readonly poDropzone: Locator;
+  readonly poFileInput: Locator;
+  readonly poBrowseButton: Locator;
+  readonly ackDropzone: Locator;
+  readonly ackFileInput: Locator;
+  readonly ackBrowseButton: Locator;
+  readonly addAnotherAckButton: Locator;
+  readonly cancelUploadButton: Locator;
+  readonly uploadFilesButton: Locator;
+  readonly closeUploadModalButton: Locator;
+
   // Review Page
   readonly showPdfsButton: Locator;
   readonly completeButton: Locator;
@@ -87,6 +101,20 @@ export class PoAckReconPage extends BasePage {
     this.docTableRows = page.locator('table tbody tr');
     this.docReviewButtons = page.locator('table tbody tr button:has-text("Review")');
     this.docUploadAckButtons = page.locator('table tbody tr button:has-text("Upload ACK")');
+
+    // Upload Documents Modal
+    this.uploadModal = page.locator('[role="dialog"]').filter({ hasText: /Upload Documents/i }).first();
+    this.uploadModalTitle = this.uploadModal.locator('h2, h3, :text("Upload Documents")').first();
+    this.poDropzone = this.uploadModal.locator('div:has(> *:has-text("Purchase Order")), div:has-text("Purchase Order")').first();
+    this.poFileInput = this.uploadModal.locator('input[type="file"]').first();
+    this.poBrowseButton = this.uploadModal.locator('button:has-text("Browse files"), span:has-text("Browse files")').first();
+    this.ackDropzone = this.uploadModal.locator('div:has(> *:has-text("Acknowledgment")), div:has-text("Acknowledgment")').first();
+    this.ackFileInput = this.uploadModal.locator('input[type="file"]').nth(1);
+    this.ackBrowseButton = this.uploadModal.locator('button:has-text("Browse files"), span:has-text("Browse files")').nth(1);
+    this.addAnotherAckButton = this.uploadModal.locator('button:has-text("Add another file")').first();
+    this.cancelUploadButton = this.uploadModal.locator('button:has-text("Cancel")').first();
+    this.uploadFilesButton = this.uploadModal.locator('button:has-text("Upload Files")').first();
+    this.closeUploadModalButton = this.uploadModal.locator('button:has-text("Close"), button[aria-label*="close" i], button:has(svg)').first();
 
     // Review Page
     this.showPdfsButton = page.locator('button:has-text("Show PDFs"), button:has-text("View PDFs"), button:has-text("Collapse PDF"), button:has-text("Hide PDFs")').first();
@@ -266,5 +294,100 @@ export class PoAckReconPage extends BasePage {
     await loading.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
     await this.completeButton.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Open Upload Documents modal
+   */
+  async openUploadDocumentsModal(): Promise<void> {
+    await this.uploadDocsButton.waitFor({ state: 'visible', timeout: 10000 });
+    await this.uploadDocsButton.click();
+    await this.uploadModal.waitFor({ state: 'visible', timeout: 8000 });
+  }
+
+  /**
+   * Attach PO File in the upload modal
+   */
+  async attachPoFile(filePath: string): Promise<void> {
+    await this.poFileInput.setInputFiles(filePath);
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Attach ACK File in the upload modal
+   */
+  async attachAckFile(filePath: string, ackIndex: number = 0): Promise<void> {
+    const fileInputs = this.uploadModal.locator('input[type="file"]');
+    const targetInput = fileInputs.nth(1 + ackIndex);
+    await targetInput.setInputFiles(filePath);
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Click '+ Add another file' button in the upload modal
+   */
+  async clickAddAnotherAck(): Promise<void> {
+    await this.addAnotherAckButton.waitFor({ state: 'visible', timeout: 5000 });
+    await this.addAnotherAckButton.click();
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Close upload modal with Cancel
+   */
+  async cancelUpload(): Promise<void> {
+    await this.cancelUploadButton.click();
+    await this.uploadModal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+  }
+
+  /**
+   * Close upload modal with (X) button
+   */
+  async closeUploadModalWithX(): Promise<void> {
+    await this.closeUploadModalButton.click();
+    await this.uploadModal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+  }
+
+  /**
+   * Submit PO and ACK files
+   */
+  async submitUploadFiles(): Promise<void> {
+    await this.uploadFilesButton.waitFor({ state: 'visible', timeout: 5000 });
+    await this.uploadFilesButton.click();
+    await this.uploadModal.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    await this.waitForDocsLoaded();
+  }
+
+  /**
+   * Filter documents table by status button (e.g. 'Critical', 'Medium', 'Matched', 'All')
+   */
+  async applyStatusFilter(status: string): Promise<void> {
+    const filterBtn = this.page.locator(`button:has-text("${status}")`).first();
+    await filterBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await filterBtn.click();
+    await this.page.waitForTimeout(1000);
+    await this.waitForDocsLoaded();
+  }
+
+  /**
+   * Get visible status texts from the document table
+   */
+  async getVisibleDocumentStatuses(): Promise<string[]> {
+    const rows = this.docTableRows;
+    const count = await rows.count();
+    const statuses: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const row = rows.nth(i);
+      const isVisible = await row.isVisible();
+      if (!isVisible) continue;
+      const statusCell = row.locator('td:nth-child(4), td:has-text("Critical"), td:has-text("Medium"), td:has-text("Minor"), td:has-text("Matched"), td:has-text("Awaiting"), td:has-text("Pending"), td:has-text("Failed"), td:has-text("Processing")').first();
+      if (await statusCell.isVisible().catch(() => false)) {
+        const text = (await statusCell.innerText()).trim();
+        if (text && !text.toLowerCase().includes('no po-ack')) {
+          statuses.push(text);
+        }
+      }
+    }
+    return statuses;
   }
 }
