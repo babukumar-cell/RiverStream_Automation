@@ -39,7 +39,120 @@ interface FailedTestDetail {
   tcId: string;
   module: string;
   testTitle: string;
+  steps: string;
+  expectedResult: string;
+  actualResult: string;
   failureReason: string;
+}
+
+// Load master test case catalog
+const catalogPath = path.resolve(__dirname, '../test-data/test-catalog-metadata.json');
+let testCatalog: Record<string, any> = {};
+if (fs.existsSync(catalogPath)) {
+  try {
+    testCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+  } catch (err) {
+    // ignore
+  }
+}
+
+// Helper to formulate clear, non-technical plain English explanation of failure
+function getPlainEnglishFailure(tcId: string, rawError: string, expectedText: string): string {
+  const lower = (rawError || '').toLowerCase();
+
+  if (lower.includes('beforeall') && lower.includes('timeout')) {
+    return 'Setup Timed Out: Inbound mail service / SMTP connection setup did not complete within the allotted timeout (45-90s limit).';
+  }
+  if (lower.includes('hook timeout') || lower.includes('beforeeach')) {
+    return 'Setup Hook Timed Out: The test initialization hook took longer than expected and exceeded the timeout threshold.';
+  }
+  if (lower.includes('tobetruthy') && (lower.includes('visibleprojectnames') || lower.includes('searchproject') || tcId.includes('RECON'))) {
+    return 'Project Not Found: The newly created project was not displayed or visible in the PO-ACK Reconciliation projects table after creation.';
+  }
+  if (lower.includes('tocontain') && (tcId.includes('RECON_020') || lower.includes('project'))) {
+    return 'Sorting Verification Failed: The newly created project did not appear at the top of the project list table.';
+  }
+  if (lower.includes('tobetruthy') || lower.includes('received: false')) {
+    return 'Assertion Failed: The expected UI component, project record, or confirmation state was not met (evaluated to false).';
+  }
+  if (lower.includes('tocontain')) {
+    return 'Content Mismatch: The expected text, project name, or data was not found in the target UI element or table row.';
+  }
+  if (lower.includes('tobevisible') || lower.includes('waiting for locator')) {
+    return 'Element Not Visible: The expected UI component, button, or modal dialog was not rendered on screen within the timeout.';
+  }
+  if (lower.includes('tobedisabled') || lower.includes('tobeenabled')) {
+    return 'State Mismatch: Interactive control (button/input) was not in the expected enabled or disabled state.';
+  }
+  if (lower.includes('tohavetext') || lower.includes('tohavevalue')) {
+    return 'Value Mismatch: The displayed field value or label did not match the expected value.';
+  }
+  if (lower.includes('timeout') || lower.includes('timed out')) {
+    return 'Execution Timeout: The application or server took longer to respond than the configured waiting threshold.';
+  }
+  if (lower.includes('500') || lower.includes('internal server error')) {
+    return 'Backend Server Error: The server returned an HTTP 500 error while processing the request.';
+  }
+  if (lower.includes('401') || lower.includes('403') || lower.includes('unauthorized')) {
+    return 'Authentication Error: Operation was blocked due to expired session or insufficient permissions.';
+  }
+
+  return 'Verification Failed: System outcome did not match acceptance criteria during execution.';
+}
+
+// Lookup catalog metadata with fuzzy matching and title fallback
+function lookupCatalog(tcId: string, title: string): {
+  description: string;
+  steps: string;
+  testData: string;
+  expectedResult: string;
+} {
+  // 1. Direct match
+  if (testCatalog[tcId]) {
+    const entry = testCatalog[tcId];
+    return {
+      description: entry.description || title,
+      steps: entry.steps || '',
+      testData: entry.testData || '',
+      expectedResult: entry.expectedResult || '',
+    };
+  }
+
+  // 2. Normalized match (dashes, spaces, underscores)
+  const normId = tcId.replace(/[- ]/g, '_').toUpperCase();
+  for (const [k, v] of Object.entries(testCatalog)) {
+    const kNorm = k.replace(/[- ]/g, '_').toUpperCase();
+    if (kNorm === normId || kNorm.replace(/_/g, '') === normId.replace(/_/g, '')) {
+      return {
+        description: v.description || title,
+        steps: v.steps || '',
+        testData: v.testData || '',
+        expectedResult: v.expectedResult || '',
+      };
+    }
+  }
+
+  // 3. Match by description/title text
+  const cleanTitle = title.replace(/^TC[_-]?[A-Za-z0-9_ -]+?:\s*/i, '').trim().toLowerCase();
+  for (const [k, v] of Object.entries(testCatalog)) {
+    if (v.description && v.description.toLowerCase().trim() === cleanTitle) {
+      return {
+        description: v.description,
+        steps: v.steps || '',
+        testData: v.testData || '',
+        expectedResult: v.expectedResult || '',
+      };
+    }
+  }
+
+  // 4. Fallback based on title
+  const pureTitle = title.replace(/^TC[_-]?[A-Za-z0-9_ -]+?:\s*/i, '').trim();
+  return {
+    description: pureTitle,
+    steps: `1. Authenticate to RiverStream application.\n2. Navigate to target module.\n3. Execute test verification actions for: ${pureTitle}.\n4. Verify application behavior.`,
+    testData: 'Standard test environment data',
+    expectedResult: `System should successfully complete and verify: ${pureTitle}.`,
+  };
 }
 
 // Map spec file path to human-readable module name
@@ -209,10 +322,17 @@ export async function generateAndSendReport(): Promise<void> {
           }
         }
 
+        const tcId = extractTcId(spec.title);
+        const catEntry = lookupCatalog(tcId, spec.title);
+        const actualResult = getPlainEnglishFailure(tcId, reason, catEntry.expectedResult);
+
         failedTests.push({
-          tcId: extractTcId(spec.title),
+          tcId,
           module: modName,
-          testTitle: spec.title,
+          testTitle: catEntry.description || spec.title,
+          steps: catEntry.steps,
+          expectedResult: catEntry.expectedResult,
+          actualResult,
           failureReason: reason,
         });
       }
@@ -304,12 +424,32 @@ export async function generateAndSendReport(): Promise<void> {
     let failedRowsHtml = '';
     for (const ft of failedTests) {
       failedRowsHtml += `
-        <tr style="border-bottom: 1px solid #fee2e2; font-size: 12px; vertical-align: top;">
-          <td style="padding: 10px 12px; color: #b91c1c; font-weight: bold; font-family: 'Consolas', 'Courier New', monospace; white-space: nowrap;">${ft.tcId}</td>
-          <td style="padding: 10px 12px; color: #1f2937; font-weight: 500; white-space: nowrap;">${ft.module}</td>
-          <td style="padding: 10px 12px; color: #374151;">${ft.testTitle}</td>
-          <td style="padding: 10px 12px;">
-            <pre style="margin: 0; padding: 8px 10px; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; color: #b91c1c; font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; line-height: 1.4; white-space: pre-wrap; word-break: break-all;">${escapeHtml(ft.failureReason)}</pre>
+        <tr style="border-bottom: 2px solid #fee2e2; font-size: 12px; vertical-align: top;">
+          <td style="padding: 12px 10px; width: 14%;">
+            <div style="color: #b91c1c; font-weight: bold; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px;">${ft.tcId}</div>
+            <div style="font-size: 11px; color: #4b5563; margin-top: 4px; font-weight: 600;">${ft.module}</div>
+          </td>
+          <td style="padding: 12px 10px; width: 28%;">
+            <div style="font-weight: 700; color: #111827; margin-bottom: 6px; font-size: 13px;">${escapeHtml(ft.testTitle)}</div>
+            <div style="font-size: 11px; color: #4b5563; background: #f9fafb; padding: 6px 8px; border-radius: 4px; border: 1px solid #e5e7eb; white-space: pre-wrap; line-height: 1.4;">
+              <strong style="color: #1f2937;">Steps Executed:</strong><br>${escapeHtml(ft.steps)}
+            </div>
+          </td>
+          <td style="padding: 12px 10px; width: 28%;">
+            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px 12px; color: #166534; font-size: 12px; line-height: 1.45;">
+              <strong style="color: #15803d; font-size: 12px; display: block; margin-bottom: 4px;">🟢 Expected Result:</strong>
+              ${escapeHtml(ft.expectedResult)}
+            </div>
+          </td>
+          <td style="padding: 12px 10px; width: 30%;">
+            <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 10px 12px; color: #991b1b; font-size: 12px; line-height: 1.45;">
+              <strong style="color: #b91c1c; font-size: 12px; display: block; margin-bottom: 4px;">🔴 Actual Result (Why it Failed):</strong>
+              ${escapeHtml(ft.actualResult)}
+            </div>
+            <details style="margin-top: 8px; font-size: 11px;">
+              <summary style="color: #b91c1c; cursor: pointer; font-weight: 600;">View Technical Diagnostics / Stack</summary>
+              <pre style="margin: 6px 0 0 0; padding: 8px 10px; background-color: #1e293b; color: #fca5a5; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; line-height: 1.4; white-space: pre-wrap; word-break: break-all;">${escapeHtml(ft.failureReason)}</pre>
+            </details>
           </td>
         </tr>
       `;
@@ -318,17 +458,20 @@ export async function generateAndSendReport(): Promise<void> {
     failedTestsSectionHtml = `
       <div style="margin-top: 35px;">
         <h3 style="color: #b91c1c; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">
-          Failed Tests (${failedTests.length})
+          Failed Tests Diagnostic Summary (${failedTests.length})
         </h3>
+        <p style="margin: 0 0 12px 0; font-size: 13px; color: #4b5563;">
+          Below is the plain English breakdown of expected vs. actual outcomes for all failed test cases:
+        </p>
         <div style="height: 2px; background-color: #b91c1c; margin-bottom: 15px;"></div>
         
-        <table style="width: 100%; border-collapse: collapse; background-color: #ffffff; border: 1px solid #fecaca;">
+        <table style="width: 100%; border-collapse: collapse; background-color: #ffffff; border: 1px solid #fecaca; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
           <thead>
             <tr style="background-color: #b91c1c; color: #ffffff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-              <th style="padding: 10px 12px; text-align: left; width: 14%;">TC ID</th>
-              <th style="padding: 10px 12px; text-align: left; width: 16%;">Module</th>
-              <th style="padding: 10px 12px; text-align: left; width: 30%;">Test Title</th>
-              <th style="padding: 10px 12px; text-align: left; width: 40%;">Failure Reason</th>
+              <th style="padding: 10px 12px; text-align: left; width: 14%;">TC ID / Module</th>
+              <th style="padding: 10px 12px; text-align: left; width: 28%;">Test Steps Executed</th>
+              <th style="padding: 10px 12px; text-align: left; width: 28%;">Expected Result</th>
+              <th style="padding: 10px 12px; text-align: left; width: 30%;">Actual Result & Root Cause</th>
             </tr>
           </thead>
           <tbody>

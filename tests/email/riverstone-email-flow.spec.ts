@@ -8,6 +8,7 @@ import fs from 'fs';
 test.describe('Module 08: Riverstone Organization Email Flow Suite (18 Test Cases)', () => {
 
   test.beforeAll(async () => {
+    test.setTimeout(120000);
     const mailService = new MailService();
 
     // 1. Verify SMTP connection

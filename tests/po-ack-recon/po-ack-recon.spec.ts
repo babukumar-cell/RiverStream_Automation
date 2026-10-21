@@ -133,6 +133,7 @@ test.describe('River Stream - PO-ACK Recon Suite (67 End-to-End Lifecycle Test C
     await poAckReconPage.createProject(uniqueProjName, 'Miami, FL', 'Automated QA Project');
     await poAckReconPage.waitForProjectsLoaded();
     await poAckReconPage.searchProject(uniqueProjName);
+    await poAckReconPage.projectNameCells.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     const visibleNames = await poAckReconPage.getVisibleProjectNames();
     expect(visibleNames.some(n => n.includes(uniqueProjName))).toBeTruthy();
   });
@@ -178,9 +179,11 @@ test.describe('River Stream - PO-ACK Recon Suite (67 End-to-End Lifecycle Test C
 
   test('TC_RECON_020: Verify newly created project appears at top of project list', async ({ poAckReconPage, page }) => {
     const uniqueProj = `TestList_${Date.now()}`;
+    await poAckReconPage.clearSearch();
     await poAckReconPage.createProject(uniqueProj, 'New York', 'Order Verification');
     await poAckReconPage.waitForProjectsLoaded();
-    const firstRowText = await poAckReconPage.projectRows.first().textContent();
+    await poAckReconPage.projectRows.first().waitFor({ state: 'visible', timeout: 10000 });
+    const firstRowText = (await poAckReconPage.projectRows.first().textContent()) || '';
     expect(firstRowText).toContain(uniqueProj);
   });
 

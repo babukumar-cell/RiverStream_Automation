@@ -228,6 +228,9 @@ export class PoAckReconPage extends BasePage {
       await this.projectDescriptionInput.fill(description);
     }
     await this.createProjectButton.click();
+    await this.dialog.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    await this.page.waitForTimeout(1000);
+    await this.waitForProjectsLoaded();
   }
 
   /**

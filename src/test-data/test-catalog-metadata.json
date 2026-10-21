@@ -1,0 +1,4088 @@
+{
+  "TC_AUTH_001": {
+    "tcId": "TC_AUTH_001",
+    "module": "Authentication",
+    "description": "Verify user is able to sign in with valid credentials",
+    "steps": "1. Navigate to the login page by using https://riverstream.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
+    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : River@123",
+    "expectedResult": "User is successfully logged in, and the system should redirects the user to the dashboard.",
+    "actualResult": ""
+  },
+  "TC_AUTH_002": {
+    "tcId": "TC_AUTH_002",
+    "module": "Authentication",
+    "description": "Verify that an error message is displayed for an incorrect Email/password",
+    "steps": "1. Enter the invalid Email. \n2. Enter the invalid password. \n3. Click on the 'Sign in' button.",
+    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"River@123456\"",
+    "expectedResult": "User verify an error message should be displayed : \"Email username or password\".",
+    "actualResult": ""
+  },
+  "TC_AUTH_003": {
+    "tcId": "TC_AUTH_003",
+    "module": "Authentication",
+    "description": "Verify login with empty Email and password fields",
+    "steps": "Click on the 'Sign in' button.",
+    "testData": "-",
+    "expectedResult": "User verify an error message should be displayed : \"Email is required\nPassword is required\".",
+    "actualResult": ""
+  },
+  "TC_AUTH_004": {
+    "tcId": "TC_AUTH_004",
+    "module": "Authentication",
+    "description": "Verify login with only the valid Email filled",
+    "steps": "1. Enter the valid Email. \n2. Click on the 'Sign in' button.",
+    "testData": "Valid Email : \"admin@riverstonetech.com\"",
+    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
+    "actualResult": ""
+  },
+  "TC_AUTH_005": {
+    "tcId": "TC_AUTH_005",
+    "module": "Authentication",
+    "description": "Verify login with only the valid password filled",
+    "steps": "1. Enter the valid password. \n2. Click on the 'Sign in' button.",
+    "testData": "Valid Password : \"River@123\"",
+    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
+    "actualResult": ""
+  },
+  "TC_DASH_001": {
+    "tcId": "TC_DASH_001",
+    "module": "Dashboard",
+    "description": "Verify Logout button visibility and location",
+    "steps": "1. Login to the application\n2. Navigate to Dashboard",
+    "testData": "Valid user credentials",
+    "expectedResult": "Logout button should be visible at the bottom-left corner of the dashboard",
+    "actualResult": ""
+  },
+  "TC_DASH_002": {
+    "tcId": "TC_DASH_002",
+    "module": "Dashboard",
+    "description": "Verify Logout button functionality",
+    "steps": "1. Click on Logout button",
+    "testData": "",
+    "expectedResult": "User should be logged out and redirected to the Login page",
+    "actualResult": ""
+  },
+  "TC_DASH_003": {
+    "tcId": "TC_DASH_003",
+    "module": "Dashboard",
+    "description": "Verify Organization dropdown is displayed",
+    "steps": "1. Navigate to Dashboard page.\n2. Observe the Organization field.",
+    "testData": "",
+    "expectedResult": "Organization dropdown should be displayed with a default value.",
+    "actualResult": ""
+  },
+  "TC_DASH_004": {
+    "tcId": "TC_DASH_004",
+    "module": "Dashboard",
+    "description": "Verify Organization dropdown options",
+    "steps": "1. Click the Organization dropdown.\n2. View available options.",
+    "testData": "Multiple organizations",
+    "expectedResult": "All available organizations should be listed in the dropdown.",
+    "actualResult": ""
+  },
+  "TC_DASH_005": {
+    "tcId": "TC_DASH_005",
+    "module": "Dashboard",
+    "description": "Verify Organization selection functionality",
+    "steps": "1. Select an organization from the dropdown.\n2. Observe dashboard metrics.",
+    "testData": "Valid organization",
+    "expectedResult": "Dashboard data should refresh and display metrics related to the selected organization.",
+    "actualResult": ""
+  },
+  "TC_DASH_006": {
+    "tcId": "TC_DASH_006",
+    "module": "Dashboard",
+    "description": "Verify Total POs card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Total POs card.",
+    "testData": "",
+    "expectedResult": "Total POs card should be visible with count and trend information.",
+    "actualResult": ""
+  },
+  "TC_DASH_007": {
+    "tcId": "TC_DASH_007",
+    "module": "Dashboard",
+    "description": "Verify Processing Rate card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Processing Rate card.",
+    "testData": "",
+    "expectedResult": "Processing Rate card should display a valid percentage value.",
+    "actualResult": ""
+  },
+  "TC_DASH_008": {
+    "tcId": "TC_DASH_008",
+    "module": "Dashboard",
+    "description": "Verify Extraction Accuracy card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Extraction Accuracy card.",
+    "testData": "",
+    "expectedResult": "Extraction Accuracy card should display percentage and target value.",
+    "actualResult": ""
+  },
+  "TC_DASH_009": {
+    "tcId": "TC_DASH_009",
+    "module": "Dashboard",
+    "description": "Verify Reviewed card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Reviewed card.",
+    "testData": "",
+    "expectedResult": "Reviewed card should display the total reviewed document count.",
+    "actualResult": ""
+  },
+  "TC_DASH_010": {
+    "tcId": "TC_DASH_010",
+    "module": "Dashboard",
+    "description": "Verify Reviewed count accuracy",
+    "steps": "1. Compare Reviewed count with reviewed records.",
+    "testData": "Reviewed records",
+    "expectedResult": "Reviewed count should match the actual reviewed documents.",
+    "actualResult": ""
+  },
+  "TC_DASH_011": {
+    "tcId": "TC_DASH_011",
+    "module": "Dashboard",
+    "description": "Verify Pending Review card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Pending Review card.",
+    "testData": "",
+    "expectedResult": "Pending Review card should display pending review count and status message.",
+    "actualResult": ""
+  },
+  "TC_DASH_012": {
+    "tcId": "TC_DASH_012",
+    "module": "Dashboard",
+    "description": "Verify Pending Review count accuracy",
+    "steps": "1. Compare Pending Review count with pending records.",
+    "testData": "Pending review records",
+    "expectedResult": "Pending Review count should match actual pending records.",
+    "actualResult": ""
+  },
+  "TC_DASH_013": {
+    "tcId": "TC_DASH_013",
+    "module": "Dashboard",
+    "description": "Verify Processing card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Processing card.",
+    "testData": "",
+    "expectedResult": "Processing card should display the number of files currently being processed.",
+    "actualResult": ""
+  },
+  "TC_DASH_014": {
+    "tcId": "TC_DASH_014",
+    "module": "Dashboard",
+    "description": "Verify Processing count accuracy",
+    "steps": "1. Compare Processing count with active processing jobs.",
+    "testData": "Processing records",
+    "expectedResult": "Processing count should match actual processing jobs.",
+    "actualResult": ""
+  },
+  "TC_DASH_015": {
+    "tcId": "TC_DASH_015",
+    "module": "Dashboard",
+    "description": "Verify Avg Processing Time card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Avg Processing Time card.",
+    "testData": "",
+    "expectedResult": "Avg Processing Time card should display a valid processing time value.",
+    "actualResult": ""
+  },
+  "TC_DASH_016": {
+    "tcId": "TC_DASH_016",
+    "module": "Dashboard",
+    "description": "Verify Avg Processing Time accuracy",
+    "steps": "1. Compare displayed value with calculated average processing time.",
+    "testData": "Processing logs",
+    "expectedResult": "Displayed average processing time should be accurate.",
+    "actualResult": ""
+  },
+  "TC_DASH_017": {
+    "tcId": "TC_DASH_017",
+    "module": "Dashboard",
+    "description": "Verify dashboard card alignment",
+    "steps": "1. Open Dashboard page.\n2. Inspect all metric cards.",
+    "testData": "",
+    "expectedResult": "All cards should be properly aligned with consistent spacing and formatting.",
+    "actualResult": ""
+  },
+  "TC_DASH_018": {
+    "tcId": "TC_DASH_018",
+    "module": "Dashboard",
+    "description": "Verify dashboard data refresh on page reload",
+    "steps": "1. Open Dashboard page.\n2. Refresh the page.\n3. Observe metrics.",
+    "testData": "",
+    "expectedResult": "Dashboard should load successfully and display updated metrics without errors.",
+    "actualResult": ""
+  },
+  "TC_DASH_019": {
+    "tcId": "TC_DASH_019",
+    "module": "Dashboard",
+    "description": "Verify dashboard responsiveness",
+    "steps": "1. Resize browser window.\n2. Observe dashboard layout.",
+    "testData": "Different screen sizes",
+    "expectedResult": "Dashboard cards should adjust properly without overlap or UI issues.",
+    "actualResult": ""
+  },
+  "TC_DASH_020": {
+    "tcId": "TC_DASH_020",
+    "module": "Dashboard",
+    "description": "Verify dashboard loads without errors",
+    "steps": "1. Open Dashboard page.2. Check browser console and UI.",
+    "testData": "",
+    "expectedResult": "No error messages or console errors should be displayed.",
+    "actualResult": ""
+  },
+  "TC_CLIE_044": {
+    "tcId": "TC_CLIE_044",
+    "module": "Clients",
+    "description": "Verify Clients page loads successfully",
+    "steps": "1. Navigate to the Clients page.",
+    "testData": "",
+    "expectedResult": "Clients page should load successfully with all UI elements displayed.",
+    "actualResult": ""
+  },
+  "TC_CLIE_045": {
+    "tcId": "TC_CLIE_045",
+    "module": "Clients",
+    "description": "Verify Clients section header",
+    "steps": "1. Open the Clients page.",
+    "testData": "",
+    "expectedResult": "\"Clients\" header and description should be displayed correctly.",
+    "actualResult": ""
+  },
+  "TC_CLIE_046": {
+    "tcId": "TC_CLIE_046",
+    "module": "Clients",
+    "description": "Verify client list display",
+    "steps": "1. Open the Clients page.",
+    "testData": "Existing clients",
+    "expectedResult": "All available clients should be displayed in the list.",
+    "actualResult": ""
+  },
+  "TC_CLIE_047": {
+    "tcId": "TC_CLIE_047",
+    "module": "Clients",
+    "description": "Verify client name display",
+    "steps": "1. Observe the client list.",
+    "testData": "Existing clients",
+    "expectedResult": "Client names should be displayed correctly.",
+    "actualResult": ""
+  },
+  "TC_CLIE_048": {
+    "tcId": "TC_CLIE_048",
+    "module": "Clients",
+    "description": "Verify search box visibility",
+    "steps": "1. Open the Clients page.",
+    "testData": "",
+    "expectedResult": "Search box should be visible and enabled.",
+    "actualResult": ""
+  },
+  "TC_CLIE_049": {
+    "tcId": "TC_CLIE_049",
+    "module": "Clients",
+    "description": "Verify search functionality with valid client name",
+    "steps": "1. Enter an existing client name in the search box.",
+    "testData": "Existing client name \"Corpdesign\"",
+    "expectedResult": "Matching client records should be displayed.",
+    "actualResult": ""
+  },
+  "TC_CLIE_050": {
+    "tcId": "TC_CLIE_050",
+    "module": "Clients",
+    "description": "Verify search functionality with invalid client name",
+    "steps": "1. Enter a non-existing client name in the search box.",
+    "testData": "Invalid client name\"riverstone\"",
+    "expectedResult": "No matching client records should be displayed.",
+    "actualResult": ""
+  },
+  "TC_CLIE_051": {
+    "tcId": "TC_CLIE_051",
+    "module": "Clients",
+    "description": "Verify Add Client button visibility",
+    "steps": "1. Open the Clients page.",
+    "testData": "",
+    "expectedResult": "Add Client button should be visible and enabled.",
+    "actualResult": ""
+  },
+  "TC_CLIE_052": {
+    "tcId": "TC_CLIE_052",
+    "module": "Clients",
+    "description": "Verify Add Client button functionality",
+    "steps": "1. Click the Add Client button.",
+    "testData": "Valid client details",
+    "expectedResult": "Add Client form/page should open successfully.",
+    "actualResult": ""
+  },
+  "TC_CLIE_053": {
+    "tcId": "TC_CLIE_053",
+    "module": "Clients",
+    "description": "Verify Active status display",
+    "steps": "1. Observe the status badge for clients.",
+    "testData": "Active client",
+    "expectedResult": "Active clients should display an \"Active\" status badge.",
+    "actualResult": ""
+  },
+  "TC_CLIE_054": {
+    "tcId": "TC_CLIE_054",
+    "module": "Clients",
+    "description": "Verify View icon visibility",
+    "steps": "1. Observe the action icons for each client.",
+    "testData": "",
+    "expectedResult": "View icon should be displayed for each client.",
+    "actualResult": ""
+  },
+  "TC_CLIE_055": {
+    "tcId": "TC_CLIE_055",
+    "module": "Clients",
+    "description": "Verify View icon functionality",
+    "steps": "1. Click the View icon for a client.",
+    "testData": "Existing client",
+    "expectedResult": "Client details page should open successfully.",
+    "actualResult": ""
+  },
+  "TC_CLIE_056": {
+    "tcId": "TC_CLIE_056",
+    "module": "Clients",
+    "description": "Verify Delete icon visibility",
+    "steps": "1. Observe the action icons for each client.",
+    "testData": "",
+    "expectedResult": "Delete icon should be displayed for each client.",
+    "actualResult": ""
+  },
+  "TC_CLIE_057": {
+    "tcId": "TC_CLIE_057",
+    "module": "Clients",
+    "description": "Verify Delete icon functionality",
+    "steps": "1. Click the Delete icon.",
+    "testData": "Existing client",
+    "expectedResult": "Delete confirmation popup should be displayed.",
+    "actualResult": ""
+  },
+  "TC_CLIE_058": {
+    "tcId": "TC_CLIE_058",
+    "module": "Clients",
+    "description": "Verify client card alignment",
+    "steps": "1. Observe the client list layout.",
+    "testData": "",
+    "expectedResult": "Client cards and action icons should be properly aligned.",
+    "actualResult": ""
+  },
+  "TC_CLIE_059": {
+    "tcId": "TC_CLIE_059",
+    "module": "Clients",
+    "description": "Verify client list scrolling (if applicable)",
+    "steps": "1. Add multiple clients.\n2. Scroll through the list.",
+    "testData": "Multiple client records",
+    "expectedResult": "User should be able to scroll and access all client records.",
+    "actualResult": ""
+  },
+  "TC_CLIE_060": {
+    "tcId": "TC_CLIE_060",
+    "module": "Clients",
+    "description": "Verify page responsiveness",
+    "steps": "1. Resize the browser window.",
+    "testData": "Different screen sizes",
+    "expectedResult": "All UI elements should remain accessible and properly aligned.",
+    "actualResult": ""
+  },
+  "TC_CLIE_061": {
+    "tcId": "TC_CLIE_061",
+    "module": "Clients",
+    "description": "Verify page loads without UI errors",
+    "steps": "1. Open the Clients page.\n2. Check UI behavior and browser console.",
+    "testData": "",
+    "expectedResult": "No UI errors or console errors should be displayed.",
+    "actualResult": ""
+  },
+  "TC_CLIE_062": {
+    "tcId": "TC_CLIE_062",
+    "module": "Clients",
+    "description": "Verify successful client creation",
+    "steps": "1. Open the Create Client popup.\n2. Enter valid values in Client Name, Domain, Client Type, and Registration ID fields.\n3. Click the Create Client button.",
+    "testData": "Client Name: Acme CorpDomain: acme.com Client Type: StandardRegistration ID: REG-123456",
+    "expectedResult": "The client should be created successfully and added to the Clients list.",
+    "actualResult": ""
+  },
+  "TC_ANAL_063": {
+    "tcId": "TC_ANAL_063",
+    "module": "Analytics",
+    "description": "Verify Performance Analytics page loads successfully",
+    "steps": "1. Navigate to the Performance Analytics page.",
+    "testData": "",
+    "expectedResult": "Performance Analytics page should load successfully with all charts and filters displayed.",
+    "actualResult": ""
+  },
+  "TC_ANAL_064": {
+    "tcId": "TC_ANAL_064",
+    "module": "Analytics",
+    "description": "Verify Organization filter functionality",
+    "steps": "1. Select an organization from the Organization dropdown.",
+    "testData": "Valid organization",
+    "expectedResult": "Analytics data should update based on the selected organization.",
+    "actualResult": ""
+  },
+  "TC_ANAL_065": {
+    "tcId": "TC_ANAL_065",
+    "module": "Analytics",
+    "description": "Verify Date Range filter functionality",
+    "steps": "1. Select a date range from the Date Range dropdown.",
+    "testData": "Last 7 Days",
+    "expectedResult": "Analytics data should refresh according to the selected date range.",
+    "actualResult": ""
+  },
+  "TC_ANAL_066": {
+    "tcId": "TC_ANAL_066",
+    "module": "Analytics",
+    "description": "Verify chart data updates after filter selection",
+    "steps": "1. Change the Organization or Date Range filter.",
+    "testData": "Valid filter values",
+    "expectedResult": "All charts should refresh with updated data.",
+    "actualResult": ""
+  },
+  "TC_ANAL_067": {
+    "tcId": "TC_ANAL_067",
+    "module": "Analytics",
+    "description": "Verify page responsiveness",
+    "steps": "1. Resize the browser window.",
+    "testData": "Different screen sizes",
+    "expectedResult": "Charts and filters should remain properly aligned and accessible.",
+    "actualResult": ""
+  },
+  "TC_UP_001": {
+    "tcId": "TC_UP_001",
+    "module": "Upload Document",
+    "description": "Verify Document Type dropdown displays configured options (Quote Request, Purchase Order)",
+    "steps": "1. Navigate to Upload page\n2. Click Document type dropdown",
+    "testData": "-",
+    "expectedResult": "Options 'Quote Request' and 'Purchase Order' are visible",
+    "actualResult": ""
+  },
+  "TC_UP_002": {
+    "tcId": "TC_UP_002",
+    "module": "Upload Document",
+    "description": "Verify selection of 'Quote Request' document type",
+    "steps": "1. Open Document type dropdown\n2. Select 'Quote Request'",
+    "testData": "Quote Request",
+    "expectedResult": "Quote Request is selected and reflected in the dropdown",
+    "actualResult": ""
+  },
+  "TC_UP_003": {
+    "tcId": "TC_UP_003",
+    "module": "Upload Document",
+    "description": "Verify selection of 'Purchase Order' document type",
+    "steps": "1. Open Document type dropdown\n2. Select 'Purchase Order'",
+    "testData": "Purchase Order",
+    "expectedResult": "Purchase Order is selected and reflected in the dropdown",
+    "actualResult": ""
+  },
+  "TC_UP_004": {
+    "tcId": "TC_UP_004",
+    "module": "Upload Document",
+    "description": "Verify behavior when uploading without selecting a Document Type",
+    "steps": "1. Choose a file without selecting Doc Type\n2. Click Process",
+    "testData": "invoice.pdf",
+    "expectedResult": "Validation notification requires selecting document type or default applied",
+    "actualResult": ""
+  },
+  "TC_UP_005": {
+    "tcId": "TC_UP_005",
+    "module": "Upload Document",
+    "description": "Verify Document Type persistence when replacing attached file",
+    "steps": "1. Select Quote Request\n2. Attach file A\n3. Replace with file B",
+    "testData": "quote1.sif -> quote2.sif",
+    "expectedResult": "Selected document type remains Quote Request",
+    "actualResult": ""
+  },
+  "TC_UP_006": {
+    "tcId": "TC_UP_006",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid PDF file using Choose File",
+    "steps": "1. Select Purchase Order\n2. Click Choose File\n3. Select sample-invoice.pdf\n4. Click Process",
+    "testData": "sample-invoice.pdf",
+    "expectedResult": "File is uploaded and processed successfully",
+    "actualResult": ""
+  },
+  "TC_UP_007": {
+    "tcId": "TC_UP_007",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid EDI file using Choose File",
+    "steps": "1. Select Purchase Order\n2. Choose valid EDI file\n3. Click Process",
+    "testData": "order.edi",
+    "expectedResult": "EDI file accepted and ingestion triggered",
+    "actualResult": ""
+  },
+  "TC_UP_008": {
+    "tcId": "TC_UP_008",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid modern Excel workbook (.xlsx)",
+    "steps": "1. Select Purchase Order\n2. Choose valid XLSX file\n3. Click Process",
+    "testData": "data.xlsx",
+    "expectedResult": "XLSX file accepted and uploaded successfully",
+    "actualResult": ""
+  },
+  "TC_UP_009": {
+    "tcId": "TC_UP_009",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid legacy Excel spreadsheet (.xls)",
+    "steps": "1. Select Purchase Order\n2. Choose valid XLS file\n3. Click Process",
+    "testData": "report.xls",
+    "expectedResult": "XLS file accepted and uploaded successfully",
+    "actualResult": ""
+  },
+  "TC_UP_010": {
+    "tcId": "TC_UP_010",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid Riverstone SIF quotation file (.sif)",
+    "steps": "1. Select Quote Request\n2. Choose customer SIF file\n3. Click Process",
+    "testData": "Riverstone SIF file",
+    "expectedResult": "SIF file is accepted, processed and parsed",
+    "actualResult": ""
+  },
+  "TC_UP_011": {
+    "tcId": "TC_UP_011",
+    "module": "Upload Document",
+    "description": "Verify upload of multi-page complex PDF document (>10 pages)",
+    "steps": "1. Attach multi-page invoice PDF\n2. Click Process",
+    "testData": "multi_page_po.pdf",
+    "expectedResult": "Multi-page PDF uploaded and queued for page-by-page extraction",
+    "actualResult": ""
+  },
+  "TC_UP_012": {
+    "tcId": "TC_UP_012",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid PDF file using Drag and Drop",
+    "steps": "1. Drag PDF into dropzone\n2. Release mouse\n3. Click Process",
+    "testData": "invoice.pdf",
+    "expectedResult": "PDF dropped into zone, file attaches and processes",
+    "actualResult": ""
+  },
+  "TC_UP_013": {
+    "tcId": "TC_UP_013",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid SIF file using Drag and Drop",
+    "steps": "1. Drag SIF file into dropzone\n2. Release mouse\n3. Click Process",
+    "testData": "order.sif",
+    "expectedResult": "SIF file dropped into zone and attaches successfully",
+    "actualResult": ""
+  },
+  "TC_UP_014": {
+    "tcId": "TC_UP_014",
+    "module": "Upload Document",
+    "description": "Verify clicking drag-and-drop container triggers file selection browser",
+    "steps": "1. Click inside dashed dropzone area",
+    "testData": "-",
+    "expectedResult": "Native system file chooser opens",
+    "actualResult": ""
+  },
+  "TC_UP_015": {
+    "tcId": "TC_UP_015",
+    "module": "Upload Document",
+    "description": "Verify visual border highlight state when dragging file over dropzone",
+    "steps": "1. Drag a file over dropzone without releasing",
+    "testData": "Any file",
+    "expectedResult": "Dropzone displays active dashed highlight state",
+    "actualResult": ""
+  },
+  "TC_UP_016": {
+    "tcId": "TC_UP_016",
+    "module": "Upload Document",
+    "description": "Verify selected file name and size display before clicking Process",
+    "steps": "1. Select file via Choose File",
+    "testData": "invoice.pdf",
+    "expectedResult": "Selected file name is clearly displayed in UI",
+    "actualResult": ""
+  },
+  "TC_UP_017": {
+    "tcId": "TC_UP_017",
+    "module": "Upload Document",
+    "description": "Verify replacing attached file with a different file before processing",
+    "steps": "1. Attach File A\n2. Click Choose File again and select File B",
+    "testData": "fileA -> fileB",
+    "expectedResult": "File B replaces File A in preview",
+    "actualResult": ""
+  },
+  "TC_UP_018": {
+    "tcId": "TC_UP_018",
+    "module": "Upload Document",
+    "description": "Verify removal of attached file prior to submission",
+    "steps": "1. Attach file\n2. Click Remove / Delete icon",
+    "testData": "invoice.pdf",
+    "expectedResult": "File is detached, dropzone returns to empty state",
+    "actualResult": ""
+  },
+  "TC_UP_019": {
+    "tcId": "TC_UP_019",
+    "module": "Upload Document",
+    "description": "Verify error when uploading image formats (JPG, PNG)",
+    "steps": "1. Select image file (JPG/PNG)\n2. Click Process",
+    "testData": "photo.jpg",
+    "expectedResult": "Unsupported format error displayed (.pdf,.edi,.xlsx,.xls,.sif only)",
+    "actualResult": ""
+  },
+  "TC_UP_020": {
+    "tcId": "TC_UP_020",
+    "module": "Upload Document",
+    "description": "Verify error when uploading executable file (.exe, .bat)",
+    "steps": "1. Select executable file\n2. Attempt upload",
+    "testData": "setup.exe",
+    "expectedResult": "Security block / invalid file type error shown",
+    "actualResult": ""
+  },
+  "TC_UP_021": {
+    "tcId": "TC_UP_021",
+    "module": "Upload Document",
+    "description": "Verify error when uploading plain text file (.txt)",
+    "steps": "1. Select plain text file\n2. Attempt upload",
+    "testData": "notes.txt",
+    "expectedResult": "Unsupported format error shown",
+    "actualResult": ""
+  },
+  "TC_UP_022": {
+    "tcId": "TC_UP_022",
+    "module": "Upload Document",
+    "description": "Verify error when uploading file without file extension",
+    "steps": "1. Select extensionless file\n2. Attempt upload",
+    "testData": "invoice_no_ext",
+    "expectedResult": "System rejects file without recognized extension",
+    "actualResult": ""
+  },
+  "TC_UP_023": {
+    "tcId": "TC_UP_023",
+    "module": "Upload Document",
+    "description": "Verify error when uploading zero-byte (empty) file",
+    "steps": "1. Select 0-byte file\n2. Click Process",
+    "testData": "empty.pdf (0 KB)",
+    "expectedResult": "Error displayed indicating file is empty",
+    "actualResult": ""
+  },
+  "TC_UP_024": {
+    "tcId": "TC_UP_024",
+    "module": "Upload Document",
+    "description": "Verify error when uploading corrupted PDF file",
+    "steps": "1. Select corrupted PDF\n2. Click Process",
+    "testData": "corrupted.pdf",
+    "expectedResult": "Processing error shown indicating unreadable/corrupt file",
+    "actualResult": ""
+  },
+  "TC_UP_025": {
+    "tcId": "TC_UP_025",
+    "module": "Upload Document",
+    "description": "Verify upload block for files exceeding maximum size limit (>25MB)",
+    "steps": "1. Select oversized file (>25MB)\n2. Attempt upload",
+    "testData": "oversized.pdf (30MB)",
+    "expectedResult": "System displays file size limit exceeded error",
+    "actualResult": ""
+  },
+  "TC_UP_026": {
+    "tcId": "TC_UP_026",
+    "module": "Upload Document",
+    "description": "Verify multi-file selection rejection when only single file allowed",
+    "steps": "1. Attempt to pass 2 files at once",
+    "testData": "file1.pdf + file2.pdf",
+    "expectedResult": "System only accepts single file or shows error",
+    "actualResult": ""
+  },
+  "TC_UP_027": {
+    "tcId": "TC_UP_027",
+    "module": "Upload Document",
+    "description": "Verify duplicate file name collision detection and handling",
+    "steps": "1. Upload invoice.pdf\n2. Upload exact same invoice.pdf again",
+    "testData": "invoice.pdf",
+    "expectedResult": "System identifies existing file or prompts duplicate warning",
+    "actualResult": ""
+  },
+  "TC_UP_028": {
+    "tcId": "TC_UP_028",
+    "module": "Upload Document",
+    "description": "Verify Process button state before file attachment",
+    "steps": "1. Observe Process button when no file attached",
+    "testData": "-",
+    "expectedResult": "Process button is disabled or triggers selection prompt",
+    "actualResult": ""
+  },
+  "TC_UP_029": {
+    "tcId": "TC_UP_029",
+    "module": "Upload Document",
+    "description": "Verify upload progress bar / loading indicator during upload",
+    "steps": "1. Attach file and click Process\n2. Observe UI during upload",
+    "testData": "valid.pdf",
+    "expectedResult": "Progress bar or loading spinner is visible during transfer",
+    "actualResult": ""
+  },
+  "TC_UP_030": {
+    "tcId": "TC_UP_030",
+    "module": "Upload Document",
+    "description": "Verify success notification toast message upon upload completion",
+    "steps": "1. Complete valid file upload\n2. Observe toast notification",
+    "testData": "valid.sif",
+    "expectedResult": "Success toast notification appears",
+    "actualResult": ""
+  },
+  "TC_UP_031": {
+    "tcId": "TC_UP_031",
+    "module": "Upload Document",
+    "description": "Verify 'Back to Dashboard' navigation link",
+    "steps": "1. Click Back to Dashboard button",
+    "testData": "-",
+    "expectedResult": "User is navigated back to /dashboard",
+    "actualResult": ""
+  },
+  "TC_UP_032": {
+    "tcId": "TC_UP_032",
+    "module": "Upload Document",
+    "description": "Verify newly uploaded document appears in Document Library table",
+    "steps": "1. Complete upload\n2. Navigate to /documents",
+    "testData": "uploaded_doc.pdf",
+    "expectedResult": "Uploaded document is listed in table with 'Processing' or 'Extracted' status",
+    "actualResult": ""
+  },
+  "TC_DOCU_021": {
+    "tcId": "TC_DOCU_021",
+    "module": "Documents Library",
+    "description": "Verify Document Library page is displayed",
+    "steps": "1. Navigate to the Document Library page.",
+    "testData": "",
+    "expectedResult": "Document Library page should load successfully with all UI elements displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_022": {
+    "tcId": "TC_DOCU_022",
+    "module": "Documents Library",
+    "description": "Verify Organization dropdown is displayed",
+    "steps": "1. Open the page.\n2. Observe the Organization dropdown.",
+    "testData": "",
+    "expectedResult": "Organization dropdown should be visible with a default value selected.",
+    "actualResult": ""
+  },
+  "TC_DOCU_023": {
+    "tcId": "TC_DOCU_023",
+    "module": "Documents Library",
+    "description": "Verify Organization dropdown functionality",
+    "steps": "1. Select a different organization from the dropdown.",
+    "testData": "",
+    "expectedResult": "Document list should refresh based on the selected organization.",
+    "actualResult": ""
+  },
+  "TC_DOCU_024": {
+    "tcId": "TC_DOCU_024",
+    "module": "Documents Library",
+    "description": "Verify file type filter buttons are displayed",
+    "steps": "1. Open the page.\n2. Observe the filter section.",
+    "testData": "",
+    "expectedResult": "All file type filters (All, PDF, XLS, XLSX, EDI, SIF) should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_025": {
+    "tcId": "TC_DOCU_025",
+    "module": "Documents Library",
+    "description": "Verify All filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"All\" filter.",
+    "testData": "",
+    "expectedResult": "All available documents should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_026": {
+    "tcId": "TC_DOCU_026",
+    "module": "Documents Library",
+    "description": "Verify PDF filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"PDF\" filter.",
+    "testData": "PDF documents",
+    "expectedResult": "Only PDF documents should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_027": {
+    "tcId": "TC_DOCU_027",
+    "module": "Documents Library",
+    "description": "Verify XLS filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"XLS\" filter.",
+    "testData": "XLS documents",
+    "expectedResult": "Only XLS documents should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_028": {
+    "tcId": "TC_DOCU_028",
+    "module": "Documents Library",
+    "description": "Verify XLSX filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"XLSX\" filter.",
+    "testData": "XLSX documents",
+    "expectedResult": "Only XLSX documents should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_029": {
+    "tcId": "TC_DOCU_029",
+    "module": "Documents Library",
+    "description": "Verify EDI filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"EDI\" filter.",
+    "testData": "EDI documents",
+    "expectedResult": "Only EDI documents should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_030": {
+    "tcId": "TC_DOCU_030",
+    "module": "Documents Library",
+    "description": "Verify SIF filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"SIF\" filter.",
+    "testData": "SIF documents",
+    "expectedResult": "Only SIF documents should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_031": {
+    "tcId": "TC_DOCU_031",
+    "module": "Documents Library",
+    "description": "Verify search functionality with valid document name",
+    "steps": "1. Select document field.\n2. Enter a document name in the search field.",
+    "testData": "Existing document name \"purchase Order\"",
+    "expectedResult": "Matching document(s) should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_032": {
+    "tcId": "TC_DOCU_032",
+    "module": "Documents Library",
+    "description": "Verify search functionality with invalid document name",
+    "steps": "1. Select document field.\n2. Enter a non-existing document name in the search field.",
+    "testData": "Invalid document name \"AZZZZ\"",
+    "expectedResult": "No matching documents should be displayed.",
+    "actualResult": ""
+  },
+  "TC_DOCU_033": {
+    "tcId": "TC_DOCU_033",
+    "module": "Documents Library",
+    "description": "Verify document list columns",
+    "steps": "1. Open the page.\n2. Observe the document grid.",
+    "testData": "",
+    "expectedResult": "Columns should display Document Name, Customer, Upload Date, Status, and Action.",
+    "actualResult": ""
+  },
+  "TC_DOCU_034": {
+    "tcId": "TC_DOCU_034",
+    "module": "Documents Library",
+    "description": "Verify document names are displayed",
+    "steps": "1. Observe the Document Name column.",
+    "testData": "",
+    "expectedResult": "Each uploaded document should display its name correctly.",
+    "actualResult": ""
+  },
+  "TC_DOCU_035": {
+    "tcId": "TC_DOCU_035",
+    "module": "Documents Library",
+    "description": "Verify customer details are displayed",
+    "steps": "1. Observe the Customer column.",
+    "testData": "Customer-associated documents",
+    "expectedResult": "Customer information should be displayed for applicable documents.",
+    "actualResult": ""
+  },
+  "TC_DOCU_036": {
+    "tcId": "TC_DOCU_036",
+    "module": "Documents Library",
+    "description": "Verify upload date is displayed",
+    "steps": "1. Observe the Upload Date column.",
+    "testData": "Uploaded documents",
+    "expectedResult": "Correct upload date should be displayed for each document.",
+    "actualResult": ""
+  },
+  "TC_DOCU_037": {
+    "tcId": "TC_DOCU_037",
+    "module": "Documents Library",
+    "description": "Verify Extracted status display",
+    "steps": "1. Locate a successfully processed document.",
+    "testData": "Extracted document",
+    "expectedResult": "Status should be displayed as \"Extracted\" with proper styling.",
+    "actualResult": ""
+  },
+  "TC_DOCU_038": {
+    "tcId": "TC_DOCU_038",
+    "module": "Documents Library",
+    "description": "Verify Failed status display",
+    "steps": "1. Locate a failed document.",
+    "testData": "Failed document",
+    "expectedResult": "Status should be displayed as \"Failed\" with proper styling.",
+    "actualResult": ""
+  },
+  "TC_DOCU_039": {
+    "tcId": "TC_DOCU_039",
+    "module": "Documents Library",
+    "description": "Verify the Failed status files document",
+    "steps": "1. Locate a failed document.",
+    "testData": "Failed document",
+    "expectedResult": "For documents with a \"Failed\" status, a \"Re-Extract\" button should be displayed and enabled. Clicking the button should initiate the extraction process for the selected document.",
+    "actualResult": ""
+  },
+  "TC_DOCU_040": {
+    "tcId": "TC_DOCU_040",
+    "module": "Documents Library",
+    "description": "Verify Review button visibility",
+    "steps": "1. Observe the Action column.",
+    "testData": "",
+    "expectedResult": "A Review button should be available for each document.",
+    "actualResult": ""
+  },
+  "TC_DOCU_041": {
+    "tcId": "TC_DOCU_041",
+    "module": "Documents Library",
+    "description": "Verify Review button functionality",
+    "steps": "1. Click the Review button for a document.",
+    "testData": "Existing document",
+    "expectedResult": "User should be navigated to the document review page.",
+    "actualResult": ""
+  },
+  "TC_DOCU_042": {
+    "tcId": "TC_DOCU_042",
+    "module": "Documents Library",
+    "description": "Verify vertical scrolling functionality",
+    "steps": "1. Scroll through the document list.",
+    "testData": "Multiple documents",
+    "expectedResult": "User should be able to scroll and view all",
+    "actualResult": ""
+  },
+  "TC_DOCU_043": {
+    "tcId": "TC_DOCU_043",
+    "module": "Documents Library",
+    "description": "Verify page loads without errors",
+    "steps": "1. Open the document page.\n2. Check for UI and console errors.",
+    "testData": "",
+    "expectedResult": "No UI errors or console errors should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_001": {
+    "tcId": "TC_RECON_001",
+    "module": "PO-ACK Recon",
+    "description": "Verify PO-ACK Recon Projects page loads successfully",
+    "steps": "1. Login with valid credentials.\n2. Click 'PO-ACK Recon' in left navigation menu.\n3. Observe page header and layout.",
+    "testData": "Valid Admin Credentials",
+    "expectedResult": "PO-ACK Recon page loads successfully at /po-ack-recon. Page header 'PO-ACK Recon', 'Projects' subheader, 'New Project' button, search textbox, and projects table are displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_002": {
+    "tcId": "TC_RECON_002",
+    "module": "PO-ACK Recon",
+    "description": "Verify project list table displays configured columns",
+    "steps": "1. Navigate to PO-ACK Recon Projects page.\n2. Check table headers.",
+    "testData": "Existing Projects",
+    "expectedResult": "Projects table displays columns: 'Project Name', 'Org Name', and 'Created Date'.",
+    "actualResult": ""
+  },
+  "TC_RECON_003": {
+    "tcId": "TC_RECON_003",
+    "module": "PO-ACK Recon",
+    "description": "Verify project details are populated in project table rows",
+    "steps": "1. Observe rows in projects table.\n2. Verify project name, organization, and creation timestamp.",
+    "testData": "Existing Projects (e.g. Tech_Soluton, CKNS Enterprise)",
+    "expectedResult": "Project records display non-empty project names, organization names, and formatted creation dates.",
+    "actualResult": ""
+  },
+  "TC_RECON_004": {
+    "tcId": "TC_RECON_004",
+    "module": "PO-ACK Recon",
+    "description": "Verify vertical scrolling functionality in project list",
+    "steps": "1. Scroll down the project list table.\n2. Scroll back up to the top.",
+    "testData": "Multiple Projects",
+    "expectedResult": "Table scrolls smoothly, allowing view of all project rows without UI truncation.",
+    "actualResult": ""
+  },
+  "TC_RECON_005": {
+    "tcId": "TC_RECON_005",
+    "module": "PO-ACK Recon",
+    "description": "Verify search box is visible and enabled",
+    "steps": "1. Locate search textbox above projects table.\n2. Verify placeholder text.",
+    "testData": "N/A",
+    "expectedResult": "Search textbox is visible, enabled, and displays placeholder 'Search projects...'.",
+    "actualResult": ""
+  },
+  "TC_RECON_006": {
+    "tcId": "TC_RECON_006",
+    "module": "PO-ACK Recon",
+    "description": "Verify search functionality with valid full project name",
+    "steps": "1. Enter an existing project name (e.g. 'Tech_Soluton') in search box.\n2. Observe filtered results.",
+    "testData": "Project Name: 'Tech_Soluton'",
+    "expectedResult": "Only matching project 'Tech_Soluton' is displayed in the table. Unrelated projects are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_007": {
+    "tcId": "TC_RECON_007",
+    "module": "PO-ACK Recon",
+    "description": "Verify search functionality with partial project name",
+    "steps": "1. Enter partial text (e.g. 'Tech') in search box.\n2. Observe filtered results.",
+    "testData": "Partial Search Query: 'Tech'",
+    "expectedResult": "All projects containing 'Tech' in their name are displayed in the table.",
+    "actualResult": ""
+  },
+  "TC_RECON_008": {
+    "tcId": "TC_RECON_008",
+    "module": "PO-ACK Recon",
+    "description": "Verify search functionality with non-existent project name",
+    "steps": "1. Enter non-existent project name (e.g. 'XYZ_NonExistent_999') in search box.\n2. Observe table state.",
+    "testData": "Invalid Query: 'XYZ_NonExistent_999'",
+    "expectedResult": "Table displays zero matching project records with empty/no results message.",
+    "actualResult": ""
+  },
+  "TC_RECON_009": {
+    "tcId": "TC_RECON_009",
+    "module": "PO-ACK Recon",
+    "description": "Verify search field clear functionality resets project list",
+    "steps": "1. Filter by search query.\n2. Clear text in search box.\n3. Observe table.",
+    "testData": "Active Search Filter",
+    "expectedResult": "Search input is cleared; table resets and displays all available projects.",
+    "actualResult": ""
+  },
+  "TC_RECON_010": {
+    "tcId": "TC_RECON_010",
+    "module": "PO-ACK Recon",
+    "description": "Verify New Project button visibility and styling",
+    "steps": "1. Locate 'New Project' button in top right.\n2. Check button text and clickable state.",
+    "testData": "N/A",
+    "expectedResult": "'New Project' button is clearly visible, styled with primary brand color, and enabled.",
+    "actualResult": ""
+  },
+  "TC_RECON_011": {
+    "tcId": "TC_RECON_011",
+    "module": "PO-ACK Recon",
+    "description": "Verify New Project modal opens successfully upon button click",
+    "steps": "1. Click 'New Project' button.\n2. Observe modal dialog.",
+    "testData": "N/A",
+    "expectedResult": "Modal dialog opens with title 'Create New Project'.",
+    "actualResult": ""
+  },
+  "TC_RECON_012": {
+    "tcId": "TC_RECON_012",
+    "module": "PO-ACK Recon",
+    "description": "Verify New Project modal UI fields and controls",
+    "steps": "1. Inspect input fields and buttons inside modal dialog.",
+    "testData": "N/A",
+    "expectedResult": "Modal contains 'Project Name' (required), 'Location' input, 'Description' textarea, 'Cancel' button, 'Create' button, and 'Close' (X) button.",
+    "actualResult": ""
+  },
+  "TC_RECON_013": {
+    "tcId": "TC_RECON_013",
+    "module": "PO-ACK Recon",
+    "description": "Verify Project Name textbox accepts valid alphanumeric input",
+    "steps": "1. Click Project Name field.\n2. Type alphanumeric project name (e.g. 'Alpha_Corp_2026').\n3. Verify input value.",
+    "testData": "Project Name: 'Alpha_Corp_2026'",
+    "expectedResult": "Project Name field accepts and displays the entered alphanumeric text.",
+    "actualResult": ""
+  },
+  "TC_RECON_014": {
+    "tcId": "TC_RECON_014",
+    "module": "PO-ACK Recon",
+    "description": "Verify Create button creates new project with valid details",
+    "steps": "1. Enter unique project name.\n2. Enter location and description.\n3. Click 'Create' button.\n4. Observe project list.",
+    "testData": "Project Name: 'CRI_Automation_<timestamp>', Location: 'Miami, FL'",
+    "expectedResult": "Modal closes, success confirmation displays, and newly created project appears in the project list.",
+    "actualResult": ""
+  },
+  "TC_RECON_015": {
+    "tcId": "TC_RECON_015",
+    "module": "PO-ACK Recon",
+    "description": "Verify Create button behavior when Project Name is empty",
+    "steps": "1. Leave Project Name field blank.\n2. Click 'Create' button.\n3. Check for validation error.",
+    "testData": "Empty Project Name",
+    "expectedResult": "System prevents project creation and displays required validation message (e.g. 'Project name is required').",
+    "actualResult": ""
+  },
+  "TC_RECON_016": {
+    "tcId": "TC_RECON_016",
+    "module": "PO-ACK Recon",
+    "description": "Verify duplicate project name creation handling",
+    "steps": "1. Enter name of an already existing project (e.g. 'Tech_Soluton').\n2. Click 'Create' button.",
+    "testData": "Duplicate Project Name: 'Tech_Soluton'",
+    "expectedResult": "System detects duplicate name and displays error message preventing duplicate project.",
+    "actualResult": ""
+  },
+  "TC_RECON_017": {
+    "tcId": "TC_RECON_017",
+    "module": "PO-ACK Recon",
+    "description": "Verify Cancel button closes modal without creating project",
+    "steps": "1. Enter project details.\n2. Click 'Cancel' button.\n3. Observe page.",
+    "testData": "Draft Project Data",
+    "expectedResult": "Modal closes immediately, entered details are discarded, and no new project is created.",
+    "actualResult": ""
+  },
+  "TC_RECON_018": {
+    "tcId": "TC_RECON_018",
+    "module": "PO-ACK Recon",
+    "description": "Verify Close (X) icon closes New Project modal",
+    "steps": "1. Click 'X' icon at top right of modal.\n2. Observe page.",
+    "testData": "N/A",
+    "expectedResult": "Modal closes cleanly, returning user to project list.",
+    "actualResult": ""
+  },
+  "TC_RECON_019": {
+    "tcId": "TC_RECON_019",
+    "module": "PO-ACK Recon",
+    "description": "Verify Escape key closes New Project modal",
+    "steps": "1. Press keyboard 'Escape' key.\n2. Observe page.",
+    "testData": "N/A",
+    "expectedResult": "Modal closes upon pressing Escape key.",
+    "actualResult": ""
+  },
+  "TC_RECON_020": {
+    "tcId": "TC_RECON_020",
+    "module": "PO-ACK Recon",
+    "description": "Verify newly created project appears at top of project list",
+    "steps": "1. Navigate to Projects page.\n2. Observe the first row in project list.",
+    "testData": "Newly created project name",
+    "expectedResult": "Newly created project is displayed at the top of the projects table with correct Org and today's date.",
+    "actualResult": ""
+  },
+  "TC_RECON_021": {
+    "tcId": "TC_RECON_021",
+    "module": "PO-ACK Recon",
+    "description": "Verify navigating into a project opens project document list page",
+    "steps": "1. Click on any project name (e.g. 'Tech_Soluton').\n2. Observe URL and page content.",
+    "testData": "Project: 'Tech_Soluton'",
+    "expectedResult": "User navigates to /po-ack-recon/<projectId>. Document list page loads with search box, 'Upload Documents' button, status filter tabs, and document table.",
+    "actualResult": ""
+  },
+  "TC_RECON_022": {
+    "tcId": "TC_RECON_022",
+    "module": "PO-ACK Recon",
+    "description": "Verify project document list table displays configured columns",
+    "steps": "1. Inspect table headers in project document list.",
+    "testData": "Valid Project",
+    "expectedResult": "Table displays columns: 'PO / MANUFACTURER', 'ACK VERSIONS', 'LAST UPDATE', 'STATUS', and 'ACTION'.",
+    "actualResult": ""
+  },
+  "TC_RECON_023": {
+    "tcId": "TC_RECON_023",
+    "module": "PO-ACK Recon",
+    "description": "Verify breadcrumbs on project documents list display 'PO-ACK Recon > [Project Name]'",
+    "steps": "1. Observe breadcrumb navigation trail above table.",
+    "testData": "Project: 'Tech_Soluton'",
+    "expectedResult": "Breadcrumbs display 'PO-ACK Recon > Tech_Soluton' reflecting current project context.",
+    "actualResult": ""
+  },
+  "TC_RECON_024": {
+    "tcId": "TC_RECON_024",
+    "module": "PO-ACK Recon",
+    "description": "Verify clicking 'PO-ACK Recon' in breadcrumb navigates back to Projects page",
+    "steps": "1. Click 'PO-ACK Recon' link in breadcrumb.\n2. Observe URL and page.",
+    "testData": "N/A",
+    "expectedResult": "User is navigated back to /po-ack-recon Projects list page.",
+    "actualResult": ""
+  },
+  "TC_RECON_025": {
+    "tcId": "TC_RECON_025",
+    "module": "PO-ACK Recon",
+    "description": "Verify 'Upload Documents' button opens upload modal inside project",
+    "steps": "1. Click 'Upload Documents' button in top right.\n2. Observe modal.",
+    "testData": "Valid Project",
+    "expectedResult": "Upload Documents modal opens with title 'Upload Documents', subtitle 'Add your purchase order and acknowledgment files to get started.', Purchase Order section (Required), Acknowledgment section, and '+ Add another file' button.",
+    "actualResult": ""
+  },
+  "TC_RECON_026": {
+    "tcId": "TC_RECON_026",
+    "module": "PO-ACK Recon",
+    "description": "Verify upload modal UI layout and section requirements",
+    "steps": "1. Inspect Purchase Order dropzone.\n2. Inspect Acknowledgment dropzone.\n3. Check action buttons.",
+    "testData": "N/A",
+    "expectedResult": "Purchase Order section displays 'Required' badge. Both sections display cloud upload icon with 'Drag & drop here or Browse files' and 'Supports PDF'. 'Cancel' and 'Upload Files' buttons are present.",
+    "actualResult": ""
+  },
+  "TC_RECON_027": {
+    "tcId": "TC_RECON_027",
+    "module": "PO-ACK Recon",
+    "description": "Verify attaching valid Purchase Order file via Browse or Drag & Drop",
+    "steps": "1. In Purchase Order section, click 'Browse files' (or drag & drop).\n2. Select valid PO PDF from CRI Files.\n3. Observe dropzone state.",
+    "testData": "DURSEA-53758-113547-DIRO.pdf (Timestamped copy)",
+    "expectedResult": "PO file is successfully attached, file name and size are displayed in the dropzone, and dropzone indicates selected state.",
+    "actualResult": ""
+  },
+  "TC_RECON_028": {
+    "tcId": "TC_RECON_028",
+    "module": "PO-ACK Recon",
+    "description": "Verify attaching valid Acknowledgment (ACK) file via Browse or Drag & Drop",
+    "steps": "1. In Acknowledgment section, click 'Browse files' (or drag & drop).\n2. Select matching ACK PDF from CRI Files.\n3. Observe dropzone state.",
+    "testData": "53758-113547-DURSEA-ACKS.pdf (Timestamped copy)",
+    "expectedResult": "ACK file is successfully attached and listed under Acknowledgment section.",
+    "actualResult": ""
+  },
+  "TC_RECON_029": {
+    "tcId": "TC_RECON_029",
+    "module": "PO-ACK Recon",
+    "description": "Verify '+ Add another file' button adds multiple ACK file dropzones",
+    "steps": "1. In Acknowledgment section, click '+ Add another file' button.\n2. Observe new dropzone.\n3. Click '+ Add another file' again.",
+    "testData": "N/A",
+    "expectedResult": "A new Acknowledgment dropzone is dynamically appended for each click, enabling multi-version or multi-vendor ACK attachments.",
+    "actualResult": ""
+  },
+  "TC_RECON_030": {
+    "tcId": "TC_RECON_030",
+    "module": "PO-ACK Recon",
+    "description": "Verify attaching multiple ACK files for a single PO",
+    "steps": "1. Attach primary ACK file in first dropzone.\n2. Click '+ Add another file'.\n3. Attach secondary ACK file in second dropzone.",
+    "testData": "ACK 1: 53758-113547-DURSEA-ACKS.pdf\nACK 2: 53758-113541-SIT-ACKS.pdf",
+    "expectedResult": "Both ACK files are attached under Acknowledgment section with individual file names and sizes displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_031": {
+    "tcId": "TC_RECON_031",
+    "module": "PO-ACK Recon",
+    "description": "Verify Cancel button closes upload modal and discards attached files",
+    "steps": "1. Attach PO and ACK files.\n2. Click 'Cancel' button.\n3. Check document list.",
+    "testData": "CRI Files (PO & ACK)",
+    "expectedResult": "Modal closes immediately, attached files are discarded, and no new record is created in the document table.",
+    "actualResult": ""
+  },
+  "TC_RECON_032": {
+    "tcId": "TC_RECON_032",
+    "module": "PO-ACK Recon",
+    "description": "Verify Close (X) icon closes upload modal",
+    "steps": "1. Click 'X' icon at top right of modal.\n2. Observe page.",
+    "testData": "N/A",
+    "expectedResult": "Modal closes cleanly, returning user to project document list.",
+    "actualResult": ""
+  },
+  "TC_RECON_033": {
+    "tcId": "TC_RECON_033",
+    "module": "PO-ACK Recon",
+    "description": "Verify Upload Files button submits PO and ACK files to Processing",
+    "steps": "1. Attach valid PO file (Required).\n2. Attach matching ACK file.\n3. Click 'Upload Files' button.\n4. Observe UI.",
+    "testData": "PO: DURSEA-53758-113547-DIRO.pdf\nACK: 53758-113547-DURSEA-ACKS.pdf",
+    "expectedResult": "Modal closes, success toast notification displays, and new record appears in the table with initial status 'Processing' or 'Pending Review'.",
+    "actualResult": ""
+  },
+  "TC_RECON_034": {
+    "tcId": "TC_RECON_034",
+    "module": "PO-ACK Recon",
+    "description": "Verify document status changes to Awaiting ACK when only PO is uploaded",
+    "steps": "1. Upload PO file without attaching ACK.\n2. Click 'Upload Files'.\n3. Check document status in table.",
+    "testData": "PO: DURSEA-53758-113547-DIRO.pdf",
+    "expectedResult": "Document row displays status 'Awaiting ACK'.",
+    "actualResult": ""
+  },
+  "TC_RECON_035": {
+    "tcId": "TC_RECON_035",
+    "module": "PO-ACK Recon",
+    "description": "Verify document status changes to Pending Review after ACK is uploaded",
+    "steps": "1. Upload PO and ACK files.\n2. Observe status once processing completes.",
+    "testData": "CRI Files: PO + ACK",
+    "expectedResult": "Document row displays status 'Pending Review' with an active 'Review' button.",
+    "actualResult": ""
+  },
+  "TC_RECON_036": {
+    "tcId": "TC_RECON_036",
+    "module": "PO-ACK Recon",
+    "description": "Verify document shows multiple ACK versions count (e.g. '2 versions')",
+    "steps": "1. Locate uploaded multi-ACK document in table.\n2. Check 'ACK VERSIONS' column.",
+    "testData": "Multi-ACK submission",
+    "expectedResult": "'ACK VERSIONS' column displays '2 versions' badge.",
+    "actualResult": ""
+  },
+  "TC_RECON_037": {
+    "tcId": "TC_RECON_037",
+    "module": "PO-ACK Recon",
+    "description": "Verify Awaiting ACK filter displays only documents awaiting ACK files",
+    "steps": "1. Click 'Awaiting ACK' filter button.\n2. Wait for table reload.\n3. Inspect status on every visible row.",
+    "testData": "CRI Files",
+    "expectedResult": "Table reloads showing strictly documents with 'Awaiting ACK' status. Documents with other statuses are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_038": {
+    "tcId": "TC_RECON_038",
+    "module": "PO-ACK Recon",
+    "description": "Verify Pending Review filter displays only documents ready for review",
+    "steps": "1. Click 'Pending Review' filter button.\n2. Wait for table reload.\n3. Inspect status on every visible row.",
+    "testData": "CRI Files",
+    "expectedResult": "Table reloads showing strictly documents with 'Pending Review' status. All other documents are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_039": {
+    "tcId": "TC_RECON_039",
+    "module": "PO-ACK Recon",
+    "description": "Verify Matched filter displays only matched reconciliation documents",
+    "steps": "1. Click 'Matched' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
+    "testData": "CRI Files (Matched records)",
+    "expectedResult": "Table reloads displaying only records with 'Matched' status badge. Non-matched records are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_040": {
+    "tcId": "TC_RECON_040",
+    "module": "PO-ACK Recon",
+    "description": "Verify Medium discrepancy filter displays only medium discrepancy documents",
+    "steps": "1. Click 'Medium' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
+    "testData": "CRI Files (Medium discrepancy records)",
+    "expectedResult": "Table reloads displaying only records with 'Medium' discrepancy badge. Other records are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_041": {
+    "tcId": "TC_RECON_041",
+    "module": "PO-ACK Recon",
+    "description": "Verify Critical discrepancy filter displays only critical discrepancy documents",
+    "steps": "1. Click 'Critical' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
+    "testData": "CRI Files (Critical discrepancy records)",
+    "expectedResult": "Table reloads displaying only records with 'Critical' discrepancy badge. Non-critical records are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_042": {
+    "tcId": "TC_RECON_042",
+    "module": "PO-ACK Recon",
+    "description": "Verify Minor discrepancy filter displays only minor discrepancy documents",
+    "steps": "1. Click 'Minor' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
+    "testData": "CRI Files (Minor discrepancy records)",
+    "expectedResult": "Table reloads displaying only records with 'Minor' discrepancy badge. Other records are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_043": {
+    "tcId": "TC_RECON_043",
+    "module": "PO-ACK Recon",
+    "description": "Verify Failed filter displays only failed processing documents",
+    "steps": "1. Click 'Failed' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
+    "testData": "CRI Files (Failed extraction records)",
+    "expectedResult": "Table reloads displaying only records with 'Failed' status badge. Successful documents are filtered out.",
+    "actualResult": ""
+  },
+  "TC_RECON_044": {
+    "tcId": "TC_RECON_044",
+    "module": "PO-ACK Recon",
+    "description": "Verify All filter resets and displays documents across all statuses",
+    "steps": "1. Click 'All' filter button.\n2. Wait for table reload.\n3. Inspect visible rows.",
+    "testData": "CRI Files (All statuses)",
+    "expectedResult": "Filter resets completely; table displays all documents across all statuses (Awaiting ACK, Pending Review, Critical, Medium, Minor, Matched).",
+    "actualResult": ""
+  },
+  "TC_RECON_045": {
+    "tcId": "TC_RECON_045",
+    "module": "PO-ACK Recon",
+    "description": "Verify clicking Review button opens Document Review page",
+    "steps": "1. Locate document with 'Review' button in Action column.\n2. Click 'Review' button.\n3. Observe URL and review interface.",
+    "testData": "Pending Review Document",
+    "expectedResult": "User navigates to Document Review page (/po-ack-recon/review/<docId>). Review interface loads showing PO and ACK data side by side.",
+    "actualResult": ""
+  },
+  "TC_RECON_046": {
+    "tcId": "TC_RECON_046",
+    "module": "PO-ACK Recon",
+    "description": "Verify Review page breadcrumbs display 'PO-ACK Recon > [Project Name] > [PO Number]'",
+    "steps": "1. Inspect breadcrumb trail above review interface.",
+    "testData": "Document Review Page",
+    "expectedResult": "Breadcrumbs display 'PO-ACK Recon > [Project Name] > [PO Number]' showing complete hierarchical context.",
+    "actualResult": ""
+  },
+  "TC_RECON_047": {
+    "tcId": "TC_RECON_047",
+    "module": "PO-ACK Recon",
+    "description": "Verify clicking Project Name breadcrumb returns user to project document list",
+    "steps": "1. Click Project Name link in breadcrumb.\n2. Observe URL and page.",
+    "testData": "Project Name Breadcrumb",
+    "expectedResult": "User is navigated back to the project document list (/po-ack-recon/<projectId>).",
+    "actualResult": ""
+  },
+  "TC_RECON_048": {
+    "tcId": "TC_RECON_048",
+    "module": "PO-ACK Recon",
+    "description": "Verify clicking PO-ACK Recon breadcrumb returns user to Projects page",
+    "steps": "1. Click 'PO-ACK Recon' link in breadcrumb.\n2. Observe URL and page.",
+    "testData": "PO-ACK Recon Breadcrumb",
+    "expectedResult": "User is navigated back to the main /po-ack-recon Projects list page.",
+    "actualResult": ""
+  },
+  "TC_RECON_049": {
+    "tcId": "TC_RECON_049",
+    "module": "PO-ACK Recon",
+    "description": "Verify single PO values are reflected correctly in PO Data card",
+    "steps": "1. Locate PO Data card in review interface.\n2. Verify PO Number, Order Date, Vendor, and Total Amount.",
+    "testData": "Extracted PO Document",
+    "expectedResult": "PO Data card displays submitted PO values matching original uploaded document.",
+    "actualResult": ""
+  },
+  "TC_RECON_050": {
+    "tcId": "TC_RECON_050",
+    "module": "PO-ACK Recon",
+    "description": "Verify extracted PO values are read-only and cannot be directly edited",
+    "steps": "1. Attempt to edit PO Number and PO header values.\n2. Check input element type.",
+    "testData": "PO Data Card",
+    "expectedResult": "PO data fields are rendered as static read-only text, preventing direct inline editing.",
+    "actualResult": ""
+  },
+  "TC_RECON_051": {
+    "tcId": "TC_RECON_051",
+    "module": "PO-ACK Recon",
+    "description": "Verify ACK section displays 'ACK yet to add' when reviewing document without ACK",
+    "steps": "1. Open Review for document with status 'Awaiting ACK'.\n2. Check ACK Data and PDF sections.",
+    "testData": "Awaiting ACK Document",
+    "expectedResult": "ACK section displays placeholder 'ACK yet to add' indicating missing acknowledgment file.",
+    "actualResult": ""
+  },
+  "TC_RECON_052": {
+    "tcId": "TC_RECON_052",
+    "module": "PO-ACK Recon",
+    "description": "Verify View PDFs / Show PDFs button displays split PDF viewer",
+    "steps": "1. Locate 'View PDFs' / 'Show PDFs' button in header.\n2. Click button.\n3. Observe layout.",
+    "testData": "Review Page with PDFs",
+    "expectedResult": "PDF viewer panel opens, displaying original PO PDF alongside ACK PDF for visual comparison.",
+    "actualResult": ""
+  },
+  "TC_RECON_053": {
+    "tcId": "TC_RECON_053",
+    "module": "PO-ACK Recon",
+    "description": "Verify Collapse PDF's / Hide PDFs button collapses PDF viewer",
+    "steps": "1. Click 'Hide PDFs' / 'Collapse PDF' button.\n2. Observe layout.",
+    "testData": "Open PDF Viewer",
+    "expectedResult": "PDF viewer panel closes, restoring full-width extracted data review layout.",
+    "actualResult": ""
+  },
+  "TC_RECON_054": {
+    "tcId": "TC_RECON_054",
+    "module": "PO-ACK Recon",
+    "description": "Verify ACK dropdown allows switching between multiple ACK versions",
+    "steps": "1. Click ACK dropdown (e.g. 'ACK 1').\n2. Observe dropdown options.\n3. Select 'ACK 2'.",
+    "testData": "Document with 2 ACK versions",
+    "expectedResult": "Dropdown displays all ACK versions ('ACK 1', 'ACK 2'). Selecting 'ACK 2' reloads extracted ACK data corresponding to the selected version.",
+    "actualResult": ""
+  },
+  "TC_RECON_055": {
+    "tcId": "TC_RECON_055",
+    "module": "PO-ACK Recon",
+    "description": "Verify discrepancy fields between PO and ACK are highlighted in yellow",
+    "steps": "1. Compare PO and ACK line-item values.\n2. Observe discrepancy styling.",
+    "testData": "Document with pricing/quantity discrepancy",
+    "expectedResult": "Discrepancy fields (e.g. mismatched unit price, quantity, or shipping date) are highlighted with yellow/amber background.",
+    "actualResult": ""
+  },
+  "TC_RECON_056": {
+    "tcId": "TC_RECON_056",
+    "module": "PO-ACK Recon",
+    "description": "Verify discrepancy summary badges display counts by severity",
+    "steps": "1. Locate discrepancy badge counter above tables.\n2. Check counts for Critical, Medium, Minor, and Matched.",
+    "testData": "Review Page Summary",
+    "expectedResult": "Discrepancy badges accurately display counts matching discrepancies found (e.g. '1 Critical', '2 Medium', '3 Matched').",
+    "actualResult": ""
+  },
+  "TC_RECON_057": {
+    "tcId": "TC_RECON_057",
+    "module": "PO-ACK Recon",
+    "description": "Verify hovering over header field displays edit icon",
+    "steps": "1. Hover mouse over editable header/address field.\n2. Observe field actions.",
+    "testData": "Header Fields",
+    "expectedResult": "Edit pencil icon appears on hover over editable header fields.",
+    "actualResult": ""
+  },
+  "TC_RECON_058": {
+    "tcId": "TC_RECON_058",
+    "module": "PO-ACK Recon",
+    "description": "Verify user can edit header field values",
+    "steps": "1. Click edit icon on header field.\n2. Update value.\n3. Save changes.",
+    "testData": "Header Field Data",
+    "expectedResult": "Field becomes editable, accepts updated value, and persists change upon save.",
+    "actualResult": ""
+  },
+  "TC_RECON_059": {
+    "tcId": "TC_RECON_059",
+    "module": "PO-ACK Recon",
+    "description": "Verify Select All checkbox selects all discrepancy fields",
+    "steps": "1. Locate 'Select All' checkbox in line items section.\n2. Click 'Select All'.",
+    "testData": "Line Items with Discrepancies",
+    "expectedResult": "All discrepancy line-item checkboxes are checked simultaneously.",
+    "actualResult": ""
+  },
+  "TC_RECON_060": {
+    "tcId": "TC_RECON_060",
+    "module": "PO-ACK Recon",
+    "description": "Verify Preview Selected popup displays selected discrepancy fields",
+    "steps": "1. Select discrepancy checkboxes.\n2. Click 'Preview selected' button.\n3. Observe popup.",
+    "testData": "Selected Discrepancies",
+    "expectedResult": "Preview popup opens displaying structured table of all selected discrepancy items.",
+    "actualResult": ""
+  },
+  "TC_RECON_061": {
+    "tcId": "TC_RECON_061",
+    "module": "PO-ACK Recon",
+    "description": "Verify selected discrepancy fields can be copied to clipboard",
+    "steps": "1. Click 'Copy' button inside popup.\n2. Verify copy confirmation toast.",
+    "testData": "Preview Selected Discrepancies",
+    "expectedResult": "Selected discrepancy details are copied to clipboard; toast confirms successful copy.",
+    "actualResult": ""
+  },
+  "TC_RECON_062": {
+    "tcId": "TC_RECON_062",
+    "module": "PO-ACK Recon",
+    "description": "Verify hovering over discrepancy field displays flag icon",
+    "steps": "1. Hover over a highlighted discrepancy field.\n2. Observe flag action.",
+    "testData": "Discrepancy Cell",
+    "expectedResult": "Flag icon is displayed on hover, indicating discrepancy severity classification control.",
+    "actualResult": ""
+  },
+  "TC_RECON_063": {
+    "tcId": "TC_RECON_063",
+    "module": "PO-ACK Recon",
+    "description": "Verify user can change discrepancy flag severity (Critical, Medium, Minor, Matched)",
+    "steps": "1. Click flag icon on discrepancy field.\n2. Select severity from dropdown (e.g. Critical -> Medium).",
+    "testData": "Discrepancy Flag Dropdown",
+    "expectedResult": "Flag severity is updated, and flag icon color updates to match new severity (Red for Critical, Orange for Medium, Yellow for Minor, Green for Matched).",
+    "actualResult": ""
+  },
+  "TC_RECON_064": {
+    "tcId": "TC_RECON_064",
+    "module": "PO-ACK Recon",
+    "description": "Verify Edit All button enables editing of line-item fields",
+    "steps": "1. Locate 'Edit All' button in Line Items section.\n2. Click 'Edit All'.\n3. Observe line-item cells.",
+    "testData": "Line Items Section",
+    "expectedResult": "Line-item fields transition into editable input fields, and 'Save and Continue' / 'Cancel' buttons appear.",
+    "actualResult": ""
+  },
+  "TC_RECON_065": {
+    "tcId": "TC_RECON_065",
+    "module": "PO-ACK Recon",
+    "description": "Verify modifying line item values creates visual discrepancy highlighting",
+    "steps": "1. Modify unit price or quantity in line item.\n2. Click 'Save and Continue'.\n3. Observe edited field.",
+    "testData": "Modified Line Item Values",
+    "expectedResult": "Edited field is updated and highlighted with discrepancy background styling reflecting the modification.",
+    "actualResult": ""
+  },
+  "TC_RECON_066": {
+    "tcId": "TC_RECON_066",
+    "module": "PO-ACK Recon",
+    "description": "Verify Complete button is enabled for first extraction review",
+    "steps": "1. Observe 'Complete' button in header action bar.",
+    "testData": "Pending Review Document",
+    "expectedResult": "'Complete' button is visible and enabled for submission.",
+    "actualResult": ""
+  },
+  "TC_RECON_067": {
+    "tcId": "TC_RECON_067",
+    "module": "PO-ACK Recon",
+    "description": "Verify clicking Complete finishes document review and updates document status",
+    "steps": "1. Click 'Complete' button.\n2. Confirm completion prompt if displayed.\n3. Observe navigation and status.",
+    "testData": "Review Completion",
+    "expectedResult": "Review is finalized, Complete button disables or shows completed state, and document status updates to reflect completion (Matched, Critical, or Medium discrepancy) in document list.",
+    "actualResult": ""
+  },
+  "TC_RECON_068": {
+    "tcId": "TC_RECON_068",
+    "module": "PO-ACK Recon",
+    "description": "Verify Edit All allows editing of line-item fields",
+    "steps": "1. Open the Review page.\n2. Click Edit All in the Line Items section.\n3. Try to edit line-item fields.",
+    "testData": "PO/ACK line items",
+    "expectedResult": "All applicable line-item fields should become editable.",
+    "actualResult": ""
+  },
+  "TC_RECON_069": {
+    "tcId": "TC_RECON_069",
+    "module": "PO-ACK Recon",
+    "description": "Verify discrepancy highlighting is created after editing line items",
+    "steps": "1. Click Edit All.\n2. Modify a line-item value.\n3. Click Save and Continue.\n4. Check the modified field.",
+    "testData": "Modified line-item field",
+    "expectedResult": "Based on the updated value, the appropriate discrepancy highlighting should be displayed after saving.",
+    "actualResult": ""
+  },
+  "TC_RECON_070": {
+    "tcId": "TC_RECON_070",
+    "module": "PO-ACK Recon",
+    "description": "Verify selected ACK file displays its corresponding extracted data",
+    "steps": "1. Open a PO with multiple ACK files.\n2. Open the ACK dropdown.\n3. Select an ACK file.",
+    "testData": "Multiple ACK files",
+    "expectedResult": "The extracted data corresponding to the selected ACK file should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_071": {
+    "tcId": "TC_RECON_071",
+    "module": "PO-ACK Recon",
+    "description": "Verify switching between ACK files retains selected flags",
+    "steps": "1. Select flags for an ACK file.\n2. Switch to another ACK file from the dropdown.\n3. Switch back to the previous ACK file.\n4. Check the selected flags.",
+    "testData": "Multiple ACK files with discrepancies",
+    "expectedResult": "The previously selected flags should remain unchanged when returning to the ACK file.",
+    "actualResult": ""
+  },
+  "TC_RECON_072": {
+    "tcId": "TC_RECON_072",
+    "module": "PO-ACK Recon",
+    "description": "Verify Extracted data changes based on selected ACK file",
+    "steps": "1. Open a PO with multiple ACK files.\n2. Select an ACK file from the dropdown.\n3. Select another ACK file and check the PDF.",
+    "testData": "Multiple ACK PDF files",
+    "expectedResult": "The Extracted data displayed should correspond to the selected ACK file.",
+    "actualResult": ""
+  },
+  "TC_RECON_073": {
+    "tcId": "TC_RECON_073",
+    "module": "PO-ACK Recon",
+    "description": "Verify edited values are retained after Save and Continue",
+    "steps": "1. Click Edit All.\n2. Modify one or more line-item values.\n3. Click Save and Continue.\n4. Recheck the edited fields.",
+    "testData": "Modified line-item values",
+    "expectedResult": "The updated values should be saved and displayed correctly after saving.",
+    "actualResult": ""
+  },
+  "TC_REV_001": {
+    "tcId": "TC_REV_001",
+    "module": "Document Review",
+    "description": "Verify Document Review page loads successfully",
+    "steps": "1. Open a processed document from the dashboard.",
+    "testData": "Extracted document",
+    "expectedResult": "Document Review page should load with PDF preview and extracted data.",
+    "actualResult": ""
+  },
+  "TC_REV_002": {
+    "tcId": "TC_REV_002",
+    "module": "Document Review",
+    "description": "Verify PDF document preview display",
+    "steps": "1. Open the Document Review page.",
+    "testData": "Valid PDF document",
+    "expectedResult": "Uploaded PDF should be displayed correctly in the preview panel.",
+    "actualResult": ""
+  },
+  "TC_REV_003": {
+    "tcId": "TC_REV_003",
+    "module": "Document Review",
+    "description": "Verify page navigation and ciatation controls by clicking the Source number and the order line items value",
+    "steps": "1. Use the Previous/Next page controls.",
+    "testData": "Multi-page PDF",
+    "expectedResult": "User should be able to navigation and citation between document pages.",
+    "actualResult": ""
+  },
+  "TC_REV_004": {
+    "tcId": "TC_REV_004",
+    "module": "Document Review",
+    "description": "Verify zoom in and zoom out functionality",
+    "steps": "1. Click Zoom In and Zoom Out icons.",
+    "testData": "PDF document",
+    "expectedResult": "PDF preview should zoom in and out accordingly.",
+    "actualResult": ""
+  },
+  "TC_REV_005": {
+    "tcId": "TC_REV_005",
+    "module": "Document Review",
+    "description": "Verify Complete button functionality",
+    "steps": "1. Click the Complete button.",
+    "testData": "Reviewed document",
+    "expectedResult": "Document status should be updated to Complete.",
+    "actualResult": ""
+  },
+  "TC_REV_006": {
+    "tcId": "TC_REV_006",
+    "module": "Document Review",
+    "description": "Verify Submit to ERP button functionality",
+    "steps": "1. Click Submit to ERP.",
+    "testData": "Completed document",
+    "expectedResult": "Document data should be submitted successfully to ERP.",
+    "actualResult": ""
+  },
+  "TC_REV_007": {
+    "tcId": "TC_REV_007",
+    "module": "Document Review",
+    "description": "Verify Back to Dashboard navigation",
+    "steps": "1. Click Back to Dashboard.",
+    "testData": "",
+    "expectedResult": "User should be redirected to the Dashboard page.",
+    "actualResult": ""
+  },
+  "TC_REV_008": {
+    "tcId": "TC_REV_008",
+    "module": "Document Review",
+    "description": "Verify JSON View tab display",
+    "steps": "1. Click the JSON View tab.",
+    "testData": "Extracted document",
+    "expectedResult": "Extracted document data should be displayed in JSON format.",
+    "actualResult": ""
+  },
+  "TC_REV_009": {
+    "tcId": "TC_REV_009",
+    "module": "Document Review",
+    "description": "Verify extracted field values",
+    "steps": "1. Compare extracted values with the PDF document.",
+    "testData": "Customer Name, PO Number, Amount, Date, Address",
+    "expectedResult": "Extracted values should match the source document.",
+    "actualResult": ""
+  },
+  "TC_REV_010": {
+    "tcId": "TC_REV_010",
+    "module": "Document Review",
+    "description": "Verify field edit functionality",
+    "steps": "1. Click the Edit icon for an extracted field.2. Update the value and save.",
+    "testData": "Updated field value",
+    "expectedResult": "Field value should be updated successfully.",
+    "actualResult": ""
+  },
+  "TC_REV_011": {
+    "tcId": "TC_REV_011",
+    "module": "Document Review",
+    "description": "Verify field copy functionality",
+    "steps": "1. Click the Copy icon for a field.",
+    "testData": "Extracted field",
+    "expectedResult": "Field value should be copied to the clipboard.",
+    "actualResult": ""
+  },
+  "TC_REV_012": {
+    "tcId": "TC_REV_012",
+    "module": "Document Review",
+    "description": "Verify the selection functionality",
+    "steps": "1. Click the selection icon.\n2. Select the text from pdf and drap.\n3. Observe that appropiate field.",
+    "testData": "",
+    "expectedResult": "Newly seleted data should be replaces with the extracted data.",
+    "actualResult": ""
+  },
+  "TC_REV_013": {
+    "tcId": "TC_REV_013",
+    "module": "Document Review",
+    "description": "Verify confidence score display",
+    "steps": "1. Review extracted fields.",
+    "testData": "Extracted document",
+    "expectedResult": "Confidence percentage should be displayed for each field.",
+    "actualResult": ""
+  },
+  "TC_REV_014": {
+    "tcId": "TC_REV_014",
+    "module": "Document Review",
+    "description": "Verify address swap functionality",
+    "steps": "1. Click the Swap icon between Billing and Shipping Address sections.",
+    "testData": "Extracted addresses",
+    "expectedResult": "Billing and Shipping Address values should be swapped successfully.",
+    "actualResult": ""
+  },
+  "TC_REV_015": {
+    "tcId": "TC_REV_015",
+    "module": "Document Review",
+    "description": "Verify document review page without errors",
+    "steps": "1. Open and review a document.",
+    "testData": "Valid document",
+    "expectedResult": "No UI errors, data loading issues, or console errors should occur.",
+    "actualResult": ""
+  },
+  "TC_REV_016": {
+    "tcId": "TC_REV_016",
+    "module": "Document Review",
+    "description": "Verify Client and Billing Address auto-replacement when Customer Name partially matches client JSON",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Customer Name partially matches a Client Name available in the client JSON configuration.\n3. Process the document.",
+    "testData": "Customer Name: \"Office Interiors Inc\"Client JSON Name: \"Office Interiors\"",
+    "expectedResult": "System should identify the partial match and automatically replace the Client and Billing Address details with the values from the client JSON configuration.",
+    "actualResult": ""
+  },
+  "TC_REV_017": {
+    "tcId": "TC_REV_017",
+    "module": "Document Review",
+    "description": "Verify no replacement when Customer Name does not match client JSON",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Customer Name does not match any Client Name in the JSON configuration.\n3. Process the document.",
+    "testData": "Customer Name: \"ABC Furniture\"",
+    "expectedResult": "Client and Billing Address details should remain unchanged.",
+    "actualResult": ""
+  },
+  "TC_REV_018": {
+    "tcId": "TC_REV_018",
+    "module": "Document Review",
+    "description": "Verify Shipping Address auto-replacement when match is greater than 75%",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Shipping Address matches more than 75% of a Shipping Address in the client JSON configuration.\n3. Process the document.",
+    "testData": "Extracted Address: 80% match with JSON address",
+    "expectedResult": "Shipping Address should be automatically replaced with the address from the client JSON configuration.",
+    "actualResult": ""
+  },
+  "TC_REV_019": {
+    "tcId": "TC_REV_019",
+    "module": "Document Review",
+    "description": "Verify no Shipping Address replacement when match is less than 75%",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Shipping Address matches less than 75% of a Shipping Address in the client JSON configuration.\n3. Process the document.",
+    "testData": "Extracted Address: 70% match with JSON address",
+    "expectedResult": "Shipping Address should remain unchanged.",
+    "actualResult": ""
+  },
+  "TC_REV_020": {
+    "tcId": "TC_REV_020",
+    "module": "Document Review",
+    "description": "Verify correct JSON values are applied after replacement",
+    "steps": "1. Upload and process a document that meets the matching criteria.\n2. Review the extracted data.",
+    "testData": "Valid matching Customer Name and Address",
+    "expectedResult": "The displayed Client, Billing Address, and Shipping Address should exactly match the values stored in the JSON configuration.",
+    "actualResult": ""
+  },
+  "TC_REV_021": {
+    "tcId": "TC_REV_021",
+    "module": "Document Review",
+    "description": "Verify expand icon in the order line item",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Observe the system behaviour.",
+    "testData": "",
+    "expectedResult": "The order line item table should be display in the middle of the page.",
+    "actualResult": ""
+  },
+  "TC_REV_022": {
+    "tcId": "TC_REV_022",
+    "module": "Document Review",
+    "description": "Verify Edit all button functionality",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Click on Edit all button \n4. Click on save all button",
+    "testData": "",
+    "expectedResult": "The system should allow to edit all the rows.",
+    "actualResult": ""
+  },
+  "TC_REV_023": {
+    "tcId": "TC_REV_023",
+    "module": "Document Review",
+    "description": "Verify the editing status.",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Click on Edit all button",
+    "testData": "",
+    "expectedResult": "After click on edit all button the button status should change to editing",
+    "actualResult": ""
+  },
+  "TC_REV_024": {
+    "tcId": "TC_REV_024",
+    "module": "Document Review",
+    "description": "Verify the cancel button",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Click on Edit all button \n4. Click on Cancel button",
+    "testData": "",
+    "expectedResult": "The new changes should not be saved.",
+    "actualResult": ""
+  },
+  "TC_REV_025": {
+    "tcId": "TC_REV_025",
+    "module": "Document Review",
+    "description": "Verify the Add row Button.",
+    "steps": "1. Navigate to the review page.\n2. Click on Add row button.",
+    "testData": "",
+    "expectedResult": "New row should be added with the new row button and should allow user to edit the cells. While editing the add row button should be enable.",
+    "actualResult": ""
+  },
+  "TC_REV_026": {
+    "tcId": "TC_REV_026",
+    "module": "Document Review",
+    "description": "Verify the drag row functionality",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Try to drag the rows",
+    "testData": "",
+    "expectedResult": "The drag functionality should work",
+    "actualResult": ""
+  },
+  "TC_REV_027": {
+    "tcId": "TC_REV_027",
+    "module": "Document Review",
+    "description": "Verify the Actions functionality in the Order line items.",
+    "steps": "1. Navigate to the review page.\n2. Click on edit, delete icon.",
+    "testData": "",
+    "expectedResult": "When user click on edit icon, entire row should editable. When the user click on delete icon, the entire row should delete.",
+    "actualResult": ""
+  },
+  "TC_REV_028": {
+    "tcId": "TC_REV_028",
+    "module": "Document Review",
+    "description": "Verify that deleting the only existing row removes the data but retains an empty row.",
+    "steps": "1. Navigate to the review page.\n2. Click on delete icon.",
+    "testData": "",
+    "expectedResult": "The data in the row is removed successfully, but the row itself remains visible as an empty row, allowing the user to enter new data.",
+    "actualResult": ""
+  },
+  "TC_SETT_068": {
+    "tcId": "TC_SETT_068",
+    "module": "Settings & Org",
+    "description": "Verify setting field",
+    "steps": "1. Click on Settings",
+    "testData": "",
+    "expectedResult": "The list should display both Users and Organizations.",
+    "actualResult": ""
+  },
+  "TC_SETT_069": {
+    "tcId": "TC_SETT_069",
+    "module": "Settings & Org",
+    "description": "Verify Users page loads successfully",
+    "steps": "1. Navigate to the Users page.",
+    "testData": "",
+    "expectedResult": "Users page should load successfully and display the list of users.",
+    "actualResult": ""
+  },
+  "TC_SETT_070": {
+    "tcId": "TC_SETT_070",
+    "module": "Settings & Org",
+    "description": "Verify search user functionality",
+    "steps": "1. Enter a user name in the Search Users field.",
+    "testData": "Existing user name",
+    "expectedResult": "Matching user records should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_071": {
+    "tcId": "TC_SETT_071",
+    "module": "Settings & Org",
+    "description": "Verify Add User button functionality",
+    "steps": "1. Click the Add User button.",
+    "testData": "",
+    "expectedResult": "Create User popup should open successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_072": {
+    "tcId": "TC_SETT_072",
+    "module": "Settings & Org",
+    "description": "Verify user details display",
+    "steps": "1. Open the Users page.",
+    "testData": "Existing users",
+    "expectedResult": "User name, email, organization, and role should be displayed correctly.",
+    "actualResult": ""
+  },
+  "TC_SETT_073": {
+    "tcId": "TC_SETT_073",
+    "module": "Settings & Org",
+    "description": "Verify View icon functionality",
+    "steps": "1. Click the View icon for a user.",
+    "testData": "Existing user",
+    "expectedResult": "User details should be displayed successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_074": {
+    "tcId": "TC_SETT_074",
+    "module": "Settings & Org",
+    "description": "Verify Create User with valid data",
+    "steps": "1. Open Create User popup.\n2. Enter all required details.\n3. Click Create User.",
+    "testData": "Valid user details",
+    "expectedResult": "User should be created successfully and displayed in the users list.",
+    "actualResult": ""
+  },
+  "TC_SETT_075": {
+    "tcId": "TC_SETT_075",
+    "module": "Settings & Org",
+    "description": "Verify mandatory field validation",
+    "steps": "1. Leave required fields empty.\n2. Click Create User.",
+    "testData": "Empty required fields",
+    "expectedResult": "Validation messages should be displayed for mandatory fields.",
+    "actualResult": ""
+  },
+  "TC_SETT_076": {
+    "tcId": "TC_SETT_076",
+    "module": "Settings & Org",
+    "description": "Verify password reset email is sent after user creation",
+    "steps": "1. Create a new user.\n2. Complete the user creation process.",
+    "testData": "Valid user details",
+    "expectedResult": "A password reset email should be sent to the registered email address.",
+    "actualResult": ""
+  },
+  "TC_SETT_077": {
+    "tcId": "TC_SETT_077",
+    "module": "Settings & Org",
+    "description": "Verify password reset link functionality",
+    "steps": "1. Open the password reset email.\n2. Click the password reset link.",
+    "testData": "Valid reset email",
+    "expectedResult": "Password reset page should open successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_078": {
+    "tcId": "TC_SETT_078",
+    "module": "Settings & Org",
+    "description": "Verify user can reset password successfully",
+    "steps": "1. Open the password reset page.\n2. Enter and confirm a new password.\n3. Click on reset form.",
+    "testData": "Valid password",
+    "expectedResult": "Password should be reset successfully and a confirmation message should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_079": {
+    "tcId": "TC_SETT_079",
+    "module": "Settings & Org",
+    "description": "Verify login with newly created user credentials",
+    "steps": "1. Log out of the application.\n2. Navigate to the login page.\n3. Enter the created user's email and new password.\n4. Click Login.",
+    "testData": "Created user email and reset password",
+    "expectedResult": "User should be logged in successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_080": {
+    "tcId": "TC_SETT_080",
+    "module": "Settings & Org",
+    "description": "Verify logout functionality after login",
+    "steps": "1. Log in with the created user credentials.2. Click Logout.",
+    "testData": "Valid user account",
+    "expectedResult": "User should be logged out successfully and redirected to the login page.",
+    "actualResult": ""
+  },
+  "TC_SETT_081": {
+    "tcId": "TC_SETT_081",
+    "module": "Settings & Org",
+    "description": "Verify re-login after logout",
+    "steps": "1. Log out from the application.\n2. Log in again using the same credentials.",
+    "testData": "Created user email and reset password",
+    "expectedResult": "User should be able to log in successfully after logout.",
+    "actualResult": ""
+  },
+  "TC_SETT_082": {
+    "tcId": "TC_SETT_082",
+    "module": "Settings & Org",
+    "description": "Verify Role dropdown functionality",
+    "steps": "1. Open the Role dropdown.\n2. Select a role.",
+    "testData": "Admin / Viewer",
+    "expectedResult": "Selected role should be assigned to the user.",
+    "actualResult": ""
+  },
+  "TC_SETT_083": {
+    "tcId": "TC_SETT_083",
+    "module": "Settings & Org",
+    "description": "Verify popup close functionality",
+    "steps": "1. Click the Close (X) icon.",
+    "testData": "",
+    "expectedResult": "Create User popup should close successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_084": {
+    "tcId": "TC_SETT_084",
+    "module": "Settings & Org",
+    "description": "Verify Organization Name field is displayed",
+    "steps": "1. Open Create Organization page.\n2. Locate Organization Name field.",
+    "testData": "Organization Name: Acme Corp",
+    "expectedResult": "Organization Name field is displayed with mandatory * indicator.",
+    "actualResult": ""
+  },
+  "TC_SETT_085": {
+    "tcId": "TC_SETT_085",
+    "module": "Settings & Org",
+    "description": "Verify valid Organization Name can be entered",
+    "steps": "1. Click Organization Name field.\n2. Enter a valid organization name.",
+    "testData": "Acme Corp",
+    "expectedResult": "Organization name is accepted and displayed correctly.",
+    "actualResult": ""
+  },
+  "TC_SETT_086": {
+    "tcId": "TC_SETT_086",
+    "module": "Settings & Org",
+    "description": "Verify Organization Name is mandatory",
+    "steps": "1. Leave Organization Name blank.\n2. Fill other mandatory fields.\n3. Observe the Create Organization button",
+    "testData": "",
+    "expectedResult": "Button should be disable.",
+    "actualResult": ""
+  },
+  "TC_SETT_087": {
+    "tcId": "TC_SETT_087",
+    "module": "Settings & Org",
+    "description": "Verify Domain field is displayed",
+    "steps": "1. Open Create Organization page.\n2. Locate Domain field.",
+    "testData": "",
+    "expectedResult": "Domain field should display with mandatory * indicator.",
+    "actualResult": ""
+  },
+  "TC_SETT_088": {
+    "tcId": "TC_SETT_088",
+    "module": "Settings & Org",
+    "description": "Verify valid Domain is accepted",
+    "steps": "1. Enter a valid domain.\n2. Proceed with organization creation.",
+    "testData": "",
+    "expectedResult": "Valid domain should accept without validation error.",
+    "actualResult": ""
+  },
+  "TC_SETT_089": {
+    "tcId": "TC_SETT_089",
+    "module": "Settings & Org",
+    "description": "Verify invalid Domain validation",
+    "steps": "1. Enter an invalid domain.\n2. Attempt to create organization.",
+    "testData": "enter : @",
+    "expectedResult": "Appropriate domain validation should display and organization should not create.",
+    "actualResult": ""
+  },
+  "TC_SETT_090": {
+    "tcId": "TC_SETT_090",
+    "module": "Settings & Org",
+    "description": "Verify Document Type options are displayed",
+    "steps": "1. Open Create Organization page.\n2. Locate Select Document Type section.",
+    "testData": "N/A",
+    "expectedResult": "PURCHASE_ORDER, QUOTE_REQUEST, and PO-ACK RECON options should display with checkboxes.",
+    "actualResult": ""
+  },
+  "TC_SETT_091": {
+    "tcId": "TC_SETT_091",
+    "module": "Settings & Org",
+    "description": "Verify multiple Document Types can be selected",
+    "steps": "1. Select PURCHASE_ORDER.\n2. Select QUOTE_REQUEST.\n3. Select PO-ACK RECON.",
+    "testData": "All three options",
+    "expectedResult": "Multiple document types can be selected simultaneously.",
+    "actualResult": ""
+  },
+  "TC_SETT_092": {
+    "tcId": "TC_SETT_092",
+    "module": "Settings & Org",
+    "description": "Verify Document Type can be deselected",
+    "steps": "1. Select a document type.\n2. Click the same checkbox again.",
+    "testData": "PURCHASE_ORDER",
+    "expectedResult": "Previously selected document type should deselect.",
+    "actualResult": ""
+  },
+  "TC_SETT_093": {
+    "tcId": "TC_SETT_093",
+    "module": "Settings & Org",
+    "description": "Verify Document Type is mandatory",
+    "steps": "1. Leave all document types unchecked.\n2. Fill other mandatory fields.\n3. Click Create Organization.",
+    "testData": "No document type selected",
+    "expectedResult": "Validation message should display and organization is not created.",
+    "actualResult": ""
+  },
+  "TC_SETT_094": {
+    "tcId": "TC_SETT_094",
+    "module": "Settings & Org",
+    "description": "Verify Direct Estimate Creation toggle",
+    "steps": "1. Locate Direct Estimate Creation toggle.",
+    "testData": "",
+    "expectedResult": "Toggle should be defaut OFF state.",
+    "actualResult": ""
+  },
+  "TC_SETT_095": {
+    "tcId": "TC_SETT_095",
+    "module": "Settings & Org",
+    "description": "Verify Direct Estimate Creation can be disabled",
+    "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
+    "testData": "Toggle: ON \u2192 OFF",
+    "expectedResult": "Toggle should returns to disabled state.",
+    "actualResult": ""
+  },
+  "TC_SETT_096": {
+    "tcId": "TC_SETT_096",
+    "module": "Settings & Org",
+    "description": "Verify Life Line Tracking toggle",
+    "steps": "1. Locate Life Line Tracking toggle.",
+    "testData": "",
+    "expectedResult": "Toggle should be defaut ON state.",
+    "actualResult": ""
+  },
+  "TC_SETT_097": {
+    "tcId": "TC_SETT_097",
+    "module": "Settings & Org",
+    "description": "Verify Life Line Traking can be disabled",
+    "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
+    "testData": "Toggle: ON \u2192 OFF",
+    "expectedResult": "Toggle should returns to disabled state.",
+    "actualResult": ""
+  },
+  "TC_SETT_098": {
+    "tcId": "TC_SETT_098",
+    "module": "Settings & Org",
+    "description": "Verify the UI Changes when the Life Line Tracking toggle is ON for Existing Organization.",
+    "steps": "1. Naviage to the Organization page.\n2. Click on edit icon.\n3. Observe the UI when toggle is ON.",
+    "testData": "Toggle: ON",
+    "expectedResult": "subscription plan should visible.",
+    "actualResult": ""
+  },
+  "TC_SETT_099": {
+    "tcId": "TC_SETT_099",
+    "module": "Settings & Org",
+    "description": "Verify the UI Changes when the Life Line Tracking toggle is OFF for Existing Organization.",
+    "steps": "1. Naviage to the Organization page.\n2. Click on edit icon.\n3. Observe the UI when toggle is ON.\n4. Click on Edit button.\n5. Turn the toggle is OFF.\n6. Click on Save button.\n7. Observe the UI when toggle is OFF.",
+    "testData": "Toggle: OFF",
+    "expectedResult": "subscription plan should Hide.",
+    "actualResult": ""
+  },
+  "TC_SETT_100": {
+    "tcId": "TC_SETT_100",
+    "module": "Settings & Org",
+    "description": "Verify Starter subscription is displayed",
+    "steps": "1. Open subscription section.",
+    "testData": "N/A",
+    "expectedResult": "STARTER plan should displayed with price $799.00/month.",
+    "actualResult": ""
+  },
+  "TC_SETT_101": {
+    "tcId": "TC_SETT_101",
+    "module": "Settings & Org",
+    "description": "Verify Enterprise subscription is displayed",
+    "steps": "1. Open subscription section.",
+    "testData": "N/A",
+    "expectedResult": "ENTERPRISE plan should displayed with price $1499.00/month.",
+    "actualResult": ""
+  },
+  "TC_SETT_102": {
+    "tcId": "TC_SETT_102",
+    "module": "Settings & Org",
+    "description": "Verify subscription plan can be selected",
+    "steps": "1. Click STARTER subscription card.\n2. Observe selection state.",
+    "testData": "STARTER",
+    "expectedResult": "STARTER plan should selected/highlighted.",
+    "actualResult": ""
+  },
+  "TC_SETT_103": {
+    "tcId": "TC_SETT_103",
+    "module": "Settings & Org",
+    "description": "Verify only one subscription plan can be selected",
+    "steps": "1. Select STARTER.\n2. Select ENTERPRISE.",
+    "testData": "STARTER, ENTERPRISE",
+    "expectedResult": "ENTERPRISE should selected and STARTER is deselected, if subscription is single-select.",
+    "actualResult": ""
+  },
+  "TC_SETT_104": {
+    "tcId": "TC_SETT_104",
+    "module": "Settings & Org",
+    "description": "Verify Starter plan document limit",
+    "steps": "1. Review STARTER subscription details.",
+    "testData": "N/A",
+    "expectedResult": "UI displays up to 300 documents/month and $6/document overage.",
+    "actualResult": ""
+  },
+  "TC_SETT_105": {
+    "tcId": "TC_SETT_105",
+    "module": "Settings & Org",
+    "description": "Verify Enterprise plan includes SIF",
+    "steps": "1. Review ENTERPRISE plan Includes section.",
+    "testData": "N/A",
+    "expectedResult": "Enterprise plan should display SIF in addition to the listed supported document formats/features.",
+    "actualResult": ""
+  },
+  "TC_SETT_106": {
+    "tcId": "TC_SETT_106",
+    "module": "Settings & Org",
+    "description": "Verify Custom Docs section is displayed",
+    "steps": "1. Scroll below subscription plans.",
+    "testData": "N/A",
+    "expectedResult": "Custom Docs section should display as optional.",
+    "actualResult": ""
+  },
+  "TC_SETT_107": {
+    "tcId": "TC_SETT_107",
+    "module": "Settings & Org",
+    "description": "Verify Address File upload accepts supported formats",
+    "steps": "1. Locate Address File upload area.\n2. Click Browse.\n3. Upload supported file.",
+    "testData": "addresses.xlsx",
+    "expectedResult": "Supported .json, .xls, and .xlsx files are accepted.",
+    "actualResult": ""
+  },
+  "TC_SETT_108": {
+    "tcId": "TC_SETT_108",
+    "module": "Settings & Org",
+    "description": "Verify Custom Docs uploads are optional",
+    "steps": "1. Fill all mandatory fields.\n2. Do not upload Address File or Product Codes File.\n3. Click Create Organization.",
+    "testData": "Valid mandatory data",
+    "expectedResult": "Organization should be creat without optional custom documents.",
+    "actualResult": ""
+  },
+  "TC_SETT_109": {
+    "tcId": "TC_SETT_109",
+    "module": "Settings & Org",
+    "description": "Verify Create Organization button is displayed",
+    "steps": "1. Scroll to bottom of the form.",
+    "testData": "N/A",
+    "expectedResult": "Create Organization button should visible and accessible.",
+    "actualResult": ""
+  },
+  "TC_SETT_110": {
+    "tcId": "TC_SETT_110",
+    "module": "Settings & Org",
+    "description": "Verify successful organization creation with valid data",
+    "steps": "1. Enter valid Organization Name.\n2. Enter valid Domain.\n3. Select document type(s).\n4. Select subscription.\n5. Click Create Organization.",
+    "testData": "Acme Corp\nacme.com\nPURCHASE_ORDER\nSTARTER",
+    "expectedResult": "Organization should successfully create and appropriate success confirmation/next page should displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_111": {
+    "tcId": "TC_SETT_111",
+    "module": "Settings & Org",
+    "description": "Verify Create Organization button prevents duplicate submissions",
+    "steps": "1. Fill all mandatory fields.\n2. Click Create Organization multiple times quickly.",
+    "testData": "Valid organization data",
+    "expectedResult": "Only one organization creation request should processed.",
+    "actualResult": ""
+  },
+  "TC_SETT_112": {
+    "tcId": "TC_SETT_112",
+    "module": "Settings & Org",
+    "description": "Verify special characters in Organization Name",
+    "steps": "1. Enter organization name containing supported special characters.2. Submit form.",
+    "testData": "Acme & Co. Pvt. Ltd.",
+    "expectedResult": "Application handles the value according to the allowed character rules without UI issues.",
+    "actualResult": ""
+  },
+  "TC_SETT_113": {
+    "tcId": "TC_SETT_113",
+    "module": "Settings & Org",
+    "description": "Verify subscription is mandatory",
+    "steps": "1. Fill Organization Name, Domain, and Document Type.<br>2. Do not select a subscription.<br>3. Click Create Organization.",
+    "testData": "Valid mandatory fields, no subscription",
+    "expectedResult": "Validation should display for subscription selection and organization is not created.",
+    "actualResult": ""
+  },
+  "TC_SETT_114": {
+    "tcId": "TC_SETT_114",
+    "module": "Settings & Org",
+    "description": "Verify page scrolling and bottom controls",
+    "steps": "1. Open the page.\n2. Scroll from top to bottom.",
+    "testData": "",
+    "expectedResult": "All sections are accessible, including Custom Docs and Create Organization button, without layout overlap or clipping.",
+    "actualResult": ""
+  },
+  "TC_SETT_115": {
+    "tcId": "TC_SETT_115",
+    "module": "Settings & Org",
+    "description": "Verify Search with invalid organization name",
+    "steps": "1. Enter a non-existing organization name.",
+    "testData": "ABC123",
+    "expectedResult": "No matching records should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_116": {
+    "tcId": "TC_SETT_116",
+    "module": "Settings & Org",
+    "description": "Verify All tab",
+    "steps": "1. Click All tab.",
+    "testData": "",
+    "expectedResult": "All organizations should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_117": {
+    "tcId": "TC_SETT_117",
+    "module": "Settings & Org",
+    "description": "Verify Active tab",
+    "steps": "1. Click Active tab.",
+    "testData": "Active organizations",
+    "expectedResult": "Only active organizations should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_118": {
+    "tcId": "TC_SETT_118",
+    "module": "Settings & Org",
+    "description": "Verify Inactive tab",
+    "steps": "1. Click Inactive tab.",
+    "testData": "Inactive organizations",
+    "expectedResult": "Only inactive organizations should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_119": {
+    "tcId": "TC_SETT_119",
+    "module": "Settings & Org",
+    "description": "Verify View Organization details",
+    "steps": "1. Click the View (Eye) icon.",
+    "testData": "Corpdesign",
+    "expectedResult": "Organization details page should open.",
+    "actualResult": ""
+  },
+  "TC_SETT_120": {
+    "tcId": "TC_SETT_120",
+    "module": "Settings & Org",
+    "description": "Verify Delete Organization",
+    "steps": "1. Click the Delete icon.",
+    "testData": "Corpdesign",
+    "expectedResult": "Confirmation popup should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_121": {
+    "tcId": "TC_SETT_121",
+    "module": "Settings & Org",
+    "description": "Verify Organization deletion",
+    "steps": "1.Confirm deletion.",
+    "testData": "Corpdesign",
+    "expectedResult": "Organization should be removed from the list.",
+    "actualResult": ""
+  },
+  "TC_SETT_122": {
+    "tcId": "TC_SETT_122",
+    "module": "Settings & Org",
+    "description": "Verify cancellation of deletion",
+    "steps": "1.Click Delete and then Cancel.",
+    "testData": "Corpdesign",
+    "expectedResult": "Organization should remain in the list.",
+    "actualResult": ""
+  },
+  "TC_SETT_123": {
+    "tcId": "TC_SETT_123",
+    "module": "Settings & Org",
+    "description": "Verify Organization Name display",
+    "steps": "1. Observe organization names in the list.",
+    "testData": "",
+    "expectedResult": "Correct organization names should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_124": {
+    "tcId": "TC_SETT_124",
+    "module": "Settings & Org",
+    "description": "Verify Domain display",
+    "steps": "1. Observe domain values.",
+    "testData": "",
+    "expectedResult": "Correct domain names should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_125": {
+    "tcId": "TC_SETT_125",
+    "module": "Settings & Org",
+    "description": "Verify Document Usage display",
+    "steps": "1. Observe document usage count.",
+    "testData": "26/300",
+    "expectedResult": "Correct usage and limit should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_126": {
+    "tcId": "TC_SETT_126",
+    "module": "Settings & Org",
+    "description": "Verify Status display",
+    "steps": "1. Observe organization status.",
+    "testData": "Active",
+    "expectedResult": "Correct status badge should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_127": {
+    "tcId": "TC_SETT_127",
+    "module": "Settings & Org",
+    "description": "Verify organization list refresh",
+    "steps": "1. Refresh the page.",
+    "testData": "",
+    "expectedResult": "Organization list should load correctly without data loss.",
+    "actualResult": ""
+  },
+  "TC_SETT_128": {
+    "tcId": "TC_SETT_128",
+    "module": "Settings & Org",
+    "description": "Verify Edit button functionality",
+    "steps": "1. Open Organization Details page. \n2. Click the Edit button.",
+    "testData": "Existing Organization",
+    "expectedResult": "All editable fields except plan, Expires At, Last Payment, Created at, Updated at) should become enabled for modification.",
+    "actualResult": ""
+  },
+  "TC_SETT_129": {
+    "tcId": "TC_SETT_129",
+    "module": "Settings & Org",
+    "description": "Verify Save button functionality",
+    "steps": "1. Open Organization Details page.\n2. Click on Edit button.\n3. edit the existing data.\n4. Click on the Save button.",
+    "testData": "Existing Organization",
+    "expectedResult": "Edited data should be Updated.",
+    "actualResult": ""
+  },
+  "TC_SETT_130": {
+    "tcId": "TC_SETT_130",
+    "module": "Settings & Org",
+    "description": "Verify Delete button functionality",
+    "steps": "1. Open Organization Details page. \n2. Click the Delete button. \n3. Confirm deletion in the popup.",
+    "testData": "Existing Organization",
+    "expectedResult": "The organization should be deleted successfully and removed from the organization list.",
+    "actualResult": ""
+  },
+  "TC_SETT_131": {
+    "tcId": "TC_SETT_131",
+    "module": "Settings & Org",
+    "description": "Verify Pay Now button functionality",
+    "steps": "1. Open Organization Details page. \n2. Click Pay Now button.",
+    "testData": "",
+    "expectedResult": "Payment details should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_132": {
+    "tcId": "TC_SETT_132",
+    "module": "Settings & Org",
+    "description": "Validate Payment confirmed popup",
+    "steps": "1. Open Organization Details page. \n2. Click Pay Now button.\n3. Update all the valid data in the details.\n4. Click on payment.\n5. Observe the System behaviour.",
+    "testData": "",
+    "expectedResult": "Payment Confirmed popup should display for 5 seconds.",
+    "actualResult": ""
+  },
+  "TC_SETT_133": {
+    "tcId": "TC_SETT_133",
+    "module": "Settings & Org",
+    "description": "Verify Bill History button",
+    "steps": "1. Open Organization Details page. \n2. Click Bill History button.",
+    "testData": "Existing invoices",
+    "expectedResult": "Billing history should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_134": {
+    "tcId": "TC_SETT_134",
+    "module": "Settings & Org",
+    "description": "Verify Upload Custom Documents",
+    "steps": "1. Open Organization Details page. \n2. Click Upload Custom Docs. \n3. Select a valid PDF file. \n4. Upload the file.",
+    "testData": "Quote_Template.pdf",
+    "expectedResult": "File should be uploaded successfully and displayed immediately.",
+    "actualResult": ""
+  },
+  "TC_SETT_135": {
+    "tcId": "TC_SETT_135",
+    "module": "Settings & Org",
+    "description": "Verify multiple upload custom Documents",
+    "steps": "1. Open Organization Details page. \n2. Click Upload Custom Docs. \n3. Select Multiple PDF file.",
+    "testData": "Quote_Template.pdf",
+    "expectedResult": "System should not allow user to select multle files.",
+    "actualResult": ""
+  },
+  "TC_SETT_136": {
+    "tcId": "TC_SETT_136",
+    "module": "Settings & Org",
+    "description": "Verify overwriting an existing uploaded file",
+    "steps": "1. Open the Organization Details page. \n2. Upload a custom document (File_A.pdf). \n3. Save the changes. \n4. Upload another document with the same name.\n 5. Save the changes.",
+    "testData": "Existing File: File_A.pdf, New File: File_A.pdf (updated version)",
+    "expectedResult": "The existing file should be replaced with the newly uploaded file, and only the latest version should be displayed in the Custom Documents section.",
+    "actualResult": ""
+  },
+  "TC_SETT_137": {
+    "tcId": "TC_SETT_137",
+    "module": "Settings & Org",
+    "description": "Verify upload without Edit mode",
+    "steps": "1. Open Organization Details page. 2. Do not click Edit. 3. Attempt to upload a custom document.",
+    "testData": "Quote.pdf",
+    "expectedResult": "System should not allow document upload.",
+    "actualResult": ""
+  },
+  "TC_SETT_138": {
+    "tcId": "TC_SETT_138",
+    "module": "Settings & Org",
+    "description": "Verify Custom Documents section when no files are uploaded",
+    "steps": "1. Create a new organization without uploading any documents. \n2. Open Edit Organization page.",
+    "testData": "New Organization",
+    "expectedResult": "Custom Documents section should be empty.",
+    "actualResult": ""
+  },
+  "TC_SETT_139": {
+    "tcId": "TC_SETT_139",
+    "module": "Settings & Org",
+    "description": "Verify at least one Document Type must remain selected",
+    "steps": "1. Open the Organization Details page. \n2. Click Edit. \n3. Deselect Quote Request. \n4. Deselect Purchase Order. \n5. Save the changes.",
+    "testData": "Enabled Document Types: Quote Request, Purchase Order",
+    "expectedResult": "The system should not allow all document types to be deselected. At least one document type must remain selected, and an appropriate validation message should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_140": {
+    "tcId": "TC_SETT_140",
+    "module": "Settings & Org",
+    "description": "Verify Delete icon for non-existing documents",
+    "steps": "1. Create an organization without uploading documents. 2. Open Edit Organization page. 3. Check Custom Documents section.",
+    "testData": "New Organization",
+    "expectedResult": "Delete icon should not be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_141": {
+    "tcId": "TC_SETT_141",
+    "module": "Settings & Org",
+    "description": "Verify Add User functionality",
+    "steps": "1. Open Organization Details page. \n2. Click Add User. \n3. Enter user details. \n4. Save.",
+    "testData": "Name: Test User, Email: testuser@gmail.com, Role: Viewer",
+    "expectedResult": "User should be added successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_142": {
+    "tcId": "TC_SETT_142",
+    "module": "Settings & Org",
+    "description": "Verify Search User functionality",
+    "steps": "1. Enter a username in the search box.",
+    "testData": "Divya",
+    "expectedResult": "Matching user should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_143": {
+    "tcId": "TC_SETT_143",
+    "module": "Settings & Org",
+    "description": "Verify Edit User functionality",
+    "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
+    "testData": "Viewer \u2192 Admin",
+    "expectedResult": "User role should be updated successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_144": {
+    "tcId": "TC_SETT_144",
+    "module": "Settings & Org",
+    "description": "Verify Delete User functionality",
+    "steps": "1. Click Delete icon for a user. \n2. Confirm deletion.",
+    "testData": "",
+    "expectedResult": "User should be removed successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_145": {
+    "tcId": "TC_SETT_145",
+    "module": "Settings & Org",
+    "description": "Verify Organization Details update",
+    "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
+    "testData": "Corpdesign \u2192 Corpdesign QA",
+    "expectedResult": "Updated organization details should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_146": {
+    "tcId": "TC_SETT_146",
+    "module": "Settings & Org",
+    "description": "Verify Direct Estimate Creation toggle",
+    "steps": "1. Enable/Disable the toggle. \n2. Save changes if applicable.",
+    "testData": "ON/OFF",
+    "expectedResult": "Toggle state should be saved successfully.",
+    "actualResult": ""
+  },
+  "TC_SETT_147": {
+    "tcId": "TC_SETT_147",
+    "module": "Settings & Org",
+    "description": "Verify Document Quota display",
+    "steps": "1. Open Subscription section.",
+    "testData": "Monthly Limit: 300",
+    "expectedResult": "Correct quota and usage should be displayed.",
+    "actualResult": ""
+  },
+  "TC_SETT_148": {
+    "tcId": "TC_SETT_148",
+    "module": "Settings & Org",
+    "description": "Verify Unauthorized Access",
+    "steps": "1. Login as Viewer user. \n2. Open Organization Details page.",
+    "testData": "Viewer User",
+    "expectedResult": "Edit/Delete actions should be restricted.",
+    "actualResult": ""
+  },
+  "TC_SETT_149": {
+    "tcId": "TC_SETT_149",
+    "module": "Settings & Org",
+    "description": "Verify page refresh retains data",
+    "steps": "1. Open Organization Details page. \n2. Refresh the browser.",
+    "testData": "Existing Organization",
+    "expectedResult": "All organization data should remain unchanged.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_001": {
+    "tcId": "TC_RS_EM_001",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify system handles Purchase Order email when Purchase Order document type is not enabled",
+    "steps": "1. Disable Purchase Order document type for the organization.\n2. Send an email with a valid Purchase Order attachment.\n3. Check the reply email and system processing status.",
+    "testData": "Valid Purchase Order PDF",
+    "expectedResult": "System should not process the document. A relevant reply email should be sent informing the user that the Purchase Order document type is not enabled/configured for the organization.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_002": {
+    "tcId": "TC_RS_EM_002",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify system handles Quotation email when Quotation document type is not enabled",
+    "steps": "1. Disable Quotation document type for the organization.\n2. Send an email with a valid Quotation attachment.\n3. Check the reply email and system processing status.",
+    "testData": "Valid Quotation PDF",
+    "expectedResult": "System should not process the document. A relevant reply email should be sent informing the user that the Quotation document type is not enabled/configured for the organization.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_003": {
+    "tcId": "TC_RS_EM_003",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify system handles PO-ACK Recon email when PO-ACK Recon document type is not enabled",
+    "steps": "1. Disable PO-ACK Recon document type for the organization.\n2. Send an email with valid PO-ACK Recon documents.\n3. Check the reply email and system processing status.",
+    "testData": "Valid PO and ACK files",
+    "expectedResult": "System should not process the documents. A relevant reply email should be sent informing the user that the PO-ACK Recon document type is not enabled/configured for the organization.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_004": {
+    "tcId": "TC_RS_EM_004",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify correct reply email content for unsupported document type submission",
+    "steps": "1. Disable a document type.\n2. Send a valid document belonging to the disabled document type.\n3. Review the reply email content.",
+    "testData": "Any valid disabled document type",
+    "expectedResult": "Reply email should clearly mention that the submitted document type is not enabled for the organization and provide appropriate guidance to the user.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_005": {
+    "tcId": "TC_RS_EM_005",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify document is not extracted or inserted into ERP when document type is disabled",
+    "steps": "1. Disable a document type.\n2. Send a valid document of that type.\n3. Monitor processing logs, extraction status, and ERP records.",
+    "testData": "Valid Purchase Order / Quotation / PO-ACK Recon file",
+    "expectedResult": "Document should not proceed to extraction, review, or ERP insertion. Only the appropriate notification email should be sent to the user.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_006": {
+    "tcId": "TC_RS_EM_006",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify the system process the attachment without subject reference.",
+    "steps": "1. Enable Purchase Order, Quotation, and PO-ACK Recon document types.\n2. Send an email with a Purchase Order attachment and Purchase Order keyword in the subject.\n3. Verify document processing.",
+    "testData": "-",
+    "expectedResult": "System should read the attachment, process it and submit to the ERP without subject reference.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_007": {
+    "tcId": "TC_RS_EM_007",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify system differentiates document types correctly when all document types are enabled",
+    "steps": "1. Enable all three document types.\n2. Send separate emails for each document type using the appropriate subject keywords.\n3. Verify processing results.",
+    "testData": "-",
+    "expectedResult": "Each email should be routed to the correct document type workflow based on the subject keyword without confusion or misclassification.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_008": {
+    "tcId": "TC_RS_EM_008",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify Request Type Doesn't Match Attachment Email is Sent When Subject Indicates Quote but Attachment is a Purchase Order",
+    "steps": "1. Send an email with the subject containing Quotation/Estimation.\n2. Attach a valid Purchase Order document.\n3. Submit the email for processing.",
+    "testData": "-",
+    "expectedResult": "The system identifies that the request type in the subject (Quotation/Estimation) does not match the attached document type (Purchase Order). The document is not processed, extracted, reviewed, or submitted to ERP. A \"Request Type Doesn't Match Attachment\" email is sent to the user with instructions to either provide the correct request type or the correct attachment.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_009": {
+    "tcId": "TC_RS_EM_009",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify \"No Attachment Found\" reply for email without attachments from a known user",
+    "steps": "1. Send an email from a registered (known) user.\n2. Do not attach any files to the email.\n3. Submit the email.\n4. Check the reply email.",
+    "testData": "Known user account, email with no attachments",
+    "expectedResult": "System should send a reply email with the message \"No Attachment Found\".",
+    "actualResult": ""
+  },
+  "TC_RS_EM_010": {
+    "tcId": "TC_RS_EM_010",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify user attaching an attachment for No attachment found reply.",
+    "steps": "1. Send an email from a registered (known) user.\n2. Do not attach any files to the email.\n3. Submit the email.\n4. Check the reply email.\n5. Attach a valid attachment for reply mail.\n6. Observe the Reply mail",
+    "testData": "-",
+    "expectedResult": "System should process the file without any error.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_011": {
+    "tcId": "TC_RS_EM_011",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify the reply mail",
+    "steps": "1. Sent a rmail with valid attachment.\n2. Observe the reply mail.",
+    "testData": "-",
+    "expectedResult": "Review in Stream button, Status, Order line items should be available.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_012": {
+    "tcId": "TC_RS_EM_012",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify the Review in Stream Button functionality.",
+    "steps": "1. Sent a rmail with valid attachment.\n2. Observe the reply mail.\n3. Click on Review in Stream button.",
+    "testData": "-",
+    "expectedResult": "The button should be clickable and should redirect to the particular file review page.",
+    "actualResult": ""
+  },
+  "TC_RS_EM_013": {
+    "tcId": "TC_RS_EM_013",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify \"Too Many Attachments\" reply when more than two attachments are sent",
+    "steps": "1. Send an email from a registered (known) user.\n2. Attach more than two files to the email.\n3. Submit the email.\n4. Check the reply email.",
+    "testData": "Known user account, email with 3 or more attachments",
+    "expectedResult": "System should not process the email and should send a reply email with the message \"Too Many Attachments\".",
+    "actualResult": ""
+  },
+  "TC_RS_EM_014": {
+    "tcId": "TC_RS_EM_014",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify \"Document Process Failed\" reply when document extraction fails",
+    "steps": "1. Send an email with a document that cannot be processed or extracted.\n2. Wait for the processing to complete.\n3. Check the reply email.",
+    "testData": "Corrupted file, unsupported format, or extraction failure document",
+    "expectedResult": "If the document extraction fails, the system should send a reply email with the message \"Document Process Failed\".",
+    "actualResult": ""
+  },
+  "TC_RS_EM_015": {
+    "tcId": "TC_RS_EM_015",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify \"Attachment Couldn't Be Read\" reply for unreadable attachment",
+    "steps": "1. Send an email from a registered (known) user.\n2. Attach blank, or unreadable document or send image attachement with .PDF or .SIF extention.\n3. Submit the email.\n4. Check the reply email.",
+    "testData": "-",
+    "expectedResult": "The system should not process the document and should send a reply email with the message \"Attachment Appears to Be Corrupted\".",
+    "actualResult": ""
+  },
+  "TC_RS_EM_016": {
+    "tcId": "TC_RS_EM_016",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify \"Document Already Processed\" reply for previously processed document",
+    "steps": "1. Send a document from a registered (known) user and allow it to be processed successfully.\n2. Send the same document again from the same registered user.\n3. Check the reply email.",
+    "testData": "Known user account, previously processed document",
+    "expectedResult": "System should identify that the document has already been processed and send a reply email with the message \"Document Already Processed\" along with the already processed file content",
+    "actualResult": ""
+  },
+  "TC_RS_EM_017": {
+    "tcId": "TC_RS_EM_017",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify \"Document Already in Processing\" reply for a document currently being processed",
+    "steps": "1. Send a document from a registered (known) user.\n2. Before the document processing is completed, send the same document again from the same registered user.\n3. Check the reply email.",
+    "testData": "Known user account, document currently in processing state",
+    "expectedResult": "System should identify that the document is already being processed and send a reply email with the message \"Document Already in Processing\".",
+    "actualResult": ""
+  },
+  "TC_RS_EM_018": {
+    "tcId": "TC_RS_EM_018",
+    "module": "Email Flow (Riverstone Organization)",
+    "description": "Verify email processing with variations of the Client field format",
+    "steps": "1. Send emails with valid document attachments.\n2. In each email, use a different variation of the Client field in the email body.\n3. Process the emails and review the results.",
+    "testData": "Client's Name: ABC CorpClient Name: ABC CorpClient_Name: ABC CorpClient-name: ABC CorpClient: ABC Corp",
+    "expectedResult": "The system should recognize all supported variations of the Client field and process the email successfully without requiring a strict format.",
+    "actualResult": ""
+  },
+  "TC_001": {
+    "tcId": "TC_001",
+    "module": "Sign-In page",
+    "description": "Verify user is able to sign in with valid credentials",
+    "steps": "1. Navigate to the login page by using https://riverstream.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
+    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : River@123",
+    "expectedResult": "User is successfully logged in, and the system should redirects the user to the dashboard.",
+    "actualResult": "User is successfully logged in, and the system redirects the user to the dashboard as expected."
+  },
+  "TC_002": {
+    "tcId": "TC_002",
+    "module": "Sign-In page",
+    "description": "Verify that an error message is displayed for an incorrect Email/password",
+    "steps": "1. Enter the invalid Email. \n2. Enter the invalid password. \n3. Click on the 'Sign in' button.",
+    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"River@123456\"",
+    "expectedResult": "User verify an error message should be displayed : \"Email username or password\".",
+    "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
+  },
+  "TC_003": {
+    "tcId": "TC_003",
+    "module": "Sign-In page",
+    "description": "Verify login with empty Email and password fields",
+    "steps": "Click on the 'Sign in' button.",
+    "testData": "-",
+    "expectedResult": "User verify an error message should be displayed : \"Email is required\nPassword is required\".",
+    "actualResult": "User verifies that an error message \"Email is required\nPassword is required\". is displayed as expected."
+  },
+  "TC_004": {
+    "tcId": "TC_004",
+    "module": "Sign-In page",
+    "description": "Verify login with only the valid Email filled",
+    "steps": "1. Enter the valid Email. \n2. Click on the 'Sign in' button.",
+    "testData": "Valid Email : \"admin@riverstonetech.com\"",
+    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
+    "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
+  },
+  "TC_005": {
+    "tcId": "TC_005",
+    "module": "Sign-In page",
+    "description": "Verify login with only the valid password filled",
+    "steps": "1. Enter the valid password. \n2. Click on the 'Sign in' button.",
+    "testData": "Valid Password : \"River@123\"",
+    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
+    "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
+  },
+  "TC_006": {
+    "tcId": "TC_006",
+    "module": "Left side fields",
+    "description": "Verify Total POs card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Total POs card.",
+    "testData": "",
+    "expectedResult": "Total POs card should be visible with count and trend information.",
+    "actualResult": "Total POs card is displayed correctly with count and trend information."
+  },
+  "TC_007": {
+    "tcId": "TC_007",
+    "module": "Left side fields",
+    "description": "Verify Processing Rate card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Processing Rate card.",
+    "testData": "",
+    "expectedResult": "Processing Rate card should display a valid percentage value.",
+    "actualResult": "Processing Rate card displays a valid percentage value as expected."
+  },
+  "TC_008": {
+    "tcId": "TC_008",
+    "module": "Left side fields",
+    "description": "Verify Extraction Accuracy card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Extraction Accuracy card.",
+    "testData": "",
+    "expectedResult": "Extraction Accuracy card should display percentage and target value.",
+    "actualResult": "Extraction Accuracy card displays the correct percentage and target value."
+  },
+  "TC_009": {
+    "tcId": "TC_009",
+    "module": "Left side fields",
+    "description": "Verify Reviewed card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Reviewed card.",
+    "testData": "",
+    "expectedResult": "Reviewed card should display the total reviewed document count.",
+    "actualResult": "Reviewed card displays the total reviewed document count correctly."
+  },
+  "TC_010": {
+    "tcId": "TC_010",
+    "module": "Left side fields",
+    "description": "Verify Reviewed count accuracy",
+    "steps": "1. Compare Reviewed count with reviewed records.",
+    "testData": "Reviewed records",
+    "expectedResult": "Reviewed count should match the actual reviewed documents.",
+    "actualResult": "Reviewed count matches the actual reviewed documents."
+  },
+  "TC_011": {
+    "tcId": "TC_011",
+    "module": "Left side fields",
+    "description": "Verify Pending Review card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Pending Review card.",
+    "testData": "",
+    "expectedResult": "Pending Review card should display pending review count and status message.",
+    "actualResult": "Pending Review card displays the correct pending review count and status message."
+  },
+  "TC_012": {
+    "tcId": "TC_012",
+    "module": "Left side fields",
+    "description": "Verify Pending Review count accuracy",
+    "steps": "1. Compare Pending Review count with pending records.",
+    "testData": "Pending review records",
+    "expectedResult": "Pending Review count should match actual pending records.",
+    "actualResult": "Pending Review count matches the actual pending records."
+  },
+  "TC_013": {
+    "tcId": "TC_013",
+    "module": "Left side fields",
+    "description": "Verify Processing card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Processing card.",
+    "testData": "",
+    "expectedResult": "Processing card should display the number of files currently being processed.",
+    "actualResult": "Processing card displays the correct number of files currently being processed."
+  },
+  "TC_014": {
+    "tcId": "TC_014",
+    "module": "Left side fields",
+    "description": "Verify Processing count accuracy",
+    "steps": "1. Compare Processing count with active processing jobs.",
+    "testData": "Processing records",
+    "expectedResult": "Processing count should match actual processing jobs.",
+    "actualResult": "Processing count matches the actual processing jobs."
+  },
+  "TC_015": {
+    "tcId": "TC_015",
+    "module": "Left side fields",
+    "description": "Verify Avg Processing Time card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Avg Processing Time card.",
+    "testData": "",
+    "expectedResult": "Avg Processing Time card should display a valid processing time value.",
+    "actualResult": "Avg Processing Time card displays a valid processing time value."
+  },
+  "TC_016": {
+    "tcId": "TC_016",
+    "module": "Left side fields",
+    "description": "Verify Avg Processing Time accuracy",
+    "steps": "1. Compare displayed value with calculated average processing time.",
+    "testData": "Processing logs",
+    "expectedResult": "Displayed average processing time should be accurate.",
+    "actualResult": "Displayed average processing time is accurate."
+  },
+  "TC_017": {
+    "tcId": "TC_017",
+    "module": "Left side fields",
+    "description": "Verify dashboard card alignment",
+    "steps": "1. Open Dashboard page.\n2. Inspect all metric cards.",
+    "testData": "",
+    "expectedResult": "All cards should be properly aligned with consistent spacing and formatting.",
+    "actualResult": "All dashboard cards are properly aligned with consistent spacing and formatting."
+  },
+  "TC_018": {
+    "tcId": "TC_018",
+    "module": "Left side fields",
+    "description": "Verify dashboard data refresh on page reload",
+    "steps": "1. Open Dashboard page.\n2. Refresh the page.\n3. Observe metrics.",
+    "testData": "",
+    "expectedResult": "Dashboard should load successfully and display updated metrics without errors.",
+    "actualResult": "Dashboard loads successfully and displays updated metrics without any errors."
+  },
+  "TC_019": {
+    "tcId": "TC_019",
+    "module": "Left side fields",
+    "description": "Verify dashboard responsiveness",
+    "steps": "1. Resize browser window.\n2. Observe dashboard layout.",
+    "testData": "Different screen sizes",
+    "expectedResult": "Dashboard cards should adjust properly without overlap or UI issues.",
+    "actualResult": "Dashboard cards adjust properly without overlap or UI issues."
+  },
+  "TC_020": {
+    "tcId": "TC_020",
+    "module": "Left side fields",
+    "description": "Verify dashboard loads without errors",
+    "steps": "1. Open Dashboard page.2. Check browser console and UI.",
+    "testData": "",
+    "expectedResult": "No error messages or console errors should be displayed.",
+    "actualResult": "No error messages or console errors were observed during testing."
+  },
+  "TC_021": {
+    "tcId": "TC_021",
+    "module": "Left side fields",
+    "description": "Verify Document Library page is displayed",
+    "steps": "1. Navigate to the Document Library page.",
+    "testData": "",
+    "expectedResult": "Document Library page should load successfully with all UI elements displayed.",
+    "actualResult": "Document Library page loaded successfully with all UI elements displayed."
+  },
+  "TC_022": {
+    "tcId": "TC_022",
+    "module": "Left side fields",
+    "description": "Verify Organization dropdown is displayed",
+    "steps": "1. Open the page.\n2. Observe the Organization dropdown.",
+    "testData": "",
+    "expectedResult": "Organization dropdown should be visible with a default value selected.",
+    "actualResult": "Organization dropdown is visible with the \"All Organizations\" default value selected."
+  },
+  "TC_023": {
+    "tcId": "TC_023",
+    "module": "Left side fields",
+    "description": "Verify Organization dropdown functionality",
+    "steps": "1. Select a different organization from the dropdown.",
+    "testData": "",
+    "expectedResult": "Document list should refresh based on the selected organization.",
+    "actualResult": "Document list refreshed correctly based on the selected organization."
+  },
+  "TC_024": {
+    "tcId": "TC_024",
+    "module": "Left side fields",
+    "description": "Verify file type filter buttons are displayed",
+    "steps": "1. Open the page.\n2. Observe the filter section.",
+    "testData": "",
+    "expectedResult": "All file type filters (All, PDF, XLS, XLSX, EDI, SIF) should be displayed.",
+    "actualResult": "All file type filters are displayed correctly."
+  },
+  "TC_025": {
+    "tcId": "TC_025",
+    "module": "Left side fields",
+    "description": "Verify All filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"All\" filter.",
+    "testData": "",
+    "expectedResult": "All available documents should be displayed.",
+    "actualResult": "All available documents are displayed."
+  },
+  "TC_026": {
+    "tcId": "TC_026",
+    "module": "Left side fields",
+    "description": "Verify PDF filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"PDF\" filter.",
+    "testData": "PDF documents",
+    "expectedResult": "Only PDF documents should be displayed.",
+    "actualResult": "Only PDF documents are displayed."
+  },
+  "TC_027": {
+    "tcId": "TC_027",
+    "module": "Left side fields",
+    "description": "Verify XLS filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"XLS\" filter.",
+    "testData": "XLS documents",
+    "expectedResult": "Only XLS documents should be displayed.",
+    "actualResult": "Only XLS documents are displayed."
+  },
+  "TC_028": {
+    "tcId": "TC_028",
+    "module": "Left side fields",
+    "description": "Verify XLSX filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"XLSX\" filter.",
+    "testData": "XLSX documents",
+    "expectedResult": "Only XLSX documents should be displayed.",
+    "actualResult": "Only XLSX documents are displayed."
+  },
+  "TC_029": {
+    "tcId": "TC_029",
+    "module": "Left side fields",
+    "description": "Verify EDI filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"EDI\" filter.",
+    "testData": "EDI documents",
+    "expectedResult": "Only EDI documents should be displayed.",
+    "actualResult": "Only EDI documents are displayed."
+  },
+  "TC_030": {
+    "tcId": "TC_030",
+    "module": "Left side fields",
+    "description": "Verify SIF filter functionality",
+    "steps": "1. Select document field.\n2. Click the \"SIF\" filter.",
+    "testData": "SIF documents",
+    "expectedResult": "Only SIF documents should be displayed.",
+    "actualResult": "Only SIF documents are displayed."
+  },
+  "TC_031": {
+    "tcId": "TC_031",
+    "module": "Left side fields",
+    "description": "Verify search functionality with valid document name",
+    "steps": "1. Select document field.\n2. Enter a document name in the search field.",
+    "testData": "Existing document name \"purchase Order\"",
+    "expectedResult": "Matching document(s) should be displayed.",
+    "actualResult": "Matching document(s) are displayed correctly."
+  },
+  "TC_032": {
+    "tcId": "TC_032",
+    "module": "Left side fields",
+    "description": "Verify search functionality with invalid document name",
+    "steps": "1. Select document field.\n2. Enter a non-existing document name in the search field.",
+    "testData": "Invalid document name \"AZZZZ\"",
+    "expectedResult": "No matching documents should be displayed.",
+    "actualResult": "No matching documents are displayed."
+  },
+  "TC_033": {
+    "tcId": "TC_033",
+    "module": "Left side fields",
+    "description": "Verify document list columns",
+    "steps": "1. Open the page.\n2. Observe the document grid.",
+    "testData": "",
+    "expectedResult": "Columns should display Document Name, Customer, Upload Date, Status, and Action.",
+    "actualResult": "All columns are displayed correctly."
+  },
+  "TC_034": {
+    "tcId": "TC_034",
+    "module": "Left side fields",
+    "description": "Verify document names are displayed",
+    "steps": "1. Observe the Document Name column.",
+    "testData": "",
+    "expectedResult": "Each uploaded document should display its name correctly.",
+    "actualResult": "Document names are displayed correctly."
+  },
+  "TC_035": {
+    "tcId": "TC_035",
+    "module": "Left side fields",
+    "description": "Verify customer details are displayed",
+    "steps": "1. Observe the Customer column.",
+    "testData": "Customer-associated documents",
+    "expectedResult": "Customer information should be displayed for applicable documents.",
+    "actualResult": "Customer information is displayed correctly."
+  },
+  "TC_036": {
+    "tcId": "TC_036",
+    "module": "Left side fields",
+    "description": "Verify upload date is displayed",
+    "steps": "1. Observe the Upload Date column.",
+    "testData": "Uploaded documents",
+    "expectedResult": "Correct upload date should be displayed for each document.",
+    "actualResult": "Upload dates are displayed correctly."
+  },
+  "TC_037": {
+    "tcId": "TC_037",
+    "module": "Left side fields",
+    "description": "Verify Extracted status display",
+    "steps": "1. Locate a successfully processed document.",
+    "testData": "Extracted document",
+    "expectedResult": "Status should be displayed as \"Extracted\" with proper styling.",
+    "actualResult": "Status is displayed as \"Extracted\" correctly."
+  },
+  "TC_038": {
+    "tcId": "TC_038",
+    "module": "Left side fields",
+    "description": "Verify Failed status display",
+    "steps": "1. Locate a failed document.",
+    "testData": "Failed document",
+    "expectedResult": "Status should be displayed as \"Failed\" with proper styling.",
+    "actualResult": "Status is displayed as \"Failed\" correctly."
+  },
+  "TC_039": {
+    "tcId": "TC_039",
+    "module": "Left side fields",
+    "description": "Verify the Failed status files document",
+    "steps": "1. Locate a failed document.",
+    "testData": "Failed document",
+    "expectedResult": "For documents with a \"Failed\" status, a \"Re-Extract\" button should be displayed and enabled. Clicking the button should initiate the extraction process for the selected document.",
+    "actualResult": "For documents with a \"Failed\" status, the \"Re-Extract\" button is displayed and enabled. Clicking the button successfully initiates the extraction process for the selected document."
+  },
+  "TC_040": {
+    "tcId": "TC_040",
+    "module": "Left side fields",
+    "description": "Verify Review button visibility",
+    "steps": "1. Observe the Action column.",
+    "testData": "",
+    "expectedResult": "A Review button should be available for each document.",
+    "actualResult": "Review button is displayed for all documents."
+  },
+  "TC_041": {
+    "tcId": "TC_041",
+    "module": "Left side fields",
+    "description": "Verify Review button functionality",
+    "steps": "1. Click the Review button for a document.",
+    "testData": "Existing document",
+    "expectedResult": "User should be navigated to the document review page.",
+    "actualResult": "User is navigated to the document review page successfully."
+  },
+  "TC_042": {
+    "tcId": "TC_042",
+    "module": "Left side fields",
+    "description": "Verify vertical scrolling functionality",
+    "steps": "1. Scroll through the document list.",
+    "testData": "Multiple documents",
+    "expectedResult": "User should be able to scroll and view all",
+    "actualResult": "Scrolling works correctly and all documents are accessible."
+  },
+  "TC_043": {
+    "tcId": "TC_043",
+    "module": "Left side fields",
+    "description": "Verify page loads without errors",
+    "steps": "1. Open the document page.\n2. Check for UI and console errors.",
+    "testData": "",
+    "expectedResult": "No UI errors or console errors should be displayed.",
+    "actualResult": "No UI errors or console errors were observed."
+  },
+  "TC_044": {
+    "tcId": "TC_044",
+    "module": "Left side fields",
+    "description": "Verify Clients page loads successfully",
+    "steps": "1. Navigate to the Clients page.",
+    "testData": "",
+    "expectedResult": "Clients page should load successfully with all UI elements displayed.",
+    "actualResult": "Clients page loaded successfully with all UI elements displayed."
+  },
+  "TC_045": {
+    "tcId": "TC_045",
+    "module": "Left side fields",
+    "description": "Verify Clients section header",
+    "steps": "1. Open the Clients page.",
+    "testData": "",
+    "expectedResult": "\"Clients\" header and description should be displayed correctly.",
+    "actualResult": "\"Clients\" header and description are displayed correctly."
+  },
+  "TC_046": {
+    "tcId": "TC_046",
+    "module": "Left side fields",
+    "description": "Verify client list display",
+    "steps": "1. Open the Clients page.",
+    "testData": "Existing clients",
+    "expectedResult": "All available clients should be displayed in the list.",
+    "actualResult": "All available clients are displayed correctly."
+  },
+  "TC_047": {
+    "tcId": "TC_047",
+    "module": "Left side fields",
+    "description": "Verify client name display",
+    "steps": "1. Observe the client list.",
+    "testData": "Existing clients",
+    "expectedResult": "Client names should be displayed correctly.",
+    "actualResult": "Client names are displayed correctly."
+  },
+  "TC_048": {
+    "tcId": "TC_048",
+    "module": "Left side fields",
+    "description": "Verify search box visibility",
+    "steps": "1. Open the Clients page.",
+    "testData": "",
+    "expectedResult": "Search box should be visible and enabled.",
+    "actualResult": "Search box is visible and enabled."
+  },
+  "TC_049": {
+    "tcId": "TC_049",
+    "module": "Left side fields",
+    "description": "Verify search functionality with valid client name",
+    "steps": "1. Enter an existing client name in the search box.",
+    "testData": "Existing client name \"Corpdesign\"",
+    "expectedResult": "Matching client records should be displayed.",
+    "actualResult": "Matching client records are displayed correctly."
+  },
+  "TC_050": {
+    "tcId": "TC_050",
+    "module": "Left side fields",
+    "description": "Verify search functionality with invalid client name",
+    "steps": "1. Enter a non-existing client name in the search box.",
+    "testData": "Invalid client name\"riverstone\"",
+    "expectedResult": "No matching client records should be displayed.",
+    "actualResult": "No matching client records are displayed."
+  },
+  "TC_051": {
+    "tcId": "TC_051",
+    "module": "Left side fields",
+    "description": "Verify Add Client button visibility",
+    "steps": "1. Open the Clients page.",
+    "testData": "",
+    "expectedResult": "Add Client button should be visible and enabled.",
+    "actualResult": "Add Client button is visible and enabled."
+  },
+  "TC_052": {
+    "tcId": "TC_052",
+    "module": "Left side fields",
+    "description": "Verify Add Client button functionality",
+    "steps": "1. Click the Add Client button.",
+    "testData": "Valid client details",
+    "expectedResult": "Add Client form/page should open successfully.",
+    "actualResult": "Add Client form/page opens successfully."
+  },
+  "TC_053": {
+    "tcId": "TC_053",
+    "module": "Left side fields",
+    "description": "Verify Active status display",
+    "steps": "1. Observe the status badge for clients.",
+    "testData": "Active client",
+    "expectedResult": "Active clients should display an \"Active\" status badge.",
+    "actualResult": "Active status badge is displayed correctly."
+  },
+  "TC_054": {
+    "tcId": "TC_054",
+    "module": "Left side fields",
+    "description": "Verify View icon visibility",
+    "steps": "1. Observe the action icons for each client.",
+    "testData": "",
+    "expectedResult": "View icon should be displayed for each client.",
+    "actualResult": "View icon is displayed for each client."
+  },
+  "TC_055": {
+    "tcId": "TC_055",
+    "module": "Left side fields",
+    "description": "Verify View icon functionality",
+    "steps": "1. Click the View icon for a client.",
+    "testData": "Existing client",
+    "expectedResult": "Client details page should open successfully.",
+    "actualResult": "Client details page opens successfully."
+  },
+  "TC_056": {
+    "tcId": "TC_056",
+    "module": "Left side fields",
+    "description": "Verify Delete icon visibility",
+    "steps": "1. Observe the action icons for each client.",
+    "testData": "",
+    "expectedResult": "Delete icon should be displayed for each client.",
+    "actualResult": "Delete icon is displayed for each client."
+  },
+  "TC_057": {
+    "tcId": "TC_057",
+    "module": "Left side fields",
+    "description": "Verify Delete icon functionality",
+    "steps": "1. Click the Delete icon.",
+    "testData": "Existing client",
+    "expectedResult": "Delete confirmation popup should be displayed.",
+    "actualResult": "Delete confirmation popup is displayed successfully."
+  },
+  "TC_058": {
+    "tcId": "TC_058",
+    "module": "Left side fields",
+    "description": "Verify client card alignment",
+    "steps": "1. Observe the client list layout.",
+    "testData": "",
+    "expectedResult": "Client cards and action icons should be properly aligned.",
+    "actualResult": "Client cards and action icons are properly aligned."
+  },
+  "TC_059": {
+    "tcId": "TC_059",
+    "module": "Left side fields",
+    "description": "Verify client list scrolling (if applicable)",
+    "steps": "1. Add multiple clients.\n2. Scroll through the list.",
+    "testData": "Multiple client records",
+    "expectedResult": "User should be able to scroll and access all client records.",
+    "actualResult": "Scrolling works correctly and all client records are accessible."
+  },
+  "TC_060": {
+    "tcId": "TC_060",
+    "module": "Left side fields",
+    "description": "Verify page responsiveness",
+    "steps": "1. Resize the browser window.",
+    "testData": "Different screen sizes",
+    "expectedResult": "All UI elements should remain accessible and properly aligned.",
+    "actualResult": "All UI elements remain accessible and properly aligned."
+  },
+  "TC_061": {
+    "tcId": "TC_061",
+    "module": "Left side fields",
+    "description": "Verify page loads without UI errors",
+    "steps": "1. Open the Clients page.\n2. Check UI behavior and browser console.",
+    "testData": "",
+    "expectedResult": "No UI errors or console errors should be displayed.",
+    "actualResult": "No UI errors or console errors were observed."
+  },
+  "TC_062": {
+    "tcId": "TC_062",
+    "module": "Left side fields",
+    "description": "Verify successful client creation",
+    "steps": "1. Open the Create Client popup.\n2. Enter valid values in Client Name, Domain, Client Type, and Registration ID fields.\n3. Click the Create Client button.",
+    "testData": "Client Name: Acme CorpDomain: acme.com Client Type: StandardRegistration ID: REG-123456",
+    "expectedResult": "The client should be created successfully and added to the Clients list.",
+    "actualResult": "The client was created successfully and displayed in the Clients list."
+  },
+  "TC_063": {
+    "tcId": "TC_063",
+    "module": "Left side fields",
+    "description": "Verify Performance Analytics page loads successfully",
+    "steps": "1. Navigate to the Performance Analytics page.",
+    "testData": "",
+    "expectedResult": "Performance Analytics page should load successfully with all charts and filters displayed.",
+    "actualResult": "The Document Types chart overlaps with the AI Extraction Accuracy section."
+  },
+  "TC_064": {
+    "tcId": "TC_064",
+    "module": "Left side fields",
+    "description": "Verify Organization filter functionality",
+    "steps": "1. Select an organization from the Organization dropdown.",
+    "testData": "Valid organization",
+    "expectedResult": "Analytics data should update based on the selected organization.",
+    "actualResult": "Analytics data updated correctly based on the selected organization."
+  },
+  "TC_065": {
+    "tcId": "TC_065",
+    "module": "Left side fields",
+    "description": "Verify Date Range filter functionality",
+    "steps": "1. Select a date range from the Date Range dropdown.",
+    "testData": "Last 7 Days",
+    "expectedResult": "Analytics data should refresh according to the selected date range.",
+    "actualResult": "Analytics data refreshed correctly according to the selected date range."
+  },
+  "TC_066": {
+    "tcId": "TC_066",
+    "module": "Left side fields",
+    "description": "Verify chart data updates after filter selection",
+    "steps": "1. Change the Organization or Date Range filter.",
+    "testData": "Valid filter values",
+    "expectedResult": "All charts should refresh with updated data.",
+    "actualResult": "All charts refreshed successfully with updated data."
+  },
+  "TC_067": {
+    "tcId": "TC_067",
+    "module": "Left side fields",
+    "description": "Verify page responsiveness",
+    "steps": "1. Resize the browser window.",
+    "testData": "Different screen sizes",
+    "expectedResult": "Charts and filters should remain properly aligned and accessible.",
+    "actualResult": "Charts and filters remained properly aligned and accessible."
+  },
+  "TC_068": {
+    "tcId": "TC_068",
+    "module": "Left side fields",
+    "description": "Verify setting field",
+    "steps": "1. Click on Settings",
+    "testData": "",
+    "expectedResult": "The list should display both Users and Organizations.",
+    "actualResult": "Both Users and Organizations are displayed correctly in the list."
+  },
+  "TC_069": {
+    "tcId": "TC_069",
+    "module": "Left side fields",
+    "description": "Verify Users page loads successfully",
+    "steps": "1. Navigate to the Users page.",
+    "testData": "",
+    "expectedResult": "Users page should load successfully and display the list of users.",
+    "actualResult": "Users page loaded successfully and displayed the list of users."
+  },
+  "TC_070": {
+    "tcId": "TC_070",
+    "module": "Left side fields",
+    "description": "Verify search user functionality",
+    "steps": "1. Enter a user name in the Search Users field.",
+    "testData": "Existing user name",
+    "expectedResult": "Matching user records should be displayed.",
+    "actualResult": "Matching user records are displayed correctly."
+  },
+  "TC_071": {
+    "tcId": "TC_071",
+    "module": "Left side fields",
+    "description": "Verify Add User button functionality",
+    "steps": "1. Click the Add User button.",
+    "testData": "",
+    "expectedResult": "Create User popup should open successfully.",
+    "actualResult": "Create User popup opened successfully."
+  },
+  "TC_072": {
+    "tcId": "TC_072",
+    "module": "Left side fields",
+    "description": "Verify user details display",
+    "steps": "1. Open the Users page.",
+    "testData": "Existing users",
+    "expectedResult": "User name, email, organization, and role should be displayed correctly.",
+    "actualResult": "User details are displayed correctly."
+  },
+  "TC_073": {
+    "tcId": "TC_073",
+    "module": "Left side fields",
+    "description": "Verify View icon functionality",
+    "steps": "1. Click the View icon for a user.",
+    "testData": "Existing user",
+    "expectedResult": "User details should be displayed successfully.",
+    "actualResult": "User details are displayed successfully."
+  },
+  "TC_074": {
+    "tcId": "TC_074",
+    "module": "Left side fields",
+    "description": "Verify Create User with valid data",
+    "steps": "1. Open Create User popup.\n2. Enter all required details.\n3. Click Create User.",
+    "testData": "Valid user details",
+    "expectedResult": "User should be created successfully and displayed in the users list.",
+    "actualResult": "User was created successfully and displayed in the users list."
+  },
+  "TC_075": {
+    "tcId": "TC_075",
+    "module": "Left side fields",
+    "description": "Verify mandatory field validation",
+    "steps": "1. Leave required fields empty.\n2. Click Create User.",
+    "testData": "Empty required fields",
+    "expectedResult": "Validation messages should be displayed for mandatory fields.",
+    "actualResult": "Validation messages are displayed correctly."
+  },
+  "TC_076": {
+    "tcId": "TC_076",
+    "module": "Left side fields",
+    "description": "Verify password reset email is sent after user creation",
+    "steps": "1. Create a new user.\n2. Complete the user creation process.",
+    "testData": "Valid user details",
+    "expectedResult": "A password reset email should be sent to the registered email address.",
+    "actualResult": "Password reset email was received at the registered email address."
+  },
+  "TC_077": {
+    "tcId": "TC_077",
+    "module": "Left side fields",
+    "description": "Verify password reset link functionality",
+    "steps": "1. Open the password reset email.\n2. Click the password reset link.",
+    "testData": "Valid reset email",
+    "expectedResult": "Password reset page should open successfully.",
+    "actualResult": "Password reset page opened successfully."
+  },
+  "TC_078": {
+    "tcId": "TC_078",
+    "module": "Left side fields",
+    "description": "Verify user can reset password successfully",
+    "steps": "1. Open the password reset page.\n2. Enter and confirm a new password.\n3. Click on reset form.",
+    "testData": "Valid password",
+    "expectedResult": "Password should be reset successfully and a confirmation message should be displayed.",
+    "actualResult": "Password was reset successfully and confirmation message was displayed."
+  },
+  "TC_079": {
+    "tcId": "TC_079",
+    "module": "Left side fields",
+    "description": "Verify login with newly created user credentials",
+    "steps": "1. Log out of the application.\n2. Navigate to the login page.\n3. Enter the created user's email and new password.\n4. Click Login.",
+    "testData": "Created user email and reset password",
+    "expectedResult": "User should be logged in successfully.",
+    "actualResult": "User logged in successfully with the new credentials."
+  },
+  "TC_080": {
+    "tcId": "TC_080",
+    "module": "Left side fields",
+    "description": "Verify logout functionality after login",
+    "steps": "1. Log in with the created user credentials.2. Click Logout.",
+    "testData": "Valid user account",
+    "expectedResult": "User should be logged out successfully and redirected to the login page.",
+    "actualResult": "User was logged out successfully and redirected to the login page."
+  },
+  "TC_081": {
+    "tcId": "TC_081",
+    "module": "Left side fields",
+    "description": "Verify re-login after logout",
+    "steps": "1. Log out from the application.\n2. Log in again using the same credentials.",
+    "testData": "Created user email and reset password",
+    "expectedResult": "User should be able to log in successfully after logout.",
+    "actualResult": "User logged in successfully after logout using the same credentials."
+  },
+  "TC_082": {
+    "tcId": "TC_082",
+    "module": "Left side fields",
+    "description": "Verify Role dropdown functionality",
+    "steps": "1. Open the Role dropdown.\n2. Select a role.",
+    "testData": "Admin / Viewer",
+    "expectedResult": "Selected role should be assigned to the user.",
+    "actualResult": "Selected role was assigned successfully."
+  },
+  "TC_083": {
+    "tcId": "TC_083",
+    "module": "Left side fields",
+    "description": "Verify popup close functionality",
+    "steps": "1. Click the Close (X) icon.",
+    "testData": "",
+    "expectedResult": "Create User popup should close successfully.",
+    "actualResult": "Create User popup closed successfully."
+  },
+  "TC_084": {
+    "tcId": "TC_084",
+    "module": "Left side fields",
+    "description": "Verify Organization Name field is displayed",
+    "steps": "1. Open Create Organization page.\n2. Locate Organization Name field.",
+    "testData": "Organization Name: Acme Corp",
+    "expectedResult": "Organization Name field is displayed with mandatory * indicator.",
+    "actualResult": "Organization Name field is displayed with the mandatory * indicator."
+  },
+  "TC_085": {
+    "tcId": "TC_085",
+    "module": "Left side fields",
+    "description": "Verify valid Organization Name can be entered",
+    "steps": "1. Click Organization Name field.\n2. Enter a valid organization name.",
+    "testData": "Acme Corp",
+    "expectedResult": "Organization name is accepted and displayed correctly.",
+    "actualResult": "Organization Name is accepted and displayed correctly."
+  },
+  "TC_086": {
+    "tcId": "TC_086",
+    "module": "Left side fields",
+    "description": "Verify Organization Name is mandatory",
+    "steps": "1. Leave Organization Name blank.\n2. Fill other mandatory fields.\n3. Observe the Create Organization button",
+    "testData": "",
+    "expectedResult": "Button should be disable.",
+    "actualResult": "Create Organization button remains disabled when the required fields are not completed."
+  },
+  "TC_087": {
+    "tcId": "TC_087",
+    "module": "Left side fields",
+    "description": "Verify Domain field is displayed",
+    "steps": "1. Open Create Organization page.\n2. Locate Domain field.",
+    "testData": "",
+    "expectedResult": "Domain field should display with mandatory * indicator.",
+    "actualResult": "Domain field is displayed with the mandatory * indicator."
+  },
+  "TC_088": {
+    "tcId": "TC_088",
+    "module": "Left side fields",
+    "description": "Verify valid Domain is accepted",
+    "steps": "1. Enter a valid domain.\n2. Proceed with organization creation.",
+    "testData": "",
+    "expectedResult": "Valid domain should accept without validation error.",
+    "actualResult": "Valid domain is accept without validation error."
+  },
+  "TC_089": {
+    "tcId": "TC_089",
+    "module": "Left side fields",
+    "description": "Verify invalid Domain validation",
+    "steps": "1. Enter an invalid domain.\n2. Attempt to create organization.",
+    "testData": "enter : @",
+    "expectedResult": "Appropriate domain validation should display and organization should not create.",
+    "actualResult": "Appropriate domain validation should display and organization is not created."
+  },
+  "TC_090": {
+    "tcId": "TC_090",
+    "module": "Left side fields",
+    "description": "Verify Document Type options are displayed",
+    "steps": "1. Open Create Organization page.\n2. Locate Select Document Type section.",
+    "testData": "N/A",
+    "expectedResult": "PURCHASE_ORDER, QUOTE_REQUEST, and PO-ACK RECON options should display with checkboxes.",
+    "actualResult": "PURCHASE_ORDER, QUOTE_REQUEST, and PO-ACK RECON options is display with checkboxes."
+  },
+  "TC_091": {
+    "tcId": "TC_091",
+    "module": "Left side fields",
+    "description": "Verify multiple Document Types can be selected",
+    "steps": "1. Select PURCHASE_ORDER.\n2. Select QUOTE_REQUEST.\n3. Select PO-ACK RECON.",
+    "testData": "All three options",
+    "expectedResult": "Multiple document types can be selected simultaneously.",
+    "actualResult": "Working as expected."
+  },
+  "TC_092": {
+    "tcId": "TC_092",
+    "module": "Left side fields",
+    "description": "Verify Document Type can be deselected",
+    "steps": "1. Select a document type.\n2. Click the same checkbox again.",
+    "testData": "PURCHASE_ORDER",
+    "expectedResult": "Previously selected document type should deselect.",
+    "actualResult": "Previously selected document type is deselected."
+  },
+  "TC_093": {
+    "tcId": "TC_093",
+    "module": "Left side fields",
+    "description": "Verify Document Type is mandatory",
+    "steps": "1. Leave all document types unchecked.\n2. Fill other mandatory fields.\n3. Click Create Organization.",
+    "testData": "No document type selected",
+    "expectedResult": "Validation message should display and organization is not created.",
+    "actualResult": "Validation message is displayed and organization is not created."
+  },
+  "TC_094": {
+    "tcId": "TC_094",
+    "module": "Left side fields",
+    "description": "Verify Direct Estimate Creation toggle",
+    "steps": "1. Locate Direct Estimate Creation toggle.",
+    "testData": "",
+    "expectedResult": "Toggle should be defaut OFF state.",
+    "actualResult": "Toggle defaut OFF state as expect."
+  },
+  "TC_095": {
+    "tcId": "TC_095",
+    "module": "Left side fields",
+    "description": "Verify Direct Estimate Creation can be disabled",
+    "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
+    "testData": "Toggle: ON \u2192 OFF",
+    "expectedResult": "Toggle should returns to disabled state.",
+    "actualResult": "Toggle returns to disabled state."
+  },
+  "TC_096": {
+    "tcId": "TC_096",
+    "module": "Left side fields",
+    "description": "Verify Life Line Tracking toggle",
+    "steps": "1. Locate Life Line Tracking toggle.",
+    "testData": "",
+    "expectedResult": "Toggle should be defaut ON state.",
+    "actualResult": "Toggle defaut ON state as expect."
+  },
+  "TC_097": {
+    "tcId": "TC_097",
+    "module": "Left side fields",
+    "description": "Verify Life Line Traking can be disabled",
+    "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
+    "testData": "Toggle: ON \u2192 OFF",
+    "expectedResult": "Toggle should returns to disabled state.",
+    "actualResult": "Toggle returns to disabled state."
+  },
+  "TC_098": {
+    "tcId": "TC_098",
+    "module": "Left side fields",
+    "description": "Verify the UI Changes when the Life Line Tracking toggle is ON for Existing Organization.",
+    "steps": "1. Naviage to the Organization page.\n2. Click on edit icon.\n3. Observe the UI when toggle is ON.",
+    "testData": "Toggle: ON",
+    "expectedResult": "subscription plan should visible.",
+    "actualResult": "displayed Subscription plan."
+  },
+  "TC_099": {
+    "tcId": "TC_099",
+    "module": "Left side fields",
+    "description": "Verify the UI Changes when the Life Line Tracking toggle is OFF for Existing Organization.",
+    "steps": "1. Naviage to the Organization page.\n2. Click on edit icon.\n3. Observe the UI when toggle is ON.\n4. Click on Edit button.\n5. Turn the toggle is OFF.\n6. Click on Save button.\n7. Observe the UI when toggle is OFF.",
+    "testData": "Toggle: OFF",
+    "expectedResult": "subscription plan should Hide.",
+    "actualResult": "Not displayed Subscription plan."
+  },
+  "TC_100": {
+    "tcId": "TC_100",
+    "module": "Left side fields",
+    "description": "Verify Starter subscription is displayed",
+    "steps": "1. Open subscription section.",
+    "testData": "N/A",
+    "expectedResult": "STARTER plan should displayed with price $799.00/month.",
+    "actualResult": "STARTER plan is displayed with price $799.00/month."
+  },
+  "TC_101": {
+    "tcId": "TC_101",
+    "module": "Left side fields",
+    "description": "Verify Enterprise subscription is displayed",
+    "steps": "1. Open subscription section.",
+    "testData": "N/A",
+    "expectedResult": "ENTERPRISE plan should displayed with price $1499.00/month.",
+    "actualResult": "ENTERPRISE plan is displayed with price $1499.00/month."
+  },
+  "TC_102": {
+    "tcId": "TC_102",
+    "module": "Left side fields",
+    "description": "Verify subscription plan can be selected",
+    "steps": "1. Click STARTER subscription card.\n2. Observe selection state.",
+    "testData": "STARTER",
+    "expectedResult": "STARTER plan should selected/highlighted.",
+    "actualResult": "STARTER plan becomes selected/highlighted."
+  },
+  "TC_103": {
+    "tcId": "TC_103",
+    "module": "Left side fields",
+    "description": "Verify only one subscription plan can be selected",
+    "steps": "1. Select STARTER.\n2. Select ENTERPRISE.",
+    "testData": "STARTER, ENTERPRISE",
+    "expectedResult": "ENTERPRISE should selected and STARTER is deselected, if subscription is single-select.",
+    "actualResult": "ENTERPRISE becomes selected and STARTER is deselected, if subscription is single-select."
+  },
+  "TC_104": {
+    "tcId": "TC_104",
+    "module": "Left side fields",
+    "description": "Verify Starter plan document limit",
+    "steps": "1. Review STARTER subscription details.",
+    "testData": "N/A",
+    "expectedResult": "UI displays up to 300 documents/month and $6/document overage.",
+    "actualResult": ""
+  },
+  "TC_105": {
+    "tcId": "TC_105",
+    "module": "Left side fields",
+    "description": "Verify Enterprise plan includes SIF",
+    "steps": "1. Review ENTERPRISE plan Includes section.",
+    "testData": "N/A",
+    "expectedResult": "Enterprise plan should display SIF in addition to the listed supported document formats/features.",
+    "actualResult": "Enterprise plan displays SIF in addition to the listed supported document formats/features."
+  },
+  "TC_106": {
+    "tcId": "TC_106",
+    "module": "Left side fields",
+    "description": "Verify Custom Docs section is displayed",
+    "steps": "1. Scroll below subscription plans.",
+    "testData": "N/A",
+    "expectedResult": "Custom Docs section should display as optional.",
+    "actualResult": "Custom Docs section is displayed as optional."
+  },
+  "TC_107": {
+    "tcId": "TC_107",
+    "module": "Left side fields",
+    "description": "Verify Address File upload accepts supported formats",
+    "steps": "1. Locate Address File upload area.\n2. Click Browse.\n3. Upload supported file.",
+    "testData": "addresses.xlsx",
+    "expectedResult": "Supported .json, .xls, and .xlsx files are accepted.",
+    "actualResult": "Working as expected."
+  },
+  "TC_108": {
+    "tcId": "TC_108",
+    "module": "Left side fields",
+    "description": "Verify Custom Docs uploads are optional",
+    "steps": "1. Fill all mandatory fields.\n2. Do not upload Address File or Product Codes File.\n3. Click Create Organization.",
+    "testData": "Valid mandatory data",
+    "expectedResult": "Organization should be creat without optional custom documents.",
+    "actualResult": "Organization can be created without optional custom documents."
+  },
+  "TC_109": {
+    "tcId": "TC_109",
+    "module": "Left side fields",
+    "description": "Verify Create Organization button is displayed",
+    "steps": "1. Scroll to bottom of the form.",
+    "testData": "N/A",
+    "expectedResult": "Create Organization button should visible and accessible.",
+    "actualResult": "Create Organization button is visible and accessible."
+  },
+  "TC_110": {
+    "tcId": "TC_110",
+    "module": "Left side fields",
+    "description": "Verify successful organization creation with valid data",
+    "steps": "1. Enter valid Organization Name.\n2. Enter valid Domain.\n3. Select document type(s).\n4. Select subscription.\n5. Click Create Organization.",
+    "testData": "Acme Corp\nacme.com\nPURCHASE_ORDER\nSTARTER",
+    "expectedResult": "Organization should successfully create and appropriate success confirmation/next page should displayed.",
+    "actualResult": "Organization is successfully created and appropriate success confirmation/next page is displayed."
+  },
+  "TC_111": {
+    "tcId": "TC_111",
+    "module": "Left side fields",
+    "description": "Verify Create Organization button prevents duplicate submissions",
+    "steps": "1. Fill all mandatory fields.\n2. Click Create Organization multiple times quickly.",
+    "testData": "Valid organization data",
+    "expectedResult": "Only one organization creation request should processed.",
+    "actualResult": "Only one organization creation request is processed."
+  },
+  "TC_112": {
+    "tcId": "TC_112",
+    "module": "Left side fields",
+    "description": "Verify special characters in Organization Name",
+    "steps": "1. Enter organization name containing supported special characters.2. Submit form.",
+    "testData": "Acme & Co. Pvt. Ltd.",
+    "expectedResult": "Application handles the value according to the allowed character rules without UI issues.",
+    "actualResult": "Organization Name containing allowed special characters is accepted and handled without any UI issues."
+  },
+  "TC_113": {
+    "tcId": "TC_113",
+    "module": "Left side fields",
+    "description": "Verify subscription is mandatory",
+    "steps": "1. Fill Organization Name, Domain, and Document Type.<br>2. Do not select a subscription.<br>3. Click Create Organization.",
+    "testData": "Valid mandatory fields, no subscription",
+    "expectedResult": "Validation should display for subscription selection and organization is not created.",
+    "actualResult": "Validation is displayed for subscription selection and organization is not created."
+  },
+  "TC_114": {
+    "tcId": "TC_114",
+    "module": "Left side fields",
+    "description": "Verify page scrolling and bottom controls",
+    "steps": "1. Open the page.\n2. Scroll from top to bottom.",
+    "testData": "",
+    "expectedResult": "All sections are accessible, including Custom Docs and Create Organization button, without layout overlap or clipping.",
+    "actualResult": ""
+  },
+  "TC_115": {
+    "tcId": "TC_115",
+    "module": "Left side fields",
+    "description": "Verify Search with invalid organization name",
+    "steps": "1. Enter a non-existing organization name.",
+    "testData": "ABC123",
+    "expectedResult": "No matching records should be displayed.",
+    "actualResult": "No records were displayed for the invalid search term."
+  },
+  "TC_116": {
+    "tcId": "TC_116",
+    "module": "Left side fields",
+    "description": "Verify All tab",
+    "steps": "1. Click All tab.",
+    "testData": "",
+    "expectedResult": "All organizations should be displayed.",
+    "actualResult": "All available organizations were displayed successfully."
+  },
+  "TC_117": {
+    "tcId": "TC_117",
+    "module": "Left side fields",
+    "description": "Verify Active tab",
+    "steps": "1. Click Active tab.",
+    "testData": "Active organizations",
+    "expectedResult": "Only active organizations should be displayed.",
+    "actualResult": "Only organizations with Active status were displayed."
+  },
+  "TC_118": {
+    "tcId": "TC_118",
+    "module": "Left side fields",
+    "description": "Verify Inactive tab",
+    "steps": "1. Click Inactive tab.",
+    "testData": "Inactive organizations",
+    "expectedResult": "Only inactive organizations should be displayed.",
+    "actualResult": "Only organizations with Inactive status were displayed."
+  },
+  "TC_119": {
+    "tcId": "TC_119",
+    "module": "Left side fields",
+    "description": "Verify View Organization details",
+    "steps": "1. Click the View (Eye) icon.",
+    "testData": "Corpdesign",
+    "expectedResult": "Organization details page should open.",
+    "actualResult": "The organization details page opened successfully upon clicking the View icon."
+  },
+  "TC_120": {
+    "tcId": "TC_120",
+    "module": "Left side fields",
+    "description": "Verify Delete Organization",
+    "steps": "1. Click the Delete icon.",
+    "testData": "Corpdesign",
+    "expectedResult": "Confirmation popup should be displayed.",
+    "actualResult": "The delete confirmation popup was displayed successfully."
+  },
+  "TC_121": {
+    "tcId": "TC_121",
+    "module": "Left side fields",
+    "description": "Verify Organization deletion",
+    "steps": "1.Confirm deletion.",
+    "testData": "Corpdesign",
+    "expectedResult": "Organization should be removed from the list.",
+    "actualResult": "The organization was deleted successfully and removed from the list."
+  },
+  "TC_122": {
+    "tcId": "TC_122",
+    "module": "Left side fields",
+    "description": "Verify cancellation of deletion",
+    "steps": "1.Click Delete and then Cancel.",
+    "testData": "Corpdesign",
+    "expectedResult": "Organization should remain in the list.",
+    "actualResult": "The organization remained in the list after cancelling the deletion."
+  },
+  "TC_123": {
+    "tcId": "TC_123",
+    "module": "Left side fields",
+    "description": "Verify Organization Name display",
+    "steps": "1. Observe organization names in the list.",
+    "testData": "",
+    "expectedResult": "Correct organization names should be displayed.",
+    "actualResult": "All organization names were displayed correctly."
+  },
+  "TC_124": {
+    "tcId": "TC_124",
+    "module": "Left side fields",
+    "description": "Verify Domain display",
+    "steps": "1. Observe domain values.",
+    "testData": "",
+    "expectedResult": "Correct domain names should be displayed.",
+    "actualResult": "All domain names were displayed correctly."
+  },
+  "TC_125": {
+    "tcId": "TC_125",
+    "module": "Left side fields",
+    "description": "Verify Document Usage display",
+    "steps": "1. Observe document usage count.",
+    "testData": "26/300",
+    "expectedResult": "Correct usage and limit should be displayed.",
+    "actualResult": "The document usage count and quota limit were displayed accurately."
+  },
+  "TC_126": {
+    "tcId": "TC_126",
+    "module": "Left side fields",
+    "description": "Verify Status display",
+    "steps": "1. Observe organization status.",
+    "testData": "Active",
+    "expectedResult": "Correct status badge should be displayed.",
+    "actualResult": "The appropriate status badge was displayed for each organization."
+  },
+  "TC_127": {
+    "tcId": "TC_127",
+    "module": "Left side fields",
+    "description": "Verify organization list refresh",
+    "steps": "1. Refresh the page.",
+    "testData": "",
+    "expectedResult": "Organization list should load correctly without data loss.",
+    "actualResult": "The organization list loaded successfully after refresh without any data loss."
+  },
+  "TC_128": {
+    "tcId": "TC_128",
+    "module": "Left side fields",
+    "description": "Verify Edit button functionality",
+    "steps": "1. Open Organization Details page. \n2. Click the Edit button.",
+    "testData": "Existing Organization",
+    "expectedResult": "All editable fields except plan, Expires At, Last Payment, Created at, Updated at) should become enabled for modification.",
+    "actualResult": "Without click on edit icon Paynow, Billhistory, Upload custom Documents field enabled."
+  },
+  "TC_129": {
+    "tcId": "TC_129",
+    "module": "Left side fields",
+    "description": "Verify Save button functionality",
+    "steps": "1. Open Organization Details page.\n2. Click on Edit button.\n3. edit the existing data.\n4. Click on the Save button.",
+    "testData": "Existing Organization",
+    "expectedResult": "Edited data should be Updated.",
+    "actualResult": "New data updated successfully."
+  },
+  "TC_130": {
+    "tcId": "TC_130",
+    "module": "Left side fields",
+    "description": "Verify Delete button functionality",
+    "steps": "1. Open Organization Details page. \n2. Click the Delete button. \n3. Confirm deletion in the popup.",
+    "testData": "Existing Organization",
+    "expectedResult": "The organization should be deleted successfully and removed from the organization list.",
+    "actualResult": "The organization deleted successfully."
+  },
+  "TC_131": {
+    "tcId": "TC_131",
+    "module": "Left side fields",
+    "description": "Verify Pay Now button functionality",
+    "steps": "1. Open Organization Details page. \n2. Click Pay Now button.",
+    "testData": "",
+    "expectedResult": "Payment details should be displayed.",
+    "actualResult": "Payment details displayed successfully."
+  },
+  "TC_132": {
+    "tcId": "TC_132",
+    "module": "Left side fields",
+    "description": "Validate Payment confirmed popup",
+    "steps": "1. Open Organization Details page. \n2. Click Pay Now button.\n3. Update all the valid data in the details.\n4. Click on payment.\n5. Observe the System behaviour.",
+    "testData": "",
+    "expectedResult": "Payment Confirmed popup should display for 5 seconds.",
+    "actualResult": "Payment confirmed popup stayed for longtime in the same page."
+  },
+  "TC_133": {
+    "tcId": "TC_133",
+    "module": "Left side fields",
+    "description": "Verify Bill History button",
+    "steps": "1. Open Organization Details page. \n2. Click Bill History button.",
+    "testData": "Existing invoices",
+    "expectedResult": "Billing history should be displayed.",
+    "actualResult": "Billing history displayed."
+  },
+  "TC_134": {
+    "tcId": "TC_134",
+    "module": "Left side fields",
+    "description": "Verify Upload Custom Documents",
+    "steps": "1. Open Organization Details page. \n2. Click Upload Custom Docs. \n3. Select a valid PDF file. \n4. Upload the file.",
+    "testData": "Quote_Template.pdf",
+    "expectedResult": "File should be uploaded successfully and displayed immediately.",
+    "actualResult": "Uploaded document updated instantly."
+  },
+  "TC_135": {
+    "tcId": "TC_135",
+    "module": "Left side fields",
+    "description": "Verify multiple upload custom Documents",
+    "steps": "1. Open Organization Details page. \n2. Click Upload Custom Docs. \n3. Select Multiple PDF file.",
+    "testData": "Quote_Template.pdf",
+    "expectedResult": "System should not allow user to select multle files.",
+    "actualResult": "User can able to select single file."
+  },
+  "TC_136": {
+    "tcId": "TC_136",
+    "module": "Left side fields",
+    "description": "Verify overwriting an existing uploaded file",
+    "steps": "1. Open the Organization Details page. \n2. Upload a custom document (File_A.pdf). \n3. Save the changes. \n4. Upload another document with the same name.\n 5. Save the changes.",
+    "testData": "Existing File: File_A.pdf, New File: File_A.pdf (updated version)",
+    "expectedResult": "The existing file should be replaced with the newly uploaded file, and only the latest version should be displayed in the Custom Documents section.",
+    "actualResult": "The new file replaced with the existing file."
+  },
+  "TC_137": {
+    "tcId": "TC_137",
+    "module": "Left side fields",
+    "description": "Verify upload without Edit mode",
+    "steps": "1. Open Organization Details page. 2. Do not click Edit. 3. Attempt to upload a custom document.",
+    "testData": "Quote.pdf",
+    "expectedResult": "System should not allow document upload.",
+    "actualResult": "System allows document upload without enabling Edit mode."
+  },
+  "TC_138": {
+    "tcId": "TC_138",
+    "module": "Left side fields",
+    "description": "Verify Custom Documents section when no files are uploaded",
+    "steps": "1. Create a new organization without uploading any documents. \n2. Open Edit Organization page.",
+    "testData": "New Organization",
+    "expectedResult": "Custom Documents section should be empty.",
+    "actualResult": "Section looks like having documents with the delete icon."
+  },
+  "TC_139": {
+    "tcId": "TC_139",
+    "module": "Left side fields",
+    "description": "Verify at least one Document Type must remain selected",
+    "steps": "1. Open the Organization Details page. \n2. Click Edit. \n3. Deselect Quote Request. \n4. Deselect Purchase Order. \n5. Save the changes.",
+    "testData": "Enabled Document Types: Quote Request, Purchase Order",
+    "expectedResult": "The system should not allow all document types to be deselected. At least one document type must remain selected, and an appropriate validation message should be displayed.",
+    "actualResult": "The system prevented deselecting all document types and ensured that at least one document type remained selected."
+  },
+  "TC_140": {
+    "tcId": "TC_140",
+    "module": "Left side fields",
+    "description": "Verify Delete icon for non-existing documents",
+    "steps": "1. Create an organization without uploading documents. 2. Open Edit Organization page. 3. Check Custom Documents section.",
+    "testData": "New Organization",
+    "expectedResult": "Delete icon should not be displayed.",
+    "actualResult": "Delete icon is displayed and opens confirmation popup."
+  },
+  "TC_141": {
+    "tcId": "TC_141",
+    "module": "Left side fields",
+    "description": "Verify Add User functionality",
+    "steps": "1. Open Organization Details page. \n2. Click Add User. \n3. Enter user details. \n4. Save.",
+    "testData": "Name: Test User, Email: testuser@gmail.com, Role: Viewer",
+    "expectedResult": "User should be added successfully.",
+    "actualResult": "User added successfully."
+  },
+  "TC_142": {
+    "tcId": "TC_142",
+    "module": "Left side fields",
+    "description": "Verify Search User functionality",
+    "steps": "1. Enter a username in the search box.",
+    "testData": "Divya",
+    "expectedResult": "Matching user should be displayed.",
+    "actualResult": "matching user displayed"
+  },
+  "TC_143": {
+    "tcId": "TC_143",
+    "module": "Left side fields",
+    "description": "Verify Edit User functionality",
+    "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
+    "testData": "Viewer \u2192 Admin",
+    "expectedResult": "User role should be updated successfully.",
+    "actualResult": "User role updated successfully"
+  },
+  "TC_144": {
+    "tcId": "TC_144",
+    "module": "Left side fields",
+    "description": "Verify Delete User functionality",
+    "steps": "1. Click Delete icon for a user. \n2. Confirm deletion.",
+    "testData": "",
+    "expectedResult": "User should be removed successfully.",
+    "actualResult": "User removed Successfully"
+  },
+  "TC_145": {
+    "tcId": "TC_145",
+    "module": "Left side fields",
+    "description": "Verify Organization Details update",
+    "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
+    "testData": "Corpdesign \u2192 Corpdesign QA",
+    "expectedResult": "Updated organization details should be displayed.",
+    "actualResult": "Updated organization details successfully"
+  },
+  "TC_146": {
+    "tcId": "TC_146",
+    "module": "Left side fields",
+    "description": "Verify Direct Estimate Creation toggle",
+    "steps": "1. Enable/Disable the toggle. \n2. Save changes if applicable.",
+    "testData": "ON/OFF",
+    "expectedResult": "Toggle state should be saved successfully.",
+    "actualResult": "Toggle state saved"
+  },
+  "TC_147": {
+    "tcId": "TC_147",
+    "module": "Left side fields",
+    "description": "Verify Document Quota display",
+    "steps": "1. Open Subscription section.",
+    "testData": "Monthly Limit: 300",
+    "expectedResult": "Correct quota and usage should be displayed.",
+    "actualResult": "Correct quota and usage displayed."
+  },
+  "TC_148": {
+    "tcId": "TC_148",
+    "module": "Left side fields",
+    "description": "Verify Unauthorized Access",
+    "steps": "1. Login as Viewer user. \n2. Open Organization Details page.",
+    "testData": "Viewer User",
+    "expectedResult": "Edit/Delete actions should be restricted.",
+    "actualResult": "Edit/Delete actions restricted."
+  },
+  "TC_149": {
+    "tcId": "TC_149",
+    "module": "Left side fields",
+    "description": "Verify page refresh retains data",
+    "steps": "1. Open Organization Details page. \n2. Refresh the browser.",
+    "testData": "Existing Organization",
+    "expectedResult": "All organization data should remain unchanged.",
+    "actualResult": "All organization data remain unchanged."
+  }
+}

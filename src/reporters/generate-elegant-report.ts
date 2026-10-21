@@ -56,6 +56,11 @@ interface ProcessedTestCase {
   durationMs: number;
   error?: string;
   errorStack?: string;
+  description: string;
+  plainSteps: string;
+  testData: string;
+  expectedResult: string;
+  actualResult: string;
   steps: Array<{ title: string; durationMs: number; ok: boolean }>;
   media: MediaItem[];
 }
@@ -83,6 +88,157 @@ function escapeHtml(str: string | undefined | null): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// Load master test case catalog
+const catalogPath = path.resolve(__dirname, '../test-data/test-catalog-metadata.json');
+let testCatalog: Record<string, any> = {};
+if (fs.existsSync(catalogPath)) {
+  try {
+    testCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+    console.log(`[ElegantReport] Loaded ${Object.keys(testCatalog).length} test cases from catalog metadata.`);
+  } catch (err: any) {
+    console.warn('[ElegantReport] Could not load test catalog metadata:', err.message);
+  }
+}
+
+// Format test steps cleanly into HTML list
+function formatPlainStepsHtml(rawSteps: string): string {
+  if (!rawSteps || !rawSteps.trim()) {
+    return '<p class="plain-step-fallback">1. Execute test workflow and verify application response.</p>';
+  }
+  const lines = rawSteps
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
+
+  let html = '<ol class="plain-steps-list">';
+  for (const line of lines) {
+    const cleanText = line.replace(/^(?:\d+[\.\)]|\-|\*|•)\s*/, '').trim();
+    if (cleanText) {
+      html += `<li><span class="step-text">${escapeHtml(cleanText)}</span></li>`;
+    }
+  }
+  html += '</ol>';
+  return html;
+}
+
+// Categorize raw technical error into clear, non-technical plain English
+function getPlainEnglishFailure(tcId: string, rawError: string, expectedText: string): string {
+  const lower = (rawError || '').toLowerCase();
+
+  if (lower.includes('beforeall') && lower.includes('timeout')) {
+    return 'Setup Timed Out: Inbound mail service / SMTP connection setup did not complete within the allotted timeout (45-90s limit).';
+  }
+  if (lower.includes('hook timeout') || lower.includes('beforeeach')) {
+    return 'Setup Hook Timed Out: The test initialization hook took longer than expected and exceeded the timeout threshold.';
+  }
+  if (lower.includes('tobetruthy') && (lower.includes('visibleprojectnames') || lower.includes('searchproject') || tcId.includes('RECON'))) {
+    return 'Project Not Found: The newly created project was not displayed or visible in the PO-ACK Reconciliation projects table after creation.';
+  }
+  if (lower.includes('tocontain') && (tcId.includes('RECON_020') || lower.includes('project'))) {
+    return 'Sorting Verification Failed: The newly created project did not appear at the top of the project list table.';
+  }
+  if (lower.includes('tobetruthy') || lower.includes('received: false')) {
+    return 'Assertion Failed: The expected UI component, project record, or confirmation state was not met (evaluated to false).';
+  }
+  if (lower.includes('tocontain')) {
+    return 'Content Mismatch: The expected text, project name, or data was not found in the target UI element or table row.';
+  }
+  if (lower.includes('tobevisible') || lower.includes('waiting for locator')) {
+    return 'Element Not Visible: The expected UI component, button, or modal dialog was not rendered on screen within the timeout.';
+  }
+  if (lower.includes('tobedisabled') || lower.includes('tobeenabled')) {
+    return 'State Mismatch: Interactive control (button/input) was not in the expected enabled or disabled state.';
+  }
+  if (lower.includes('tohavetext') || lower.includes('tohavevalue')) {
+    return 'Value Mismatch: The displayed field value or label did not match the expected value.';
+  }
+  if (lower.includes('timeout') || lower.includes('timed out')) {
+    return 'Execution Timeout: The application or server took longer to respond than the configured waiting threshold.';
+  }
+  if (lower.includes('500') || lower.includes('internal server error')) {
+    return 'Backend Server Error: The server returned an HTTP 500 error while processing the request.';
+  }
+  if (lower.includes('401') || lower.includes('403') || lower.includes('unauthorized')) {
+    return 'Authentication Error: Operation was blocked due to expired session or insufficient permissions.';
+  }
+
+  return 'Verification Failed: System outcome did not match acceptance criteria during execution.';
+}
+
+// Formulate plain English actual result
+function formulateActualResult(
+  status: 'passed' | 'failed' | 'skipped' | 'flaky',
+  tcId: string,
+  errorReason: string | undefined,
+  expectedResult: string
+): string {
+  if (status === 'passed') {
+    return 'All verification checkpoints passed successfully. The application interface and backend state behaved exactly as expected.';
+  }
+  if (status === 'flaky') {
+    return 'Passed on retry: The test encountered an initial transient delay, but succeeded on retry.';
+  }
+  if (status === 'skipped') {
+    return 'Test execution skipped: Preconditions or target document types were not enabled for this test iteration.';
+  }
+  return getPlainEnglishFailure(tcId, errorReason || '', expectedResult);
+}
+
+// Lookup catalog metadata with fuzzy matching and title fallback
+function lookupCatalog(tcId: string, title: string): {
+  description: string;
+  steps: string;
+  testData: string;
+  expectedResult: string;
+} {
+  // 1. Direct match
+  if (testCatalog[tcId]) {
+    const entry = testCatalog[tcId];
+    return {
+      description: entry.description || title,
+      steps: entry.steps || '',
+      testData: entry.testData || '',
+      expectedResult: entry.expectedResult || '',
+    };
+  }
+
+  // 2. Normalized match (dashes, spaces, underscores)
+  const normId = tcId.replace(/[- ]/g, '_').toUpperCase();
+  for (const [k, v] of Object.entries(testCatalog)) {
+    const kNorm = k.replace(/[- ]/g, '_').toUpperCase();
+    if (kNorm === normId || kNorm.replace(/_/g, '') === normId.replace(/_/g, '')) {
+      return {
+        description: v.description || title,
+        steps: v.steps || '',
+        testData: v.testData || '',
+        expectedResult: v.expectedResult || '',
+      };
+    }
+  }
+
+  // 3. Match by description/title text
+  const cleanTitle = title.replace(/^TC[_-]?[A-Za-z0-9_ -]+?:\s*/i, '').trim().toLowerCase();
+  for (const [k, v] of Object.entries(testCatalog)) {
+    if (v.description && v.description.toLowerCase().trim() === cleanTitle) {
+      return {
+        description: v.description,
+        steps: v.steps || '',
+        testData: v.testData || '',
+        expectedResult: v.expectedResult || '',
+      };
+    }
+  }
+
+  // 4. Intelligent fallback based on title
+  const pureTitle = title.replace(/^TC[_-]?[A-Za-z0-9_ -]+?:\s*/i, '').trim();
+  return {
+    description: pureTitle,
+    steps: `1. Authenticate to RiverStream application with valid credentials.\n2. Navigate to target module/screen.\n3. Execute test verification actions for: ${pureTitle}.\n4. Verify application behavior and state.`,
+    testData: 'Standard RiverStream environment configuration and user credentials',
+    expectedResult: `System should successfully verify and complete: ${pureTitle}, without throwing errors.`,
+  };
 }
 
 // Module mapping helper
@@ -301,9 +457,13 @@ export function generateElegantReport(
       steps.push({ title: 'After Hooks & Teardown', durationMs: 50, ok: true });
     }
 
+    const extractedTcId = extractTcId(spec.title);
+    const catData = lookupCatalog(extractedTcId, spec.title);
+    const actualResult = formulateActualResult(status, extractedTcId, errorReason, catData.expectedResult);
+
     processedCases.push({
       id: `case_${idx}`,
-      tcId: extractTcId(spec.title),
+      tcId: extractedTcId,
       title: spec.title,
       moduleKey: modInfo.key,
       moduleName: modInfo.name,
@@ -313,6 +473,11 @@ export function generateElegantReport(
       durationMs,
       error: errorReason,
       errorStack,
+      description: catData.description,
+      plainSteps: catData.steps,
+      testData: catData.testData,
+      expectedResult: catData.expectedResult,
+      actualResult,
       steps,
       media,
     });
@@ -952,25 +1117,224 @@ export function generateElegantReport(
     }
 
     .details-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    /* Failure Callout */
-    .failure-box {
-      background: rgba(239, 68, 68, 0.08);
+    /* Test Case Objective Bar */
+    .tc-objective-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+    }
+    .tc-objective-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 250px;
+    }
+    .tc-badge-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      border-radius: 4px;
+    }
+    .tc-desc-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f1f5f9;
+      line-height: 1.4;
+    }
+    .tc-data-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 5px 10px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 6px;
+      color: #a5f3fc;
+      max-width: 100%;
+      word-break: break-all;
+    }
+    .tc-data-label {
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #38bdf8;
+    }
+    .tc-data-val {
+      font-family: 'JetBrains Mono', monospace;
+      color: #e0f2fe;
+    }
+
+    /* Expected vs. Actual Results Comparison Grid */
+    .results-comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .result-card {
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .result-card.expected-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.04) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .result-card.actual-box.passed {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.04) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .result-card.actual-box.failed {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(185, 28, 28, 0.06) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+    }
+    .result-card.actual-box.skipped {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .result-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-card.expected-box .result-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #34d399;
+    }
+    .result-card.actual-box.passed .result-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #34d399;
+    }
+    .result-card.actual-box.failed .result-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #f87171;
+    }
+    .result-card.actual-box.skipped .result-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #fbbf24;
+    }
+    .result-card-body {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+    .result-card.actual-box.failed .result-card-body {
+      color: #fecaca;
+      font-weight: 600;
+    }
+
+    /* Plain English Steps List */
+    .plain-steps-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .plain-steps-box h4 {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .plain-steps-list {
+      margin: 0;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .plain-steps-list li {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+    .plain-steps-list li::marker {
+      color: #818cf8;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .plain-step-fallback {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Developer Diagnostics Collapsible Details */
+    .dev-diagnostics-details {
+      margin-top: 4px;
       border: 1px solid rgba(239, 68, 68, 0.3);
       border-radius: 8px;
-      padding: 16px;
+      background: rgba(15, 23, 42, 0.6);
+      overflow: hidden;
+    }
+    .dev-diagnostics-summary {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+    .dev-diagnostics-summary:hover {
+      background: rgba(239, 68, 68, 0.14);
+    }
+    .dev-summary-hint {
+      font-size: 11px;
+      font-weight: 500;
+      color: #fca5a5;
+      opacity: 0.8;
+    }
+    .failure-box {
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.3);
     }
     .failure-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
-      color: #f87171;
+      color: #fca5a5;
       margin-bottom: 8px;
     }
     .copy-btn {
@@ -994,38 +1358,55 @@ export function generateElegantReport(
       line-height: 1.5;
       max-height: 250px;
       overflow-y: auto;
+      margin: 0;
     }
 
-    /* Steps List */
-    .steps-box h4 {
+    /* Playwright Step Timings Collapsible Details */
+    .pw-steps-details {
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.4);
+      overflow: hidden;
+    }
+    .pw-steps-summary {
+      padding: 9px 14px;
+      cursor: pointer;
       font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
-      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .pw-steps-summary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
     }
     .steps-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
+      padding: 10px 14px;
+      margin: 0;
     }
     .step-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 6px;
-      font-size: 13px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 4px;
+      font-size: 12px;
     }
     .step-left {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .step-icon { font-size: 13px; }
+    .step-icon { font-size: 12px; }
     .step-icon.ok { color: #10b981; }
     .step-icon.fail { color: #ef4444; }
     .step-dur {
@@ -1309,18 +1690,75 @@ export function generateElegantReport(
 
             <div class="test-card-details">
               <div class="details-grid">
-                ${tc.error ? `
-                  <div class="failure-box">
-                    <div class="failure-header">
-                      <span>Assertion / Error Diagnostic:</span>
-                      <button class="copy-btn">Copy Stack</button>
-                    </div>
-                    <pre class="error-stack">${escapeHtml(tc.errorStack || tc.error)}</pre>
+                
+                <!-- 1. Executive Objective & Test Data Bar -->
+                <div class="tc-objective-bar">
+                  <div class="tc-objective-title">
+                    <span class="tc-badge-id">${escapeHtml(tc.tcId)}</span>
+                    <span class="tc-desc-text">${escapeHtml(tc.description || tc.title)}</span>
                   </div>
+                  ${tc.testData && tc.testData !== '-' ? `
+                    <div class="tc-data-badge" title="Input test parameters">
+                      <span class="tc-data-label">DATA:</span>
+                      <span class="tc-data-val">${escapeHtml(tc.testData)}</span>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <!-- 2. The Core Expected vs. Actual Results (Plain English) -->
+                <div class="results-comparison-grid">
+                  <!-- Expected Result Card -->
+                  <div class="result-card expected-box">
+                    <div class="result-card-header">
+                      <span class="result-icon">🟢</span>
+                      <span class="result-label">Expected Result (Acceptance Criteria)</span>
+                    </div>
+                    <div class="result-card-body">
+                      ${escapeHtml(tc.expectedResult || 'System should execute the workflow successfully and verify expected UI state without errors.')}
+                    </div>
+                  </div>
+
+                  <!-- Actual Result Card -->
+                  <div class="result-card actual-box ${escapeHtml(tc.status)}">
+                    <div class="result-card-header">
+                      <span class="result-icon">${tc.status === 'passed' ? '🟢' : tc.status === 'failed' ? '🔴' : '●'}</span>
+                      <span class="result-label">Actual Result (${tc.status === 'passed' ? 'Verified Success' : tc.status === 'failed' ? 'Why it Failed' : 'Execution Skipped'})</span>
+                    </div>
+                    <div class="result-card-body">
+                      ${escapeHtml(tc.actualResult)}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Plain English Test Execution Steps -->
+                <div class="plain-steps-box">
+                  <h4>📋 Test Steps Executed (Plain English Walkthrough)</h4>
+                  ${formatPlainStepsHtml(tc.plainSteps)}
+                </div>
+
+                <!-- 4. Developer Technical Diagnostics (Collapsible if error exists) -->
+                ${tc.error ? `
+                  <details class="dev-diagnostics-details">
+                    <summary class="dev-diagnostics-summary">
+                      <span>🛠️ View Technical Stack Trace & Playwright Diagnostic</span>
+                      <span class="dev-summary-hint">For Engineers & Developers</span>
+                    </summary>
+                    <div class="failure-box">
+                      <div class="failure-header">
+                        <span>Playwright Failure Stack:</span>
+                        <button class="copy-btn">Copy Stack</button>
+                      </div>
+                      <pre class="error-stack">${escapeHtml(tc.errorStack || tc.error)}</pre>
+                    </div>
+                  </details>
                 ` : ''}
 
-                <div class="steps-box">
-                  <h4>Test Step Sequence</h4>
+                <!-- 5. Internal Step & Hook Timings (Collapsible) -->
+                <details class="pw-steps-details">
+                  <summary class="pw-steps-summary">
+                    <span>⏱️ View Browser Action & Hook Timings (${tc.steps.length} checkpoints)</span>
+                    <span style="font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">${formatDuration(tc.durationMs)} total</span>
+                  </summary>
                   <ul class="steps-list">
                     ${tc.steps.map(s => `
                       <li class="step-item">
@@ -1332,11 +1770,12 @@ export function generateElegantReport(
                       </li>
                     `).join('')}
                   </ul>
-                </div>
+                </details>
 
+                <!-- 6. Evidence & Media Attachments -->
                 ${tc.media.length > 0 ? `
                   <div class="media-box">
-                    <h4>Evidence & Attachments (${tc.media.length})</h4>
+                    <h4>📸 Evidence & Media Attachments (${tc.media.length})</h4>
                     <div class="media-container">
                       ${tc.media.map(m => m.type === 'image' ? `
                         <img src="${m.src}" alt="${escapeHtml(m.name)}" class="media-thumb" title="${escapeHtml(m.name)} (Click to zoom)">
@@ -1349,6 +1788,7 @@ export function generateElegantReport(
                     </div>
                   </div>
                 ` : ''}
+
               </div>
             </div>
           </div>

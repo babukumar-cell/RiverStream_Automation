@@ -8,4 +8,6 @@ allure-report/
 src/test-data/temp/
 .env
 *.log
+~$*.xlsx
+scratch/
 
