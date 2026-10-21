@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+import { generatePdfReport } from './generate-pdf-report';
 
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -511,6 +512,49 @@ export async function generateAndSendReport(): Promise<void> {
       Please find the execution summary for the <strong>River Stream Automation Suite</strong> run on <strong>${dateStr}</strong> against <strong>QA</strong> environment.
     </p>
 
+    <!-- Executive Quick-Status KPI Pills (Mobile & Desktop Friendly) -->
+    <div style="margin-bottom: 24px;">
+      <table style="width: 100%; border-collapse: separate; border-spacing: 6px 0; table-layout: fixed;">
+        <tr>
+          <!-- Total Tests -->
+          <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">TOTAL</div>
+            <div style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 3px;">${overallTotal}</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">⚡ Executed</div>
+          </td>
+          <!-- Passed -->
+          <td style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">PASSED</div>
+            <div style="font-size: 20px; font-weight: 800; color: #15803d; margin-top: 3px;">${overallPassed}</div>
+            <div style="font-size: 10px; color: #16a34a; margin-top: 2px;">✓ Verified</div>
+          </td>
+          <!-- Failed -->
+          <td style="background-color: ${overallFailed > 0 ? '#fef2f2' : '#f8fafc'}; border: 1px solid ${overallFailed > 0 ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; padding: 12px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: ${overallFailed > 0 ? '#991b1b' : '#64748b'}; text-transform: uppercase; letter-spacing: 0.5px;">FAILED</div>
+            <div style="font-size: 20px; font-weight: 800; color: ${overallFailed > 0 ? '#dc2626' : '#64748b'}; margin-top: 3px;">${overallFailed}</div>
+            <div style="font-size: 10px; color: ${overallFailed > 0 ? '#ef4444' : '#94a3b8'}; margin-top: 2px;">${overallFailed > 0 ? '✗ Review' : '0 Defects'}</div>
+          </td>
+          <!-- Skipped -->
+          <td style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px;">SKIPPED</div>
+            <div style="font-size: 20px; font-weight: 800; color: #d97706; margin-top: 3px;">${overallSkipped}</div>
+            <div style="font-size: 10px; color: #f59e0b; margin-top: 2px;">● Skipped</div>
+          </td>
+          <!-- Pass Rate -->
+          <td style="background-color: ${overallPassRate >= 90 ? '#f0fdf4' : '#fef2f2'}; border: 1px solid ${overallPassRate >= 90 ? '#bbf7d0' : '#fecaca'}; border-radius: 8px; padding: 12px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: ${overallPassRate >= 90 ? '#166534' : '#991b1b'}; text-transform: uppercase; letter-spacing: 0.5px;">PASS RATE</div>
+            <div style="font-size: 20px; font-weight: 800; color: ${overallPassRate >= 90 ? '#15803d' : '#dc2626'}; margin-top: 3px;">${overallPassRate}%</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">⏱️ ${executionTimeStr}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- PDF Attachment Notice -->
+    <div style="margin-bottom: 24px; padding: 10px 14px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 12px; color: #1e40af;">
+      📎 <strong>Executive PDF Report Attached:</strong> A complete standalone PDF report with plain English step walkthroughs and expected/actual results is attached to this email (<code>RiverStream_QA_Execution_Report_${dateFormatted}.pdf</code>).
+    </div>
+
     <!-- Executive Summary Section -->
     <div style="margin-bottom: 30px;">
       <h3 style="color: #0b1b54; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">Executive Summary</h3>
@@ -681,6 +725,31 @@ export async function generateAndSendReport(): Promise<void> {
     },
   });
 
+  // Generate executive PDF report attachment
+  let pdfAttachmentPath: string | null = null;
+  const expectedPdfPath = path.resolve(process.cwd(), 'test-results/RiverStream_QA_Execution_Report.pdf');
+  const htmlReportPath = path.resolve(process.cwd(), 'playwright-report/index.html');
+  try {
+    console.log('[Info] Generating executive PDF attachment for email...');
+    pdfAttachmentPath = await generatePdfReport(htmlReportPath, expectedPdfPath);
+  } catch (pdfErr: any) {
+    console.warn(`[Warning] Could not generate PDF report: ${pdfErr.message}`);
+    if (fs.existsSync(expectedPdfPath)) {
+      pdfAttachmentPath = expectedPdfPath;
+    }
+  }
+
+  // Build attachments list
+  const attachments: Array<{ filename: string; path: string; contentType?: string }> = [];
+  if (pdfAttachmentPath && fs.existsSync(pdfAttachmentPath)) {
+    attachments.push({
+      filename: `RiverStream_QA_Execution_Report_${dateFormatted}.pdf`,
+      path: pdfAttachmentPath,
+      contentType: 'application/pdf',
+    });
+    console.log(`[Info] Attached PDF report to email (${(fs.statSync(pdfAttachmentPath).size / 1024).toFixed(1)} KB): ${pdfAttachmentPath}`);
+  }
+
   console.log(`[Info] Dispatching test execution report to: ${recipients.join(', ')}...`);
 
   try {
@@ -689,8 +758,9 @@ export async function generateAndSendReport(): Promise<void> {
       to: recipients,
       subject: emailSubject,
       html: emailHtml,
+      attachments,
     });
-    console.log(`[Success] Email successfully sent! Message ID: ${info.messageId}`);
+    console.log(`[Success] Email successfully sent with ${attachments.length} attachment(s)! Message ID: ${info.messageId}`);
   } catch (err: any) {
     console.error(`[Error] Failed to send email report: ${err.message}`);
     // Do not fail the CI job completely if email fails, but log the error

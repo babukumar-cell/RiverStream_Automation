@@ -25,6 +25,7 @@
     "email:send": "ts-node --transpile-only src/scripts/send-sif-email.ts",
     "report": "ts-node --transpile-only src/reporters/generate-elegant-report.ts && node -e \"const { exec } = require('child_process'); const p = require('path').resolve('playwright-report/index.html'); exec(process.platform === 'win32' ? 'start \\\"\\\" \\\"' + p + '\\\"' : 'open \\\"' + p + '\\\"');\"",
     "report:build": "ts-node --transpile-only src/reporters/generate-elegant-report.ts",
+    "report:pdf": "ts-node --transpile-only src/utils/generate-pdf-report.ts",
     "report:email": "ts-node src/utils/send-test-report-email.ts",
     "report:email:preview": "ts-node src/utils/send-test-report-email.ts --dry-run",
     "allure:clean": "node -e \"const fs = require('fs'); if (fs.existsSync('allure-results')) fs.rmSync('allure-results', { recursive: true, force: true }); if (fs.existsSync('allure-report')) fs.rmSync('allure-report', { recursive: true, force: true });\"",
