@@ -1495,7 +1495,86 @@ export function generateElegantReport(
     @media (max-width: 1024px) {
       aside.sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
       aside.sidebar.mobile-open { transform: translateX(0); }
-      main.main-content { margin-left: 0; padding: 20px; }
+    /* Print & PDF Export Styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      aside.sidebar,
+      .top-header .header-actions,
+      .action-controls,
+      .filter-pills,
+      .copy-btn,
+      .lightbox-modal,
+      .chevron {
+        display: none !important;
+      }
+      main.main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .kpi-card, .split-bar-container {
+        border: 1px solid #e2e8f0 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+      .kpi-title, .kpi-subtext {
+        color: #475569 !important;
+      }
+      .test-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: 1px solid #cbd5e1 !important;
+        background: #ffffff !important;
+        margin-bottom: 16px !important;
+        box-shadow: none !important;
+      }
+      .test-card-details {
+        display: block !important;
+        background: #ffffff !important;
+        border-top: 1px solid #e2e8f0 !important;
+      }
+      .tc-objective-bar {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+      .tc-desc-text {
+        color: #0f172a !important;
+      }
+      .result-card.expected-box {
+        background: #f0fdf4 !important;
+        border: 1px solid #86efac !important;
+        color: #166534 !important;
+      }
+      .result-card.actual-box.failed {
+        background: #fef2f2 !important;
+        border: 1px solid #fca5a5 !important;
+        color: #991b1b !important;
+      }
+      .result-card.actual-box.passed {
+        background: #f0fdf4 !important;
+        border: 1px solid #86efac !important;
+        color: #166534 !important;
+      }
+      .result-card.expected-box .result-card-body,
+      .result-card.actual-box .result-card-body {
+        color: #1e293b !important;
+      }
+      .plain-steps-box {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+      .plain-steps-list li {
+        color: #334155 !important;
+      }
+      .dev-diagnostics-details {
+        display: none !important; /* Hide raw Playwright code dumps in formal executive printed PDF */
+      }
     }
   </style>
 </head>
@@ -1666,12 +1745,13 @@ export function generateElegantReport(
         <div class="action-controls">
           <button class="mini-btn" id="expandAllBtn">Expand All</button>
           <button class="mini-btn" id="collapseAllBtn">Collapse All</button>
+          <button class="mini-btn print-btn" id="printReportBtn" title="Export or print this report as a clean PDF">🖨️ Export PDF</button>
         </div>
       </div>
 
       <div class="test-cards-wrapper" id="testCardsWrapper">
         ${processedCases.map(tc => `
-          <div class="test-card" data-id="${escapeHtml(tc.id)}" data-status="${escapeHtml(tc.status)}" data-module="${escapeHtml(tc.moduleKey)}" data-title="${escapeHtml(tc.title.toLowerCase())} ${escapeHtml(tc.tcId.toLowerCase())}">
+          <div class="test-card" data-id="${escapeHtml(tc.id)}" data-status="${escapeHtml(tc.status)}" data-module="${escapeHtml(tc.moduleKey)}" data-title="${escapeHtml(tc.title.toLowerCase())} ${escapeHtml(tc.tcId.toLowerCase())}" data-search="${escapeHtml((tc.title + ' ' + tc.tcId + ' ' + tc.description + ' ' + tc.expectedResult + ' ' + tc.actualResult + ' ' + tc.moduleName + ' ' + tc.testData).toLowerCase())}">
             <div class="test-card-summary">
               <div class="test-card-left">
                 <span class="status-badge ${escapeHtml(tc.status)}">
@@ -1823,11 +1903,11 @@ export function generateElegantReport(
       cards.forEach(card => {
         const cardStatus = card.getAttribute('data-status');
         const cardModule = card.getAttribute('data-module');
-        const cardTitle = card.getAttribute('data-title') || '';
+        const cardSearch = (card.getAttribute('data-search') || card.getAttribute('data-title') || '').toLowerCase();
 
         const matchStatus = (currentFilter === 'all') || (cardStatus === currentFilter);
         const matchModule = (currentModule === 'all') || (cardModule === currentModule);
-        const matchSearch = (!searchQuery) || (cardTitle.indexOf(searchQuery) !== -1);
+        const matchSearch = (!searchQuery) || (cardSearch.indexOf(searchQuery) !== -1);
 
         if (matchStatus && matchModule && matchSearch) {
           card.style.display = 'block';
@@ -2034,6 +2114,17 @@ export function generateElegantReport(
     if (collapseAllBtn) {
       collapseAllBtn.addEventListener('click', function() {
         document.querySelectorAll('.test-card').forEach(c => c.classList.remove('open'));
+      });
+    }
+
+    const printBtn = document.getElementById('printReportBtn');
+    if (printBtn) {
+      printBtn.addEventListener('click', function() {
+        // Expand all visible cards before printing so all expected/actual details are included
+        document.querySelectorAll('.test-card').forEach(c => {
+          if (c.style.display !== 'none') c.classList.add('open');
+        });
+        window.print();
       });
     }
 
