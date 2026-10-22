@@ -340,22 +340,6 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
 
     <table style="width: 100%; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed; margin-bottom: 22px;"><tr>${kpis}</tr></table>
 
-    <!-- Direct HTML Playwright Interactive Report Button -->
-    <div style="margin: 22px 0 24px 0; background-color: #f0fdf4; border: 1.5px solid #86efac; padding: 18px 22px; border-radius: 8px; text-align: center;">
-      <div style="font-size: 15px; font-weight: 800; color: #166534; margin-bottom: 6px;">
-        📊 Colorful Interactive Test Dashboard
-      </div>
-      <p style="margin: 0 0 14px 0; font-size: 13px; color: #15803d; line-height: 1.5;">
-        Open the live test report in your browser to inspect test cards, filter results, and view step-by-step screenshots &amp; recordings:
-      </p>
-      <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 11px 26px; border-radius: 6px; box-shadow: 0 2px 6px rgba(22,163,74,0.3);">
-        🚀 Open Full HTML Report in Chrome &rarr;
-      </a>
-      <div style="margin-top: 10px; font-size: 11px; color: #475569;">
-        Live Report URL: <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="color: #2563eb; text-decoration: underline;">${escapeHtml(reportWebUrl)}</a>
-      </div>
-    </div>
-
     ${globalErrors}
     ${attachmentsNotice}
 
@@ -378,7 +362,7 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
     <div style="margin-top: 32px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 6px;">
       <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 6px;">Interactive Report &amp; Pipeline Artifacts</div>
       <div style="margin-bottom: 10px;">
-        <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 4px;">Open Live HTML Report &rarr;</a>
+        <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 9px 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(22,163,74,0.25);">🚀 Open Full HTML Report in Chrome &rarr;</a>
       </div>
       ${runUrl ? `<p style="margin: 0; font-size: 12px; color: #64748b;">CI/CD Run Details: <a href="${escapeHtml(runUrl)}" target="_blank" style="color: #2563eb; text-decoration: underline;">Open GitHub Actions Execution #${escapeHtml(process.env.GITHUB_RUN_ID || '')}</a></p>` : '<p style="margin: 0; font-size: 12px; color: #64748b;">Local run: double-click the attached HTML report to inspect test cards, filters, and screenshots offline.</p>'}
     </div>
