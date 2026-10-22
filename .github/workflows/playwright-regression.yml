@@ -25,7 +25,7 @@ on:
       report_recipients:
         description: 'Override Email Recipients (comma-separated, optional)'
         required: false
-        default: 'babukumar@riverstonetech.com,rajkamal@riverstonetech.com,divya.d@riverstonetech.com'
+        default: 'babukumar@riverstonetech.com'
 
 permissions:
   contents: write
@@ -133,7 +133,7 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL || 'https://riverstream-qa.azurewebsites.net/' }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
-          REPORT_RECIPIENTS: ${{ github.event.inputs.report_recipients || secrets.REPORT_RECIPIENTS || 'babukumar@riverstonetech.com,rajkamal@riverstonetech.com,divya.d@riverstonetech.com' }}
+          REPORT_RECIPIENTS: ${{ github.event.inputs.report_recipients || secrets.REPORT_RECIPIENTS || 'babukumar@riverstonetech.com' }}
           SMTP_HOST: smtp.gmail.com
           SMTP_PORT: 465
           GITHUB_SERVER_URL: ${{ github.server_url }}

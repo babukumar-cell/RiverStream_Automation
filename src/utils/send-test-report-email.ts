@@ -396,7 +396,7 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
   return { html, subject };
 }
 
-const DEFAULT_RECIPIENTS = 'babukumar@riverstonetech.com,rajkamal@riverstonetech.com,divya.d@riverstonetech.com';
+const DEFAULT_RECIPIENTS = 'babukumar@riverstonetech.com';
 
 function resolveRecipients(cli?: string): string[] {
   const raw = cli ?? process.env.REPORT_RECIPIENTS ?? DEFAULT_RECIPIENTS;
