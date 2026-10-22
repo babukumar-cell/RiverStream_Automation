@@ -310,6 +310,7 @@ test.describe('Module 08: Email Flow - Riverstone Organization', () => {
   });
 
   test('TC_RS_EM_013: Verify "Too Many Attachments" reply when more than two attachments are sent', async ({ mailService }, testInfo) => {
+    test.skip(true, 'Send only one file for email flow test cases as requested');
     test.setTimeout(scenarioTimeout(1));
     const token = newToken('E13');
     const files = await Promise.all(['_A', '_B', '_C'].map((suffix) => buildPurchaseOrderPdf(testInfo, token, { suffix })));

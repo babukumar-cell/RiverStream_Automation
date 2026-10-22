@@ -1978,7 +1978,7 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
     document.addEventListener('click', function(e) {
       // 1. Toggle Test Card
       const summary = e.target.closest('.test-card-summary');
-      if (summary) {
+      if (summary && !e.target.closest('.test-card-details')) {
         const card = summary.closest('.test-card');
         if (card) {
           card.classList.toggle('open');
@@ -1998,7 +1998,13 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       const kpiCard = e.target.closest('.kpi-card');
       if (kpiCard) {
         const filter = kpiCard.getAttribute('data-filter');
-        if (filter) setStatusFilter(filter);
+        if (filter) {
+          currentModule = 'all';
+          document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+          const overviewNav = document.querySelector('.sidebar .nav-item[data-nav="overview"]');
+          if (overviewNav) overviewNav.classList.add('active');
+          setStatusFilter(filter);
+        }
         const listSec = document.getElementById('testListSection');
         if (listSec) listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
@@ -2008,7 +2014,15 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       const legendItem = e.target.closest('.legend-item');
       if (legendItem) {
         const filter = legendItem.getAttribute('data-filter');
-        if (filter) setStatusFilter(filter);
+        if (filter) {
+          currentModule = 'all';
+          document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+          const overviewNav = document.querySelector('.sidebar .nav-item[data-nav="overview"]');
+          if (overviewNav) overviewNav.classList.add('active');
+          setStatusFilter(filter);
+        }
+        const listSec = document.getElementById('testListSection');
+        if (listSec) listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
 

@@ -129,6 +129,12 @@ export const asAttachment = (f: { path: string; fileName: string }, contentType?
   contentType,
 });
 
+export function fileDateSuffix(d = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${pad(d.getDate())}-${months[d.getMonth()]}-${d.getFullYear()}`;
+}
+
 /** Synthetic purchase order for ERP_CUSTOMER. `withCustomer: false` leaves every customer name out of the document. */
 export async function buildPurchaseOrderPdf(
   testInfo: TestInfo,
@@ -137,7 +143,8 @@ export async function buildPurchaseOrderPdf(
 ): Promise<BuiltFile> {
   const withCustomer = opts.withCustomer ?? true;
   const date = usDate();
-  const fileName = `AUTO_PO_${token}${opts.suffix ?? ''}.pdf`;
+  const dateStamp = fileDateSuffix();
+  const fileName = `AUTO_PO_${token}_${dateStamp}${opts.suffix ?? ''}.pdf`;
   const shipTo = withCustomer
     ? `<div>${ERP_CUSTOMER}</div><div>1234 Biscayne Blvd, Miami, FL 33132</div><div>Attn: Receiving Dept</div>`
     : `<div>1234 Biscayne Blvd, Miami, FL 33132</div><div>Attn: Receiving Dept</div>`;
@@ -156,7 +163,8 @@ ${itemsTable(PO_LINE_ITEMS)}</body></html>`;
 /** Synthetic sales quotation / estimate request for ERP_CUSTOMER. */
 export async function buildQuotationPdf(testInfo: TestInfo, token: string): Promise<BuiltFile> {
   const date = usDate();
-  const fileName = `AUTO_Quote_${token}.pdf`;
+  const dateStamp = fileDateSuffix();
+  const fileName = `AUTO_Quote_${token}_${dateStamp}.pdf`;
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${DOC_STYLE}</style></head><body>
 <div class="title">QUOTATION / ESTIMATE REQUEST</div>
 <p><b>Quote Number:</b> ${token}<br><b>Date:</b> ${date}<br><b>Valid Until:</b> 30 days</p>
@@ -171,7 +179,8 @@ ${itemsTable(PO_LINE_ITEMS.slice(1))}</body></html>`;
 
 /** A readable PDF that is not a business document (no customer, no order, no line items). */
 export async function buildNonBusinessPdf(testInfo: TestInfo, token: string): Promise<BuiltFile> {
-  const fileName = `AUTO_Notes_${token}.pdf`;
+  const dateStamp = fileDateSuffix();
+  const fileName = `AUTO_Notes_${token}_${dateStamp}.pdf`;
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${DOC_STYLE}</style></head><body>
 <div class="title">Team lunch menu</div>
 <p>Reference ${token}. Monday: vegetable soup. Tuesday: pasta. Wednesday: salad bar. Thursday: curry. Friday: pizza.</p>
@@ -191,7 +200,8 @@ export async function buildImageDisguisedAsPdf(testInfo: TestInfo, token: string
   } finally {
     await page.close();
   }
-  const fileName = `AUTO_Scan_${token}.pdf`;
+  const dateStamp = fileDateSuffix();
+  const fileName = `AUTO_Scan_${token}_${dateStamp}.pdf`;
   const out = testInfo.outputPath(fileName);
   fs.writeFileSync(out, png);
   return { path: out, fileName, number: token, date: usDate() };
@@ -199,7 +209,8 @@ export async function buildImageDisguisedAsPdf(testInfo: TestInfo, token: string
 
 /** A plain-text attachment (.txt is not a supported ingestion format). */
 export function buildTextFile(testInfo: TestInfo, token: string): BuiltFile {
-  const fileName = `AUTO_Order_${token}.txt`;
+  const dateStamp = fileDateSuffix();
+  const fileName = `AUTO_Order_${token}_${dateStamp}.txt`;
   const out = testInfo.outputPath(fileName);
   fs.writeFileSync(
     out,

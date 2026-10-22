@@ -55,13 +55,19 @@ function parseArgs(argv: string[]): CliOptions {
 
 class ReportEmailError extends Error {}
 
-function runLinks(): { runUrl?: string } {
-  if (process.env.REPORT_WEB_URL) return { runUrl: process.env.REPORT_WEB_URL };
+function runLinks(): { runUrl?: string; reportWebUrl: string } {
   const { GITHUB_SERVER_URL, GITHUB_REPOSITORY, GITHUB_RUN_ID } = process.env;
-  if (GITHUB_REPOSITORY && GITHUB_RUN_ID) {
-    return { runUrl: `${GITHUB_SERVER_URL || 'https://github.com'}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}` };
-  }
-  return {};
+  const githubRepo = GITHUB_REPOSITORY || 'babukumar-cell/RiverStream_Automation';
+  const repoOwner = githubRepo.split('/')[0] || 'babukumar-cell';
+  const repoName = githubRepo.split('/')[1] || 'RiverStream_Automation';
+
+  const defaultPagesUrl = `https://${repoOwner}.github.io/${repoName}/`;
+  const reportWebUrl = process.env.REPORT_WEB_URL || defaultPagesUrl;
+  const runUrl = GITHUB_REPOSITORY && GITHUB_RUN_ID
+    ? `${GITHUB_SERVER_URL || 'https://github.com'}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`
+    : `https://github.com/${githubRepo}/actions`;
+
+  return { runUrl, reportWebUrl };
 }
 
 // ---------------------------------------------------------------------------
@@ -144,24 +150,37 @@ function failureRow(c: ReportCase, accent: string, label: string, reason: string
   const defect = c.knownDefects.length
     ? `<div style="margin-top: 6px; font-size: 11px; color: ${COLORS.flaky}; font-weight: 600;">🐞 Known defect: ${escapeHtml(c.knownDefects.join('; '))}</div>`
     : '';
+
+  const locationInfo = c.file
+    ? `<div style="margin-top: 5px; font-family: Consolas, 'Courier New', monospace; font-size: 11px; color: #64748b;">📍 ${escapeHtml(c.file)}:${c.line}</div>`
+    : '';
+
+  const cleanWhy = reason || c.actualResult || 'Action timed out or assertion failed.';
+
   const technical = c.error
     ? `<details style="margin-top: 8px; font-size: 11px;">
-              <summary style="color: ${accent}; cursor: pointer; font-weight: 600;">Technical details</summary>
-              <pre style="margin: 6px 0 0 0; padding: 8px 10px; background-color: #1e293b; color: #fca5a5; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 11px; line-height: 1.4; white-space: pre-wrap; word-break: break-all;">${escapeHtml(c.error.split('\n').slice(0, 12).join('\n'))}</pre>
-            </details>`
+        <summary style="color: ${accent}; cursor: pointer; font-weight: 600;">Show Technical Trace</summary>
+        <pre style="margin: 6px 0 0 0; padding: 8px 10px; background-color: #0f172a; color: #fca5a5; border-radius: 4px; font-family: Consolas, 'Courier New', monospace; font-size: 11px; line-height: 1.4; white-space: pre-wrap; word-break: break-all;">${escapeHtml(c.error.split('\n').slice(0, 10).join('\n'))}</pre>
+      </details>`
     : '';
+
   return `
         <tr style="border-bottom: 1px solid #e5e7eb; font-size: 12px; vertical-align: top;">
-          <td style="padding: 10px; width: 16%;">
-            <div style="color: ${accent}; font-weight: bold; font-family: Consolas, 'Courier New', monospace; font-size: 12px;">${escapeHtml(c.tcId)}</div>
-            <div style="font-size: 11px; color: #4b5563; margin-top: 4px;">${escapeHtml(c.module.shortName)}</div>
+          <td style="padding: 12px; width: 22%; background-color: #fafaf9;">
+            <div style="color: ${accent}; font-weight: 800; font-family: Consolas, 'Courier New', monospace; font-size: 13px;">${escapeHtml(c.tcId)}</div>
+            <div style="font-size: 11px; font-weight: 600; color: #4b5563; margin-top: 3px;">${escapeHtml(c.module.name)}</div>
+            ${locationInfo}
           </td>
-          <td style="padding: 10px; width: 30%;">
-            <div style="font-weight: 700; color: #111827;">${escapeHtml(c.description)}</div>
-            ${c.expectedResult ? `<div style="margin-top: 6px; color: #166534;"><strong>Expected:</strong> ${escapeHtml(c.expectedResult)}</div>` : ''}
+          <td style="padding: 12px; width: 38%;">
+            <div style="font-weight: 700; color: #111827; margin-bottom: 6px;">${escapeHtml(c.description)}</div>
+            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 6px 10px; color: #166534; font-size: 11px; line-height: 1.4;">
+              <strong>🟢 Expected:</strong> ${escapeHtml(c.expectedResult || 'Should execute successfully without errors or timeouts.')}
+            </div>
           </td>
-          <td style="padding: 10px; width: 54%;">
-            <div style="color: #111827;"><strong style="color: ${accent};">${label}:</strong> ${escapeHtml(reason)}</div>
+          <td style="padding: 12px; width: 40%;">
+            <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 6px 10px; color: #991b1b; font-size: 12px; line-height: 1.4;">
+              <strong>🔴 ${label}:</strong> ${escapeHtml(cleanWhy)}
+            </div>
             ${defect}
             ${technical}
           </td>
@@ -179,15 +198,47 @@ function caseTable(title: string, accent: string, intro: string, rows: string): 
     </div>`;
 }
 
-function renderFailed(cases: ReportCase[]): string {
+function renderFailed(cases: ReportCase[], reportWebUrl: string): string {
   const failed = cases.filter((c) => c.status === 'failed');
   if (!failed.length) return '';
-  return caseTable(
-    `Failed Tests (${failed.length})`,
-    COLORS.fail,
-    'Plain-English reason first; expand "Technical details" for the raw Playwright error.',
-    failed.map((c) => failureRow(c, COLORS.fail, 'Why it failed', c.failureReason || c.actualResult)).join(''),
-  );
+
+  const maxToShow = 3;
+  const displayedCases = failed.slice(0, maxToShow);
+  const remainingCount = failed.length - maxToShow;
+
+  const rows = displayedCases
+    .map((c) => failureRow(c, COLORS.fail, 'Issue Encountered', c.failureReason || c.actualResult))
+    .join('');
+
+  const moreNotice =
+    remainingCount > 0
+      ? `
+    <div style="margin-top: 14px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 14px 18px; text-align: center;">
+      <p style="margin: 0 0 10px 0; font-size: 13px; color: #9f1239; font-weight: 700;">
+        Showing top 3 of ${failed.length} failed tests. ${remainingCount} additional failure(s) omitted to keep email concise.
+      </p>
+      <div style="margin-top: 8px;">
+        <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="display: inline-block; background-color: #e11d48; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 9px 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(225,29,72,0.2);">
+          🔍 View All ${failed.length} Failures in Interactive Report &rarr;
+        </a>
+      </div>
+      <p style="margin: 8px 0 0 0; font-size: 11px; color: #64748b;">
+        Detailed expected vs. actual outcomes for all ${failed.length} tests are also documented in the attached executive PDF.
+      </p>
+    </div>`
+      : '';
+
+  return `
+    <div style="margin-top: 30px;">
+      ${sectionTitle(`Failed Tests (${failed.length})`, COLORS.fail)}
+      <p style="margin: 0 0 10px 0; font-size: 13px; color: #4b5563;">
+        Plain-English failure analysis with expected vs. actual outcomes:
+      </p>
+      <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+        <tbody>${rows}</tbody>
+      </table>
+      ${moreNotice}
+    </div>`;
 }
 
 function renderFlaky(cases: ReportCase[]): string {
@@ -246,13 +297,13 @@ function renderSkipped(cases: ReportCase[]): string {
   return caseTable(`Skipped Tests (${skipped.length})`, COLORS.skip, 'Tests that did not run, with the reason.', rows + more);
 }
 
-export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string } = {}): { html: string; subject: string } {
+export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htmlFileName?: string } = {}): { html: string; subject: string } {
   const totals = countStatuses(run.cases);
   const rate = passRate(totals);
   const runTime = formatDuration(run.durationMs || totals.durationMs);
   const { date, time, zone, dateShort } = formatRunTime(run.startTime);
   const targetUrl = process.env.BASE_URL || 'https://riverstream-qa.azurewebsites.net/';
-  const { runUrl } = runLinks();
+  const { runUrl, reportWebUrl } = runLinks();
   const suiteStatus = totals.failed > 0 || run.globalErrors.length > 0 ? 'FAILED' : 'PASSED';
 
   const kpis = [
@@ -269,16 +320,15 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string } = 
         <strong>Run-level errors:</strong><pre style="white-space: pre-wrap; margin: 6px 0 0 0;">${escapeHtml(run.globalErrors.join('\n\n').slice(0, 2000))}</pre></div>`
     : '';
 
-  const pdfNotice = opts.pdfFileName
-    ? `<div style="margin-bottom: 24px; padding: 10px 14px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 12px; color: #1e40af;">
-        📎 <strong>PDF report attached:</strong> <code>${escapeHtml(opts.pdfFileName)}</code>, with expected vs. actual results for every test.
+  const attachmentsNotice = (opts.pdfFileName || opts.htmlFileName)
+    ? `<div style="margin-bottom: 24px; padding: 12px 16px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 12px; color: #1e40af; line-height: 1.5;">
+        📎 <strong>Attachments Included with this Email:</strong>
+        <ul style="margin: 4px 0 0 0; padding-left: 20px;">
+          ${opts.pdfFileName ? `<li><strong>Executive PDF Report:</strong> <code>${escapeHtml(opts.pdfFileName)}</code> (printable summary with expected vs actual results)</li>` : ''}
+          ${opts.htmlFileName ? `<li><strong>Interactive HTML Report:</strong> <code>${escapeHtml(opts.htmlFileName)}</code> (save or double-click to view cards &amp; filters offline)</li>` : ''}
+        </ul>
       </div>`
     : '';
-
-  const linkBlock = runUrl
-    ? `<a href="${escapeHtml(runUrl)}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: bold; padding: 9px 18px; border-radius: 4px;">View run &amp; artifacts &rarr;</a>
-        <p style="margin: 10px 0 0 0; font-size: 12px; color: #4b5563;">Download the <strong>playwright-execution-artifacts</strong> zip from the run page and open <code>playwright-report/index.html</code> for screenshots, videos and traces. Reports are not published publicly.</p>`
-    : `<p style="margin: 0; font-size: 12px; color: #4b5563;">Local run: open <code>playwright-report/index.html</code> on the machine that ran the tests.</p>`;
 
   const row = (label: string, value: string) =>
     `<tr><td style="padding: 4px 0; width: 140px; font-weight: 600; color: #111827;">${label}</td><td style="padding: 4px 0; color: #374151;">${value}</td></tr>`;
@@ -301,8 +351,24 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string } = 
 
     <table style="width: 100%; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed; margin-bottom: 22px;"><tr>${kpis}</tr></table>
 
+    <!-- Direct HTML Playwright Interactive Report Button -->
+    <div style="margin: 22px 0 24px 0; background-color: #f0fdf4; border: 1.5px solid #86efac; padding: 18px 22px; border-radius: 8px; text-align: center;">
+      <div style="font-size: 15px; font-weight: 800; color: #166534; margin-bottom: 6px;">
+        📊 Colorful Interactive Test Dashboard
+      </div>
+      <p style="margin: 0 0 14px 0; font-size: 13px; color: #15803d; line-height: 1.5;">
+        Open the live test report in your browser to inspect test cards, filter results, and view step-by-step screenshots &amp; recordings:
+      </p>
+      <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 11px 26px; border-radius: 6px; box-shadow: 0 2px 6px rgba(22,163,74,0.3);">
+        🚀 Open Full HTML Report in Chrome &rarr;
+      </a>
+      <div style="margin-top: 10px; font-size: 11px; color: #475569;">
+        Live Report URL: <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="color: #2563eb; text-decoration: underline;">${escapeHtml(reportWebUrl)}</a>
+      </div>
+    </div>
+
     ${globalErrors}
-    ${pdfNotice}
+    ${attachmentsNotice}
 
     <div style="margin-bottom: 26px;">
       ${sectionTitle('Executive Summary')}
@@ -318,14 +384,17 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string } = 
     </div>
 
     ${renderModuleTable(run, totals, rate, runTime)}
-    ${renderFailed(run.cases)}
+    ${renderFailed(run.cases, reportWebUrl)}
     ${renderKnownDefects(run)}
     ${renderFlaky(run.cases)}
     ${renderSkipped(run.cases)}
 
-    <div style="margin-top: 32px; background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 14px 18px; border-radius: 6px;">
-      <div style="font-size: 14px; font-weight: bold; color: #166534; margin-bottom: 8px;">Full report, screenshots &amp; traces</div>
-      ${linkBlock}
+    <div style="margin-top: 32px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 6px;">
+      <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 6px;">Interactive Report &amp; Pipeline Artifacts</div>
+      <div style="margin-bottom: 10px;">
+        <a href="${escapeHtml(reportWebUrl)}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 4px;">Open Live HTML Report &rarr;</a>
+      </div>
+      ${runUrl ? `<p style="margin: 0; font-size: 12px; color: #64748b;">CI/CD Run Details: <a href="${escapeHtml(runUrl)}" target="_blank" style="color: #2563eb; text-decoration: underline;">Open GitHub Actions Execution #${escapeHtml(process.env.GITHUB_RUN_ID || '')}</a></p>` : '<p style="margin: 0; font-size: 12px; color: #64748b;">Local run: double-click the attached HTML report to inspect test cards, filters, and screenshots offline.</p>'}
     </div>
 
     <div style="margin-top: 28px; font-size: 13px; color: #4b5563; line-height: 1.5;">
@@ -396,9 +465,16 @@ export async function generateAndSendReport(argv: string[] = process.argv.slice(
   const suiteTitle = process.env.SUITE_NAME || 'River Stream Automation Suite';
   const suiteTag = suiteTitle.replace(/[^a-zA-Z0-9]/g, '_');
   const pdfFileName = `${suiteTag}_${dateShort}.pdf`;
+  const htmlFileName = `${suiteTag}_${dateShort}.html`;
   const targetPdfPath = path.resolve(process.cwd(), `test-results/${pdfFileName}`);
   const pdfPath = opts.noPdf ? undefined : await buildPdf(run, targetPdfPath, pdfFileName);
-  const { html, subject } = buildEmailHtml(run, { pdfFileName: pdfPath ? pdfFileName : undefined });
+  const htmlAttachmentPath = DEFAULT_REPORT_PATH;
+  const hasHtml = fs.existsSync(htmlAttachmentPath);
+
+  const { html, subject } = buildEmailHtml(run, {
+    pdfFileName: pdfPath ? pdfFileName : undefined,
+    htmlFileName: hasHtml ? htmlFileName : undefined,
+  });
 
   const outDir = path.dirname(opts.summaryPath);
   fs.mkdirSync(outDir, { recursive: true });
@@ -407,14 +483,18 @@ export async function generateAndSendReport(argv: string[] = process.argv.slice(
   console.log(`[Info] Email HTML saved to ${localCopy} (${(Buffer.byteLength(html) / 1024).toFixed(1)} KB)`);
 
   const recipients = resolveRecipients(opts.recipients);
-  const { runUrl } = runLinks();
+  const { runUrl, reportWebUrl } = runLinks();
 
   if (opts.dryRun) {
     console.log('[Info] --dry-run: not sending.');
     console.log(`[Info] Subject:    ${subject}`);
     console.log(`[Info] Recipients: ${recipients.length ? recipients.join(', ') : '(none configured: set REPORT_RECIPIENTS)'}`);
-    console.log(`[Info] Run link:   ${runUrl || '(none: REPORT_WEB_URL / GITHUB_RUN_ID not set)'}`);
-    console.log(`[Info] Attachment: ${pdfPath ? `${pdfFileName} (${(fs.statSync(pdfPath).size / 1024).toFixed(1)} KB)` : '(none)'}`);
+    console.log(`[Info] Report Web: ${reportWebUrl}`);
+    console.log(`[Info] Run link:   ${runUrl || '(none)'}`);
+    const attachList = [];
+    if (pdfPath) attachList.push(`${pdfFileName} (${(fs.statSync(pdfPath).size / 1024).toFixed(1)} KB)`);
+    if (hasHtml) attachList.push(`${htmlFileName} (${(fs.statSync(htmlAttachmentPath).size / 1024).toFixed(1)} KB)`);
+    console.log(`[Info] Attachments: ${attachList.length ? attachList.join(', ') : '(none)'}`);
     return;
   }
 
@@ -435,6 +515,14 @@ export async function generateAndSendReport(argv: string[] = process.argv.slice(
     auth: { user: senderEmail, pass: senderPassword },
   });
 
+  const attachments = [];
+  if (pdfPath) {
+    attachments.push({ filename: pdfFileName, path: pdfPath, contentType: 'application/pdf' });
+  }
+  if (hasHtml) {
+    attachments.push({ filename: htmlFileName, path: htmlAttachmentPath, contentType: 'text/html' });
+  }
+
   console.log(`[Info] Sending report to ${recipients.join(', ')}...`);
   try {
     const info = await transporter.sendMail({
@@ -442,7 +530,7 @@ export async function generateAndSendReport(argv: string[] = process.argv.slice(
       to: recipients,
       subject,
       html,
-      attachments: pdfPath ? [{ filename: pdfFileName, path: pdfPath, contentType: 'application/pdf' }] : [],
+      attachments,
     });
     console.log(`[Success] Email sent (message id ${info.messageId}).`);
   } catch (err) {
