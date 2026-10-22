@@ -18,6 +18,7 @@ export class LoginPage extends BasePage {
   readonly passwordRequiredError: Locator;
   readonly invalidCredentialsError: Locator;
   readonly emailFormatError: Locator;
+  readonly errorMessage: Locator;
 
   // Forgot Password view
   readonly forgotPasswordHeading: Locator;
@@ -40,6 +41,7 @@ export class LoginPage extends BasePage {
     this.passwordRequiredError = this.signInForm.getByText('Password is required', { exact: true });
     this.invalidCredentialsError = this.signInForm.getByText('Invalid username or password', { exact: true });
     this.emailFormatError = this.signInForm.getByText(/valid email/i);
+    this.errorMessage = page.locator('[role="alert"], .error, .error-message, .text-danger, form p').first();
 
     this.forgotPasswordHeading = page.getByRole('heading', { name: 'Forgot Password' });
     this.forgotPasswordForm = page.locator('form').filter({ has: page.getByRole('button', { name: 'Send Reset Link' }) });
@@ -104,4 +106,26 @@ export class LoginPage extends BasePage {
       message: el.validationMessage,
     }));
   }
+
+  /** Returns the text of whichever inline validation or alert error is currently visible. */
+  async getDisplayedErrorMessage(): Promise<string> {
+    const locators = [
+      this.invalidCredentialsError,
+      this.emailRequiredError,
+      this.passwordRequiredError,
+      this.emailFormatError,
+      this.page.locator('[role="alert"]'),
+      this.page.locator('.toast'),
+      this.page.locator('.error, .error-message, .text-danger'),
+    ];
+    for (const loc of locators) {
+      if (await loc.isVisible().catch(() => false)) {
+        const text = (await loc.textContent())?.trim();
+        if (text) return text;
+      }
+    }
+    return '';
+  }
 }
+
+

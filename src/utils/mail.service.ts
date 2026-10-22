@@ -129,6 +129,8 @@ export interface RetrievedEmail {
   plain: string;
   attachments: ReceivedAttachment[];
   fields: ProcessedEmailFields;
+  quotaInfo?: string;
+  reviewLink?: string;
 }
 
 export class MailAuthError extends Error {}
@@ -352,6 +354,11 @@ export class MailService {
     }
   }
 
+  /** Convenience alias for verifying SMTP connection. */
+  async verifyConnection(): Promise<void> {
+    await this.verifySmtp();
+  }
+
   /** Verify IMAP credentials (opens INBOX once). Throws MailAuthError / MailConnectionError. */
   async verifyImap(): Promise<void> {
     const conn = await this.connectImap();
@@ -405,6 +412,17 @@ export class MailService {
   async waitForReply(query: ReplyQuery): Promise<RetrievedEmail> {
     const [reply] = await this.waitForReplies(query, 1);
     return reply;
+  }
+
+  /** Convenience method for polling for a reply by subject substring. */
+  async pollForReply(opts: { subjectContains: string; timeoutMs?: number }): Promise<RetrievedEmail> {
+    const token = opts.subjectContains.replace(/[\[\]]/g, '');
+    const since = new Date(Date.now() - (opts.timeoutMs ?? 120000));
+    return this.waitForReply({
+      token,
+      since,
+      timeoutMs: opts.timeoutMs,
+    });
   }
 
   /** Wait until at least `count` correlated replies exist; returns them oldest first. */
@@ -554,6 +572,9 @@ export class MailService {
     const text = mail.text ?? '';
     const html = typeof mail.html === 'string' ? mail.html : '';
     const refs = mail.references === undefined ? [] : Array.isArray(mail.references) ? mail.references : [mail.references];
+    const fields = parseReplyFields(text, html);
+    const quotaInfo = fields.quotaWarning || (fields.documentUsage ? `${fields.documentUsage.used}/${fields.documentUsage.total}` : undefined);
+    const reviewLink = fields.reviewInStreamUrl;
     return {
       uid: msg.attributes.uid,
       mailbox,
@@ -569,7 +590,9 @@ export class MailService {
       html,
       plain: html ? htmlToPlain(html) : normaliseText(text),
       attachments: mail.attachments.map((a) => ({ filename: a.filename ?? '', contentType: a.contentType, size: a.size })),
-      fields: parseReplyFields(text, html),
+      fields,
+      quotaInfo,
+      reviewLink,
     };
   }
 }

@@ -28,6 +28,17 @@ export class LeftSidePage extends BasePage {
   readonly bellButton: Locator;
   readonly headerAvatar: Locator;
 
+  // Dashboard & Navigation accessors
+  readonly orgDropdown: Locator;
+  readonly totalDocumentsCard: Locator;
+  readonly processingRateCard: Locator;
+  readonly extractionAccuracyCard: Locator;
+  readonly reviewedCard: Locator;
+  readonly pendingReviewCard: Locator;
+  readonly processingCard: Locator;
+  readonly avgProcessingTimeCard: Locator;
+  readonly documentsNavLink: Locator;
+
   constructor(page: Page) {
     super(page);
 
@@ -42,6 +53,16 @@ export class LeftSidePage extends BasePage {
     this.header = page.getByRole('banner');
     this.bellButton = this.header.locator('button:has(svg.lucide-bell)');
     this.headerAvatar = this.header.locator('[data-slot="avatar"]');
+
+    this.orgDropdown = page.getByRole('combobox').or(page.locator('[data-slot="select-trigger"], .org-dropdown'));
+    this.totalDocumentsCard = page.getByRole('tab', { name: /Total Documents/i }).or(page.locator('text=Total Documents'));
+    this.processingRateCard = page.locator('text=Processing Rate').or(page.locator('text=Processing').first());
+    this.extractionAccuracyCard = page.locator('text=Extraction Accuracy').or(page.locator('text=Accuracy').first());
+    this.reviewedCard = page.getByRole('tab', { name: /Reviewed/i }).or(page.locator('text=Reviewed'));
+    this.pendingReviewCard = page.getByRole('tab', { name: /Pending Review/i }).or(page.locator('text=Pending Review'));
+    this.processingCard = page.getByRole('tab', { name: /Processing/i }).or(page.locator('text=Processing'));
+    this.avgProcessingTimeCard = page.locator('text=Avg Processing Time').or(page.locator('text=Processing Time').first());
+    this.documentsNavLink = this.sidebarNav.getByRole('button', { name: 'Documents', exact: true }).or(this.sidebarNav.locator('a[href*="document"], button:has-text("Documents")'));
   }
 
   /** Sidebar navigation button (works expanded and collapsed: collapsed buttons keep a title). */
