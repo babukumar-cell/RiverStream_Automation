@@ -2,9 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 import { Config } from './src/config/environment';
 
 const workers = process.env.WORKERS ? parseInt(process.env.WORKERS, 10) : 1;
+const isSettingsRun = process.argv.some((arg) => arg.includes('settings')) || process.env.RUN_SETTINGS === 'true';
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: isSettingsRun ? [] : ['**/settings/**'],
   // Specs that mutate shared QA data opt into serial mode via test.describe.configure.
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
