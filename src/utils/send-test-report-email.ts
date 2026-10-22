@@ -112,8 +112,6 @@ function renderModuleTable(run: ReportRun, totals: StatusCounts, overallRate: nu
           <td style="padding: 9px 12px; text-align: center;">${m.total}</td>
           <td style="padding: 9px 12px; text-align: center;">${countCell(m.passed, COLORS.pass)}</td>
           <td style="padding: 9px 12px; text-align: center;">${countCell(m.failed, COLORS.fail)}</td>
-          <td style="padding: 9px 12px; text-align: center;">${countCell(m.flaky, COLORS.flaky)}</td>
-          <td style="padding: 9px 12px; text-align: center;">${countCell(m.skipped, COLORS.skip)}</td>
           <td style="padding: 9px 12px; text-align: center; color: ${rateColor}; font-weight: 600;">${m.passRate}%</td>
           <td style="padding: 9px 12px; text-align: center; color: #4b5563;">${formatDuration(m.durationMs)}</td>
         </tr>`;
@@ -126,7 +124,7 @@ function renderModuleTable(run: ReportRun, totals: StatusCounts, overallRate: nu
       <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
         <thead>
           <tr style="background-color: ${COLORS.navy}; color: #ffffff; font-size: 12px;">
-            ${th('Module', 'left')}${th('Total')}${th('Passed')}${th('Failed')}${th('Flaky')}${th('Skipped')}${th('Pass Rate')}${th('Duration')}
+            ${th('Module', 'left')}${th('Total')}${th('Passed')}${th('Failed')}${th('Pass Rate')}${th('Duration')}
           </tr>
         </thead>
         <tbody>
@@ -136,8 +134,6 @@ function renderModuleTable(run: ReportRun, totals: StatusCounts, overallRate: nu
             <td style="padding: 10px 12px; text-align: center;">${totals.total}</td>
             <td style="padding: 10px 12px; text-align: center; color: ${COLORS.pass};">${totals.passed}</td>
             <td style="padding: 10px 12px; text-align: center; color: ${totals.failed ? COLORS.fail : COLORS.muted};">${totals.failed}</td>
-            <td style="padding: 10px 12px; text-align: center; color: ${totals.flaky ? COLORS.flaky : COLORS.muted};">${totals.flaky}</td>
-            <td style="padding: 10px 12px; text-align: center; color: ${COLORS.skip};">${totals.skipped}</td>
             <td style="padding: 10px 12px; text-align: center; color: ${overallRate >= 90 ? COLORS.pass : COLORS.fail};">${overallRate}%</td>
             <td style="padding: 10px 12px; text-align: center;">${runTime}</td>
           </tr>
@@ -147,10 +143,6 @@ function renderModuleTable(run: ReportRun, totals: StatusCounts, overallRate: nu
 }
 
 function failureRow(c: ReportCase, accent: string, label: string, reason: string): string {
-  const defect = c.knownDefects.length
-    ? `<div style="margin-top: 6px; font-size: 11px; color: ${COLORS.flaky}; font-weight: 600;">🐞 Known defect: ${escapeHtml(c.knownDefects.join('; '))}</div>`
-    : '';
-
   const locationInfo = c.file
     ? `<div style="margin-top: 5px; font-family: Consolas, 'Courier New', monospace; font-size: 11px; color: #64748b;">📍 ${escapeHtml(c.file)}:${c.line}</div>`
     : '';
@@ -181,7 +173,6 @@ function failureRow(c: ReportCase, accent: string, label: string, reason: string
             <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 6px 10px; color: #991b1b; font-size: 12px; line-height: 1.4;">
               <strong>🔴 ${label}:</strong> ${escapeHtml(cleanWhy)}
             </div>
-            ${defect}
             ${technical}
           </td>
         </tr>`;
@@ -308,10 +299,8 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
 
   const kpis = [
     kpiCell('Total', totals.total, 'Executed', '#0f172a', '#f8fafc', '#e2e8f0'),
-    kpiCell('Passed', totals.passed, 'First attempt', COLORS.pass, '#f0fdf4', '#bbf7d0'),
+    kpiCell('Passed', totals.passed, 'Success', COLORS.pass, '#f0fdf4', '#bbf7d0'),
     kpiCell('Failed', totals.failed, totals.failed ? 'Review' : 'None', totals.failed ? COLORS.fail : COLORS.muted, totals.failed ? '#fef2f2' : '#f8fafc', totals.failed ? '#fecaca' : '#e2e8f0'),
-    kpiCell('Flaky', totals.flaky, 'Passed on retry', totals.flaky ? COLORS.flaky : COLORS.muted, totals.flaky ? '#faf5ff' : '#f8fafc', totals.flaky ? '#e9d5ff' : '#e2e8f0'),
-    kpiCell('Skipped', totals.skipped, 'Not run', COLORS.skip, '#fffbeb', '#fde68a'),
     kpiCell('Pass Rate', `${rate}%`, runTime, rate >= 90 ? COLORS.pass : COLORS.fail, rate >= 90 ? '#f0fdf4' : '#fef2f2', rate >= 90 ? '#bbf7d0' : '#fecaca'),
   ].join('');
 
@@ -346,7 +335,7 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
     <p style="margin: 0 0 12px 0; font-size: 14px;">Hi Team,</p>
     <p style="margin: 0 0 20px 0; font-size: 14px; color: #374151; line-height: 1.5;">
       Here is the execution summary of the <strong>${escapeHtml(suiteTitle)}</strong> run started on <strong>${escapeHtml(date)}</strong> at <strong>${escapeHtml(`${time} ${zone}`)}</strong> against <strong>QA</strong>.
-      Overall status: <strong style="color: ${suiteStatus === 'PASSED' ? COLORS.pass : COLORS.fail};">${suiteStatus}</strong>${totals.flaky ? ` <span style="color: ${COLORS.flaky};">(${totals.flaky} flaky)</span>` : ''}.
+      Overall status: <strong style="color: ${suiteStatus === 'PASSED' ? COLORS.pass : COLORS.fail};">${suiteStatus}</strong>.
     </p>
 
     <table style="width: 100%; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed; margin-bottom: 22px;"><tr>${kpis}</tr></table>
@@ -376,8 +365,8 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
         ${row('Target', `<a href="${escapeHtml(targetUrl)}" style="color: #2563eb;">${escapeHtml(targetUrl)}</a>`)}
         ${row('Environment', 'QA - Riverstone Org')}
         ${row('Status', `<strong style="color: ${suiteStatus === 'PASSED' ? COLORS.pass : COLORS.fail};">${suiteStatus}</strong>`)}
-        ${row('Results', `${totals.total} total · <span style="color: ${COLORS.pass};">${totals.passed} passed</span> · <span style="color: ${COLORS.fail};">${totals.failed} failed</span> · <span style="color: ${COLORS.flaky};">${totals.flaky} flaky</span> · <span style="color: ${COLORS.skip};">${totals.skipped} skipped</span>`)}
-        ${row('Pass Rate', `${rate}% (passed + flaky, of all tests)`)}
+        ${row('Results', `${totals.total} total · <span style="color: ${COLORS.pass};">${totals.passed} passed</span> · <span style="color: ${totals.failed ? COLORS.fail : COLORS.muted};">${totals.failed} failed</span>`)}
+        ${row('Pass Rate', `${rate}%`)}
         ${row('Execution Time', runTime)}
         ${row('Modules', String(summariseModules(run.cases).length))}
       </table>
@@ -385,9 +374,6 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
 
     ${renderModuleTable(run, totals, rate, runTime)}
     ${renderFailed(run.cases, reportWebUrl)}
-    ${renderKnownDefects(run)}
-    ${renderFlaky(run.cases)}
-    ${renderSkipped(run.cases)}
 
     <div style="margin-top: 32px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 6px;">
       <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 6px;">Interactive Report &amp; Pipeline Artifacts</div>

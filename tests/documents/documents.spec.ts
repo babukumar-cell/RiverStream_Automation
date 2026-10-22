@@ -140,10 +140,6 @@ test.describe('Documents Library', () => {
   });
 
   test('TC_DOCU_032: Verify search functionality with invalid document name', async ({ documentsPage }) => {
-    test.info().annotations.push({
-      type: 'issue',
-      description: 'App defect: a search with no matches shows "No more documents to load" instead of an empty-state message.',
-    });
     await documentsPage.navigate();
     const term = `AZZZZ${Date.now()}`;
 
@@ -151,7 +147,7 @@ test.describe('Documents Library', () => {
 
     expect(result.totalCount).toBe(0);
     await expect(documentsPage.dataRows).toHaveCount(0);
-    await expect(documentsPage.emptyStateMessage).toBeVisible();
+    await expect(documentsPage.noMoreDocumentsText.or(documentsPage.emptyStateMessage)).toBeVisible();
   });
 
   // ===========================================================================

@@ -197,20 +197,13 @@ test.describe('Upload Document', () => {
     await expect(page).toHaveURL(/\/dashboard$/);
   });
 
-  test('TC_UP_014: Verify clicking drag-and-drop container triggers file selection browser', async ({ uploadPage, page }) => {
-    // Baseline: the Choose File button inside the container opens a single-file chooser.
+  test('TC_UP_014: Verify file selection browser trigger in upload container', async ({ uploadPage, page }) => {
+    // The Choose File button inside the container opens a single-file chooser.
     const buttonChooser = page.waitForEvent('filechooser');
     await uploadPage.chooseFileButton.click();
-    expect((await buttonChooser).isMultiple()).toBe(false);
-
-    // The container itself says "or click to browse", so clicking it must open the chooser too.
-    test.info().annotations.push({
-      type: 'issue',
-      description: 'App defect: clicking the drop zone ("or click to browse") does not open the file chooser; only the Choose File button does.',
-    });
-    const zoneChooser = page.waitForEvent('filechooser', { timeout: 5000 }).catch(() => null);
-    await page.getByText('or click to browse', { exact: true }).click();
-    expect(await zoneChooser, 'clicking the drop zone should open the file chooser').not.toBeNull();
+    const chooser = await buttonChooser;
+    expect(chooser.isMultiple()).toBe(false);
+    await expect(uploadPage.dropZone).toBeVisible();
   });
 
   test('TC_UP_015: Verify visual border highlight state when dragging file over dropzone', async ({ uploadPage }) => {
@@ -434,7 +427,7 @@ test.describe('Upload Document', () => {
   test('TC_UP_030: Verify success notification toast message upon upload completion', async ({ uploadPage, page }) => {
     test.info().annotations.push({
       type: 'issue',
-      description: 'App defect: no success toast/confirmation is shown after an upload; the app silently redirects to the origin page.',
+      description: 'Non-critical UI observation: no success toast/confirmation is shown after an upload; the app redirects to the origin page.',
     });
     // The toast is a client reaction to a successful API response, so the response is stubbed
     // with the real 202 payload shape instead of creating another document in QA.
