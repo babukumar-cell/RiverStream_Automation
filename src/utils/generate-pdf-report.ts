@@ -55,7 +55,7 @@ export async function generatePdfReport(
       headerTemplate: '<div></div>',
       footerTemplate: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 8px; width: 100%; display: flex; justify-content: space-between; padding: 0 15mm; color: #64748b;">
-          <span>RiverStream QA Automation — Executive Test Execution Report</span>
+          <span>${process.env.SUITE_NAME || 'RiverStream QA Automation'} — Executive Test Execution Report</span>
           <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
         </div>
       `,

@@ -1,0 +1,139 @@
+name: River Stream - PO & Quote Request Suite
+
+on:
+  schedule:
+    # Runs weekly every Monday at 05:00 UTC (10:30 AM IST)
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'PO & Quote Test Suite to Execute'
+        required: true
+        default: 'test:po-quote'
+        type: choice
+        options:
+          - 'test:po-quote'          # Complete PO & Quote Suite (152 tests)
+          - 'test:upload'            # Upload Module (37 tests)
+          - 'test:documents'         # Documents Library (29 tests)
+          - 'test:review'            # Review & Line Items (27 tests)
+          - 'test:email'             # Email Ingestion Flow (29 tests)
+          - 'test:auth'              # Authentication (22 tests)
+          - 'test:left-side'         # Navigation & KPIs (15 tests)
+          - 'test:smoke:po-quote'    # Smoke PO & Quote (18 tests)
+      report_recipients:
+        description: 'Override Email Recipients (comma-separated, optional)'
+        required: false
+        default: 'babukumar@riverstonetech.com,rajkamal@riverstonetech.com,divya.d@riverstonetech.com'
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Scan for Committed Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  po-quote-tests:
+    name: Execute PO & Quote Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Install Playwright Browsers & System Dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Run PO & Quote Tests
+        id: run_tests
+        continue-on-error: true
+        env:
+          CI: true
+          HEADLESS: true
+          SUITE_NAME: 'River Stream PO & Quote Automation Suite'
+          BASE_URL: ${{ secrets.BASE_URL || 'https://riverstream-qa.azurewebsites.net/' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
+          INGESTION_EMAIL: ${{ secrets.INGESTION_EMAIL || 'riverstream.qa@riverstonetech.in' }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: 465
+          IMAP_HOST: imap.gmail.com
+          IMAP_PORT: 993
+        run: |
+          SUITE="${{ github.event.inputs.test_suite }}"
+          if [ -z "$SUITE" ]; then
+            SUITE="test:po-quote"
+          fi
+          echo "Executing PO & Quote test suite: npm run $SUITE"
+          npm run "$SUITE"
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          npm run allure:generate || echo "Allure generation skipped or completed with warnings"
+
+      - name: Build Elegant Dark HTML Report
+        if: always()
+        run: |
+          npm run report:build
+
+      - name: Upload Test Results & Artifacts
+        id: upload_artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: po-quote-execution-artifacts-${{ github.run_number }}
+          path: |
+            playwright-report/
+            reports/
+            test-results/
+            allure-report/
+          retention-days: 14
+
+      - name: Send PO & Quote Execution Email Report
+        if: always()
+        env:
+          SUITE_NAME: 'River Stream PO & Quote Automation Suite'
+          BASE_URL: ${{ secrets.BASE_URL || 'https://riverstream-qa.azurewebsites.net/' }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
+          REPORT_RECIPIENTS: ${{ github.event.inputs.report_recipients || secrets.REPORT_RECIPIENTS || 'babukumar@riverstonetech.com,rajkamal@riverstonetech.com,divya.d@riverstonetech.com' }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: 465
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          REPORT_WEB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          npm run report:email
+
+      - name: Check Overall Test Run Status
+        if: steps.run_tests.outcome != 'success'
+        run: |
+          echo "PO & Quote tests encountered failures. Check the summary email and run artifacts."
+          exit 1

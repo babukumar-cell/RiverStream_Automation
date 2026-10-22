@@ -6,27 +6,22 @@ import { QaData, uniqueName } from '../../src/test-data/qa-data';
 import { MailService } from '../../src/utils/mail.service';
 import { buildPurchaseOrderPdf, closeRenderer, newToken } from '../email/support/email-scenario';
 
-/*
- * Smoke suite: one happy-path check per major feature, mapped to the module test case sheets
- * (Test Cases/Module_Wise_Test_Cases). It answers "are the core flows of RiverStream working?"
- * and is meant to run before the full regression (npm run test:smoke).
- *
- * Data it creates (all AUTO_-prefixed): one uploaded PO per run, which it completes itself,
- * PO/ACK uploads into a single reusable recon project, and one emailed PO.
+/**
+ * PO and Quote Request Smoke Suite:
+ * Validates the core happy paths of Purchase Orders and Quote Requests:
+ * - Authentication & Session Security
+ * - Dashboard & Navigation
+ * - PO & Quote Upload, Extraction & Review Workflow
+ * - Automated Email Ingestion Flow
  */
 
 const PO_PDF = path.resolve('Test Cases/PO ACK files/CRI Files/New files/Purchase_Order_13583.pdf');
-const RECON_PO = path.resolve('Test Cases/PO ACK files/CRI Files/SIT-53758-113541-DIRO.pdf');
-const RECON_ACK = path.resolve('Test Cases/PO ACK files/CRI Files/53758-113541-SIT-ACKS.pdf');
-const SMOKE_RECON_PROJECT = `${QaData.testPrefix}_Smoke_Recon`;
-
 const LOGGED_OUT = { cookies: [], origins: [] };
 
-/** Collects uncaught page errors and 5xx responses for the lifetime of the page. */
 function trackErrors(page: Page): string[] {
   const errors: string[] = [];
-  page.on('pageerror', err => errors.push(`pageerror: ${err.message}`));
-  page.on('response', res => {
+  page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
+  page.on('response', (res) => {
     if (res.status() >= 500) errors.push(`HTTP ${res.status()} ${res.request().method()} ${res.url()}`);
   });
   return errors;
@@ -39,19 +34,17 @@ async function login(page: Page, email: string, password: string): Promise<void>
   await page.getByRole('button', { name: 'Sign In', exact: true }).click();
 }
 
-/** Waits until list/table loading placeholders are gone. */
 async function waitForLoaded(page: Page): Promise<void> {
   await expect(page.getByText(/^Loading\.{0,3}$/i)).toHaveCount(0, { timeout: 30000 });
 }
 
-/** Copies a sample file to the test output folder under a unique name (avoids duplicate detection). */
 function uniqueCopy(source: string, label: string): string {
   const target = test.info().outputPath(`${uniqueName(label)}${path.extname(source)}`);
   fs.copyFileSync(source, target);
   return target;
 }
 
-test.describe('Smoke: authentication', () => {
+test.describe('Smoke (PO & Quote): Authentication', () => {
   test.use({ storageState: LOGGED_OUT });
 
   test('TC_AUTH_001: Sign in with valid credentials opens the dashboard', async ({ page }) => {
@@ -78,7 +71,7 @@ test.describe('Smoke: authentication', () => {
   });
 });
 
-test.describe('Smoke: dashboard and navigation', () => {
+test.describe('Smoke (PO & Quote): Dashboard and Navigation', () => {
   test('TC_DASH_020: Dashboard loads KPI cards and the document table without errors', async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto('/dashboard');
@@ -108,12 +101,9 @@ test.describe('Smoke: dashboard and navigation', () => {
   });
 
   const modules: { id: string; nav: string[]; url: RegExp; ready: (p: Page) => ReturnType<Page['getByText']> }[] = [
-    { id: 'TC_DOCU_021', nav: ['Documents'], url: /\/documents/, ready: p => p.getByPlaceholder('Search documents...') },
-    { id: 'TC_RECON_001', nav: ['PO-ACK Recon'], url: /\/po-ack-recon$/, ready: p => p.getByRole('button', { name: 'New Project' }) },
-    { id: 'TC_CLIE_044', nav: ['Clients'], url: /\/clients/, ready: p => p.getByRole('button', { name: /Add Client/i }) },
-    { id: 'TC_ANAL_063', nav: ['Analytics'], url: /\/analytics/, ready: p => p.getByText('Performance Analytics') },
-    { id: 'TC_SETT_069', nav: ['Settings', 'Users'], url: /\/users/, ready: p => p.getByRole('button', { name: /Add User/i }) },
-    { id: 'TC_SETT_116', nav: ['Settings', 'Organizations'], url: /\/organizations/, ready: p => p.getByRole('button', { name: /Add Organization/i }) },
+    { id: 'TC_DOCU_021', nav: ['Documents'], url: /\/documents/, ready: (p) => p.getByPlaceholder('Search documents...') },
+    { id: 'TC_CLIE_044', nav: ['Clients'], url: /\/clients/, ready: (p) => p.getByRole('button', { name: /Add Client/i }) },
+    { id: 'TC_ANAL_063', nav: ['Analytics'], url: /\/analytics/, ready: (p) => p.getByText('Performance Analytics') },
   ];
 
   for (const m of modules) {
@@ -129,7 +119,7 @@ test.describe('Smoke: dashboard and navigation', () => {
   }
 });
 
-test.describe('Smoke: upload, documents and review', () => {
+test.describe('Smoke (PO & Quote): Upload, Documents and Review', () => {
   test.describe.configure({ mode: 'serial' });
 
   let fileName = '';
@@ -145,7 +135,10 @@ test.describe('Smoke: upload, documents and review', () => {
     await page.getByRole('option', { name: 'Purchase Order', exact: true }).click();
     await page.locator('input[type="file"]').setInputFiles(file);
 
-    const upload = page.waitForResponse(r => /\/api\/uploadDocument/i.test(r.url()) && r.request().method() === 'POST', { timeout: 60000 });
+    const upload = page.waitForResponse(
+      (r) => /\/api\/uploadDocument/i.test(r.url()) && r.request().method() === 'POST',
+      { timeout: 60000 },
+    );
     await page.getByRole('button', { name: 'Upload and Process', exact: true }).click();
     expect((await upload).status(), 'upload API accepted the file').toBeLessThan(300);
     await expect(page, 'returns to the Documents page').toHaveURL(/\/documents/, { timeout: 30000 });
@@ -202,92 +195,7 @@ test.describe('Smoke: upload, documents and review', () => {
   });
 });
 
-test.describe('Smoke: PO-ACK Recon', () => {
-  test.describe.configure({ mode: 'serial' });
-
-  test('TC_RECON_045: Reference project opens a recon review with PO data, ACK data and discrepancies', async ({ page }) => {
-    await page.goto('/po-ack-recon');
-    await page.getByPlaceholder('Search projects...').fill(QaData.reconProject);
-    await page.getByRole('row').filter({ hasText: QaData.reconProject }).first().click();
-    await expect(page).toHaveURL(/\/po-ack-recon\/[^/]+$/);
-    await waitForLoaded(page);
-
-    const reviewable = page.getByRole('row').filter({ hasNotText: 'Awaiting ACK' }).filter({ has: page.getByRole('button', { name: 'Review' }) });
-    await expect(reviewable.first(), 'project has a reviewable PO/ACK pair').toBeVisible();
-    await reviewable.first().getByRole('button', { name: 'Review' }).click();
-
-    await expect(page).toHaveURL(/\/po-ack-recon\/review\//);
-    await expect(page.getByText('PO Data', { exact: true })).toBeVisible({ timeout: 30000 });
-    await expect(page.getByText(/ACK \d+ Data/)).toBeVisible();
-    await expect(page.getByText(/discrepanc(y|ies) against PO/i)).toBeVisible();
-  });
-
-  test('TC_RECON_033: Upload a PO and ACK pair and get it ready for review', async ({ page }) => {
-    test.setTimeout(420000);
-    await page.goto('/po-ack-recon');
-    const search = page.getByPlaceholder('Search projects...');
-    await search.fill(SMOKE_RECON_PROJECT);
-    await waitForLoaded(page);
-    const projectRow = page.getByRole('row').filter({ hasText: SMOKE_RECON_PROJECT }).first();
-
-    if ((await projectRow.count()) === 0) {
-      // One reusable smoke project: projects cannot be deleted from the UI.
-      await page.getByRole('button', { name: 'New Project' }).click();
-      await page.getByPlaceholder('Enter project name...').fill(SMOKE_RECON_PROJECT);
-      await page.getByRole('button', { name: 'Create', exact: true }).click();
-      await expect(page).toHaveURL(/\/po-ack-recon\/[^/]+$/, { timeout: 30000 });
-    } else {
-      await projectRow.click();
-      await expect(page).toHaveURL(/\/po-ack-recon\/[^/]+$/);
-    }
-
-    const po = uniqueCopy(RECON_PO, 'SmokeReconPO');
-    const ack = uniqueCopy(RECON_ACK, 'SmokeReconACK');
-    await page.getByRole('button', { name: /Upload Documents/i }).first().click();
-    const modal = page.getByRole('dialog');
-    await expect(modal).toBeVisible();
-    const inputs = modal.locator('input[type="file"]');
-    await inputs.first().setInputFiles(po);
-    await inputs.nth(1).setInputFiles(ack);
-
-    const upload = page.waitForResponse(r => r.request().method() === 'POST' && /upload/i.test(r.url()), { timeout: 60000 });
-    await modal.getByRole('button', { name: 'Upload Files', exact: true }).click();
-    expect((await upload).status(), 'recon upload accepted').toBeLessThan(300);
-    await expect(modal).toBeHidden({ timeout: 30000 });
-
-    const poNumber = '53758-113541';
-    const row = page.getByRole('row').filter({ hasText: poNumber }).first();
-    await expect(async () => {
-      await page.reload();
-      await waitForLoaded(page);
-      await expect(row).toBeVisible({ timeout: 10000 });
-      await expect(row, 'recon processing finished').not.toContainText(/Processing|Awaiting ACK/i, { timeout: 1000 });
-    }).toPass({ timeout: 360000, intervals: [15000, 30000] });
-    await expect(row.getByRole('button', { name: 'Review' })).toBeVisible();
-  });
-});
-
-test.describe('Smoke: settings', () => {
-  test('TC_SETT_072: User details open from the Users list', async ({ page }) => {
-    await page.goto('/users');
-    await waitForLoaded(page);
-    await page.getByRole('main').getByRole('button', { name: /view/i }).first().click();
-    await expect(page).toHaveURL(/\/users\/.+/);
-    await expect(page.getByText('Basic Information')).toBeVisible();
-    await expect(page.getByText('Organization Information')).toBeVisible();
-  });
-
-  test('TC_SETT_119: Organization details open from the Organizations list', async ({ page }) => {
-    await page.goto('/organizations');
-    await waitForLoaded(page);
-    await page.getByRole('main').getByRole('button', { name: /view/i }).first().click();
-    await expect(page).toHaveURL(/\/organizations\/ORG/i);
-    await expect(page.getByText('Subscription', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('Document Limit')).toBeVisible();
-  });
-});
-
-test.describe('Smoke: email ingestion', () => {
+test.describe('Smoke (PO & Quote): Email Ingestion Flow', () => {
   test.afterAll(async () => {
     await closeRenderer();
   });

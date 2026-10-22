@@ -283,17 +283,19 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string } = 
   const row = (label: string, value: string) =>
     `<tr><td style="padding: 4px 0; width: 140px; font-weight: 600; color: #111827;">${label}</td><td style="padding: 4px 0; color: #374151;">${value}</td></tr>`;
 
+  const suiteTitle = process.env.SUITE_NAME || 'River Stream Automation Suite';
+
   const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>River Stream Automation Suite Execution Summary</title>
+  <title>${escapeHtml(suiteTitle)} Execution Summary</title>
 </head>
 <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f9fafb; color: #111827;">
   <div style="max-width: 900px; margin: 0 auto; background: #ffffff; padding: 28px 32px; border-radius: 8px; border: 1px solid #e5e7eb;">
     <p style="margin: 0 0 12px 0; font-size: 14px;">Hi Team,</p>
     <p style="margin: 0 0 20px 0; font-size: 14px; color: #374151; line-height: 1.5;">
-      Here is the execution summary of the <strong>River Stream Automation Suite</strong> run started on <strong>${escapeHtml(date)}</strong> at <strong>${escapeHtml(`${time} ${zone}`)}</strong> against <strong>QA</strong>.
+      Here is the execution summary of the <strong>${escapeHtml(suiteTitle)}</strong> run started on <strong>${escapeHtml(date)}</strong> at <strong>${escapeHtml(`${time} ${zone}`)}</strong> against <strong>QA</strong>.
       Overall status: <strong style="color: ${suiteStatus === 'PASSED' ? COLORS.pass : COLORS.fail};">${suiteStatus}</strong>${totals.flaky ? ` <span style="color: ${COLORS.flaky};">(${totals.flaky} flaky)</span>` : ''}.
     </p>
 
@@ -334,8 +336,8 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string } = 
 </html>
 `;
 
-  // Subject format kept as agreed: "River Stream Automation Suite Test Run— DD-MMM-YYYY HH:MM:SS AM TZ"
-  const subject = `River Stream Automation Suite Test Run— ${dateShort} ${time}`;
+  // Subject format kept as agreed: "<Suite Name> Test Run— DD-MMM-YYYY HH:MM:SS AM TZ"
+  const subject = `${suiteTitle} Test Run— ${dateShort} ${time}`;
   return { html, subject };
 }
 
@@ -362,12 +364,12 @@ function ensureHtmlReportMatches(run: ReportRun): void {
   }
 }
 
-async function buildPdf(run: ReportRun, fileName: string): Promise<string | undefined> {
+async function buildPdf(run: ReportRun, targetPdfPath: string, fileName: string): Promise<string | undefined> {
   try {
     ensureHtmlReportMatches(run);
-    await generatePdfReport(DEFAULT_REPORT_PATH, PDF_PATH);
+    await generatePdfReport(DEFAULT_REPORT_PATH, targetPdfPath);
     console.log(`[Info] PDF attachment ready: ${fileName}`);
-    return PDF_PATH;
+    return targetPdfPath;
   } catch (err) {
     console.warn(`[Warning] PDF report could not be generated, sending without it: ${errorMessage(err)}`);
     return undefined;
@@ -391,8 +393,11 @@ export async function generateAndSendReport(argv: string[] = process.argv.slice(
   }
 
   const { dateShort } = formatRunTime(run.startTime);
-  const pdfFileName = `RiverStream_QA_Execution_Report_${dateShort}.pdf`;
-  const pdfPath = opts.noPdf ? undefined : await buildPdf(run, pdfFileName);
+  const suiteTitle = process.env.SUITE_NAME || 'River Stream Automation Suite';
+  const suiteTag = suiteTitle.replace(/[^a-zA-Z0-9]/g, '_');
+  const pdfFileName = `${suiteTag}_${dateShort}.pdf`;
+  const targetPdfPath = path.resolve(process.cwd(), `test-results/${pdfFileName}`);
+  const pdfPath = opts.noPdf ? undefined : await buildPdf(run, targetPdfPath, pdfFileName);
   const { html, subject } = buildEmailHtml(run, { pdfFileName: pdfPath ? pdfFileName : undefined });
 
   const outDir = path.dirname(opts.summaryPath);

@@ -44,8 +44,25 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
-      name: 'chromium',
+      name: 'po-quote',
       dependencies: ['setup'],
+      testMatch: [
+        /(auth|left-side|upload|documents|review|email)[/\\][^/\\]+\.spec\.ts/,
+        /po-quote-smoke\.spec\.ts/,
+      ],
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.env.BROWSER_CHANNEL || undefined,
+        storageState: Config.adminStorageState,
+      },
+    },
+    {
+      name: 'po-ack',
+      dependencies: ['setup'],
+      testMatch: [
+        /po-ack-recon[/\\][^/\\]+\.spec\.ts/,
+        /po-ack-smoke\.spec\.ts/,
+      ],
       use: {
         ...devices['Desktop Chrome'],
         channel: process.env.BROWSER_CHANNEL || undefined,

@@ -1,4 +1,4 @@
-name: River Stream Regression Suite
+name: River Stream - Full Regression Suite
 
 on:
   schedule:
@@ -12,17 +12,16 @@ on:
         default: 'test:main'
         type: choice
         options:
-          - 'test:main'       # Every module
-          - 'test:auth'
-          - 'test:left-side'
-          - 'test:clients'
-          - 'test:analytics'
+          - 'test:main'          # Complete Automation Suite (221 tests)
+          - 'test:po-quote'      # PO & Quote Request Suite (152 tests)
+          - 'test:po-ack'        # PO-ACK Recon Suite (69 tests)
           - 'test:upload'
           - 'test:documents'
           - 'test:recon'
           - 'test:review'
-          - 'test:settings'
           - 'test:email'
+          - 'test:auth'
+          - 'test:left-side'
       report_recipients:
         description: 'Override Email Recipients (comma-separated, optional)'
         required: false
@@ -122,6 +121,7 @@ jobs:
       - name: Send Execution Email Report
         if: always()
         env:
+          SUITE_NAME: ${{ github.event.inputs.test_suite == 'test:po-quote' && 'River Stream PO & Quote Automation Suite' || github.event.inputs.test_suite == 'test:po-ack' && 'River Stream PO-ACK Recon Automation Suite' || 'River Stream Automation Suite' }}
           BASE_URL: ${{ secrets.BASE_URL || 'https://riverstream-qa.azurewebsites.net/' }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
