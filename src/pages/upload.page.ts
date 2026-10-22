@@ -1,170 +1,187 @@
-import { Page, Locator, expect } from '@playwright/test';
-import { BasePage } from './base.page';
-import { createUniqueTestFile } from '../utils/file-utils';
+import { Page, Locator, Response, expect } from '@playwright/test';
+import fs from 'fs';
 import path from 'path';
+import { BasePage } from './base.page';
 
+export type UploadDocumentType = 'Quote Request' | 'Purchase Order';
+export type UploadOrigin = 'dashboard' | 'documents';
+
+/** API value the backend stores for each document type chosen on the Upload page */
+export const DOC_TYPE_API_VALUE: Record<UploadDocumentType, string> = {
+  'Quote Request': 'QUOTE_REQUEST',
+  'Purchase Order': 'PURCHASE_ORDER',
+};
+
+/** File handed to the browser for synthetic drag-and-drop */
+export interface DroppedFile {
+  name: string;
+  mimeType: string;
+  buffer: Buffer;
+}
+
+export interface UploadResult {
+  status: number;
+  body: any;
+  requestBody: any;
+}
+
+/**
+ * Upload Document page (/upload?from=dashboard|documents).
+ *
+ * Live flow (Oct 2026): choose a document type, attach one file (Choose File or drag-and-drop),
+ * then click "Upload and Process". The button reads "Uploading..." while POST /api/uploadDocument
+ * is in flight; on success (HTTP 202) the app redirects back to the page named by `from`.
+ * Client-side validation errors and server errors appear in a red banner inside the upload card.
+ */
 export class UploadPage extends BasePage {
-  // Locators
-  readonly uploadNavButton: Locator;
-  readonly fileInput: Locator;
-  readonly chooseFileButton: Locator;
-  readonly dropZone: Locator;
+  readonly heading: Locator;
   readonly documentTypeDropdown: Locator;
-  readonly processButton: Locator;
-  readonly uploadProgressBar: Locator;
-  readonly uploadSuccessToast: Locator;
+  readonly fileInput: Locator;
+  readonly dropZone: Locator;
+  readonly dropZonePrompt: Locator;
+  readonly chooseFileButton: Locator;
+  readonly removeFileButton: Locator;
+  readonly uploadAndProcessButton: Locator;
+  readonly uploadingButton: Locator;
   readonly errorMessage: Locator;
+  readonly acceptedFormatsHint: Locator;
+  readonly selectedFileSize: Locator;
+  readonly uploadSuccessToast: Locator;
   readonly backToDashboardButton: Locator;
+  readonly backToDocumentsButton: Locator;
 
   constructor(page: Page) {
     super(page);
 
-    this.uploadNavButton = page.locator('button:has-text("Upload New File"), a:has-text("Upload New File"), button:has-text("Upload")').first();
-    this.fileInput = page.locator('input[type="file"]').first();
-    this.chooseFileButton = page.locator('button:has-text("Choose File"), label:has-text("Choose File")').first();
-    this.dropZone = page.locator('div.border-dashed, div:has(> button:has-text("Choose File"))').first();
-    this.documentTypeDropdown = page.locator('button:has-text("Choose a document type"), button:has-text("Quote Request"), button:has-text("Purchase Order"), label:has-text("Document type") ~ button').first();
-    this.processButton = page.locator('button:has-text("Process"), button:has-text("Upload Document"), button:has-text("Upload"):not(:has-text("New"))').first();
-    this.uploadProgressBar = page.locator('.progress-bar, [role="progressbar"]');
-    this.uploadSuccessToast = page.locator('.toast-success, .alert-success, :text-matches("successfully uploaded|upload complete|processing", "i")').first();
-    this.errorMessage = page.locator('.toast-error, .alert-danger, [role="alert"], :text-matches("unsupported|invalid|error|failed|rejected|limit|too large|already exists|not allowed", "i")').first();
-    this.backToDashboardButton = page.locator('button:has-text("Back to Dashboard"), a:has-text("Back to Dashboard"), button:has-text("Dashboard")').first();
+    this.heading = page.getByRole('heading', { name: 'Upload Your Document' });
+    this.documentTypeDropdown = page.getByLabel('Document type');
+    this.fileInput = page.locator('input[type="file"]');
+    // The dashed card that wraps the hidden file input is the drop target.
+    this.dropZone = page.locator('div.border-dashed').filter({ has: this.fileInput });
+    this.dropZonePrompt = page.getByText('Drag and drop your file here', { exact: true });
+    this.chooseFileButton = page.getByRole('button', { name: 'Choose File', exact: true });
+    this.removeFileButton = page.getByRole('button', { name: 'Remove File', exact: true });
+    this.uploadAndProcessButton = page.getByRole('button', { name: 'Upload and Process', exact: true });
+    this.uploadingButton = page.getByRole('button', { name: 'Uploading...', exact: true });
+    // Red validation / server error banner (it has no role="alert", so it is anchored on its styling).
+    this.errorMessage = page.locator('main div.bg-red-50').filter({ has: page.locator('span') });
+    this.acceptedFormatsHint = page.getByText(/^Accepted formats:/);
+    this.selectedFileSize = this.dropZone.getByText(/^\d+\.\d{2} MB$/);
+    this.uploadSuccessToast = page.locator('[data-sonner-toast]').filter({ hasText: /upload|success|processing/i });
+    this.backToDashboardButton = page.getByRole('button', { name: 'Back to Dashboard', exact: true });
+    this.backToDocumentsButton = page.getByRole('button', { name: 'Back to Documents', exact: true });
+  }
+
+  /** Opens /upload and waits until the accepted formats have loaded (files chosen earlier are rejected). */
+  async navigate(from: UploadOrigin = 'dashboard'): Promise<void> {
+    await this.navigateTo(`/upload?from=${from}`);
+    await this.waitForReady();
   }
 
   async waitForReady(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded').catch(() => {});
-    // Wait for "Accepted file formats are still loading" banner to detach if present
-    const loadingBanner = this.page.locator(':text("Accepted file formats are still loading")');
-    if (await loadingBanner.isVisible({ timeout: 1500 }).catch(() => false)) {
-      await loadingBanner.waitFor({ state: 'detached', timeout: 15000 }).catch(() => {});
-    }
-    await this.page.waitForTimeout(500);
+    await expect(this.heading).toBeVisible();
+    await expect(this.fileInput).toHaveAttribute('accept', /\.pdf/, { timeout: 20000 });
   }
 
-  async navigate(): Promise<void> {
-    if (!this.getCurrentUrl().includes('/upload')) {
-      await this.navigateTo('/upload?from=dashboard');
-    }
-    await this.waitForReady();
+  documentTypeOption(type: UploadDocumentType | string): Locator {
+    return this.page.getByRole('option', { name: type, exact: true });
   }
 
-  async selectDocumentType(type: string): Promise<void> {
-    await this.waitForReady();
-    if (await this.documentTypeDropdown.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const tagName = await this.documentTypeDropdown.evaluate(el => el.tagName.toLowerCase()).catch(() => 'button');
-      if (tagName === 'select') {
-        await this.documentTypeDropdown.selectOption({ label: type }).catch(async () => {
-          await this.documentTypeDropdown.selectOption({ value: type });
-        });
-      } else {
-        await this.documentTypeDropdown.click({ timeout: 5000 }).catch(() => {});
-        await this.page.waitForTimeout(500);
-        const searchPattern = type.toLowerCase().includes('quot') || type.toLowerCase().includes('quote') ? 'Quote' : 'Purchase Order';
-        const option = this.page.locator(`[role="option"]:has-text("${searchPattern}"), [role="menuitem"]:has-text("${searchPattern}"), li:has-text("${searchPattern}"), [data-radix-collection-item]:has-text("${searchPattern}")`).first();
-        if (await option.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await option.click({ timeout: 5000 }).catch(() => {});
-          await this.page.waitForTimeout(500);
-        }
+  async selectDocumentType(type: UploadDocumentType): Promise<void> {
+    await this.documentTypeDropdown.click();
+    await this.documentTypeOption(type).click();
+    await expect(this.documentTypeDropdown).toHaveText(type);
+  }
+
+  /** File name shown in the drop zone once a file is attached */
+  selectedFileName(fileName: string): Locator {
+    return this.dropZone.getByText(fileName, { exact: true });
+  }
+
+  /** Attaches a file straight to the hidden input (what the browser does after the OS dialog closes). */
+  async attachFile(file: string | DroppedFile): Promise<void> {
+    await this.fileInput.setInputFiles(typeof file === 'string' ? path.resolve(file) : file);
+  }
+
+  /** Attaches a file the way a user does: click "Choose File" and pick the file in the native dialog. */
+  async chooseFileViaDialog(filePath: string): Promise<void> {
+    const chooserPromise = this.page.waitForEvent('filechooser');
+    await this.chooseFileButton.click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles(path.resolve(filePath));
+  }
+
+  /** Builds a DroppedFile from a file on disk */
+  static toDroppedFile(filePath: string, mimeType: string = 'application/octet-stream'): DroppedFile {
+    return { name: path.basename(filePath), mimeType, buffer: fs.readFileSync(filePath) };
+  }
+
+  /** Dispatches dragenter + dragover on the drop zone with the given files (without dropping). */
+  async dragOver(files: DroppedFile[]): Promise<void> {
+    const dataTransfer = await this.createDataTransfer(files);
+    await this.dropZone.dispatchEvent('dragenter', { dataTransfer });
+    await this.dropZone.dispatchEvent('dragover', { dataTransfer });
+  }
+
+  async dragLeave(): Promise<void> {
+    const dataTransfer = await this.createDataTransfer([]);
+    await this.dropZone.dispatchEvent('dragleave', { dataTransfer });
+  }
+
+  /** Full drag-and-drop gesture: dragenter, dragover and drop on the drop zone. */
+  async dropFiles(files: DroppedFile[]): Promise<void> {
+    const dataTransfer = await this.createDataTransfer(files);
+    await this.dropZone.dispatchEvent('dragenter', { dataTransfer });
+    await this.dropZone.dispatchEvent('dragover', { dataTransfer });
+    await this.dropZone.dispatchEvent('drop', { dataTransfer });
+  }
+
+  private async createDataTransfer(files: DroppedFile[]) {
+    const payload = files.map(f => ({ name: f.name, mimeType: f.mimeType, base64: f.buffer.toString('base64') }));
+    return this.page.evaluateHandle(items => {
+      const dt = new DataTransfer();
+      for (const item of items) {
+        const bytes = Uint8Array.from(atob(item.base64), c => c.charCodeAt(0));
+        dt.items.add(new File([bytes], item.name, { type: item.mimeType }));
       }
-    }
+      return dt;
+    }, payload);
   }
 
-  async uploadFile(filePath: string): Promise<void> {
-    await this.waitForReady();
-    const resolvedPath = path.resolve(filePath);
-    await this.fileInput.setInputFiles(resolvedPath);
-    await this.page.waitForTimeout(500);
+  /** Background colour of the drop zone, used to detect the drag-over highlight */
+  async dropZoneBackground(): Promise<string> {
+    return this.dropZone.evaluate(el => getComputedStyle(el).backgroundColor);
   }
 
-  async uploadMultipleFiles(filePaths: string[]): Promise<void> {
-    const resolved = filePaths.map(p => path.resolve(p));
-    await this.fileInput.setInputFiles(resolved);
+  static isUploadRequest(response: Response): boolean {
+    return response.url().includes('/api/uploadDocument') && response.request().method() === 'POST';
   }
 
-  async dragAndDropFile(filePath: string): Promise<void> {
-    // In browser automation, setInputFiles directly targets the underlying dropzone input
-    await this.uploadFile(filePath);
-  }
-
-  async clickProcess(): Promise<void> {
-    if (await this.processButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      if (await this.processButton.isEnabled().catch(() => false)) {
-        await this.processButton.click();
-      }
-    }
-  }
-
-  async clickBackToDashboard(): Promise<void> {
-    const backBtn = this.page.getByText('Back to Dashboard').first();
-    await this.page.waitForTimeout(1000);
+  /** Clicks "Upload and Process" and returns the uploadDocument API exchange. */
+  async submitUpload(): Promise<UploadResult> {
+    const responsePromise = this.page.waitForResponse(UploadPage.isUploadRequest, { timeout: 45000 });
+    await this.uploadAndProcessButton.click();
+    const response = await responsePromise;
+    let body: any = null;
     try {
-      await backBtn.click({ force: true, timeout: 5000 });
+      body = await response.json();
     } catch {
-      await this.navigateTo('/dashboard');
+      body = await response.text();
     }
-    await this.page.waitForLoadState('domcontentloaded').catch(() => {});
-  }
-
-  async getDisplayedErrorMessage(): Promise<string | null> {
-    try {
-      if (await this.errorMessage.isVisible({ timeout: 4000 })) {
-        return await this.errorMessage.innerText();
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  async isDuplicateError(): Promise<boolean> {
-    const errorText = await this.getDisplayedErrorMessage();
-    return !!errorText && /already exists|already uploaded|already processed|duplicate/i.test(errorText);
-  }
-
-  async isUploadSuccessful(fileName?: string): Promise<boolean> {
-    const hasToast = await this.uploadSuccessToast.isVisible({ timeout: 6000 }).catch(() => false);
-    const isRedirected = !this.getCurrentUrl().includes('/upload');
-    const hasProgress = await this.uploadProgressBar.isVisible({ timeout: 3000 }).catch(() => false);
-    let hasFileCard = false;
-    if (fileName) {
-      const base = path.basename(fileName);
-      hasFileCard = await this.page.locator(`text=${base}`).first().isVisible({ timeout: 3000 }).catch(() => false);
-    }
-    return hasToast || isRedirected || hasProgress || hasFileCard;
+    return { status: response.status(), body, requestBody: response.request().postDataJSON() };
   }
 
   /**
-   * Uploads a file with smart duplicate auto-recovery:
-   * If River Stream rejects because the file already exists in UI,
-   * it automatically generates a fresh unique copy with a timestamped suffix,
-   * re-uploads it immediately, and completes the test.
+   * Complete happy-path upload: select type, attach the file, submit, and wait for the redirect
+   * back to the origin page. Returns the uploadDocument API exchange.
    */
-  async uploadWithDuplicateAutoRecovery(
-    filePath: string,
-    docType?: string
-  ): Promise<{ success: boolean; finalFilePath: string; wasDuplicated: boolean }> {
-    if (docType) {
-      await this.selectDocumentType(docType);
-    }
-
-    await this.uploadFile(filePath);
-    await this.clickProcess();
-
-    // Check if the system rejected due to duplicate file
-    const isDuplicate = await this.isDuplicateError();
-    if (isDuplicate) {
-      console.warn(`[UploadPage] File "${path.basename(filePath)}" was already uploaded previously (Duplicate detected).`);
-      console.log(`[UploadPage] Auto-recovering: Generating unique timestamped copy and re-uploading...`);
-
-      const uniqueCopy = createUniqueTestFile(filePath);
-      await this.uploadFile(uniqueCopy);
-      await this.clickProcess();
-
-      const success = await this.isUploadSuccessful(uniqueCopy);
-      return { success, finalFilePath: uniqueCopy, wasDuplicated: true };
-    }
-
-    const success = await this.isUploadSuccessful(filePath);
-    return { success, finalFilePath: filePath, wasDuplicated: false };
+  async uploadDocument(filePath: string, type: UploadDocumentType, from: UploadOrigin = 'dashboard'): Promise<UploadResult> {
+    await this.selectDocumentType(type);
+    await this.attachFile(filePath);
+    await expect(this.selectedFileName(path.basename(filePath))).toBeVisible();
+    const result = await this.submitUpload();
+    expect(result.status, `uploadDocument response: ${JSON.stringify(result.body)}`).toBe(202);
+    await this.page.waitForURL(`**/${from}`, { timeout: 30000 });
+    return result;
   }
 }

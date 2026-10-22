@@ -7,24 +7,21 @@
     "test:headed": "playwright test --headed",
     "test:auth": "playwright test tests/auth",
     "test:left-side": "playwright test tests/left-side",
+    "test:clients": "playwright test tests/clients",
+    "test:analytics": "playwright test tests/analytics",
     "test:upload": "playwright test tests/upload",
-    "test:upload:sif": "playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_007\"",
-    "test:upload:sif:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_007\" && npm run allure:generate && npm run allure:open",
-    "test:upload:sif:headed:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_007\" --headed && npm run allure:generate && npm run allure:open",
-    "test:upload:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts && npm run allure:generate && npm run allure:open",
-    "test:upload:headed:allure": "npm run allure:clean && playwright test tests/upload/upload.spec.ts --headed && npm run allure:generate && npm run allure:open",
-    "test:upload:batch": "npm run allure:clean && playwright test tests/upload/upload.spec.ts -g \"TC_File Upload_Batch\" --headed && npm run allure:generate && npm run allure:open",
-    "test:review": "playwright test tests/review",
+    "test:upload:allure": "npm run allure:clean && playwright test tests/upload && npm run allure:generate && npm run allure:open",
+    "test:documents": "playwright test tests/documents",
     "test:recon": "playwright test tests/po-ack-recon",
     "test:recon:headed": "playwright test tests/po-ack-recon --headed",
-    "test:documents": "playwright test tests/documents",
+    "test:review": "playwright test tests/review",
     "test:settings": "playwright test tests/settings",
-    "test:main": "playwright test tests/auth tests/left-side tests/upload tests/documents tests/po-ack-recon tests/review tests/email",
-    "test:main:email": "node -e \"const { execSync } = require('child_process'); try { execSync('npm run test:main', { stdio: 'inherit' }); } catch(e){} execSync('npm run report:email', { stdio: 'inherit' });\"",
-    "test:full": "playwright test",
-    "test:all": "playwright test",
+    "test:email": "playwright test tests/email",
+    "test:main": "npm run allure:clean && playwright test",
+    "test:main:email": "node scripts/run-and-report.js",
+    "typecheck": "tsc --noEmit -p .",
     "email:send": "ts-node --transpile-only src/scripts/send-sif-email.ts",
-    "report": "ts-node --transpile-only src/reporters/generate-elegant-report.ts && node -e \"const { exec } = require('child_process'); const p = require('path').resolve('playwright-report/index.html'); exec(process.platform === 'win32' ? 'start \\\"\\\" \\\"' + p + '\\\"' : 'open \\\"' + p + '\\\"');\"",
+    "report": "ts-node --transpile-only src/reporters/generate-elegant-report.ts && node scripts/open-file.js playwright-report/index.html",
     "report:build": "ts-node --transpile-only src/reporters/generate-elegant-report.ts",
     "report:pdf": "ts-node --transpile-only src/utils/generate-pdf-report.ts",
     "report:email": "ts-node src/utils/send-test-report-email.ts",
@@ -35,6 +32,7 @@
     "allure:serve": "allure serve allure-results"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@playwright/test": "1.49.1",
     "@types/imap-simple": "^4.2.9",
     "@types/mailparser": "^3.9.0",
@@ -43,12 +41,20 @@
     "allure-commandline": "^2.46.1",
     "allure-playwright": "^2.15.1",
     "dotenv": "^16.4.7",
+    "eslint": "^9.39.4",
+    "eslint-plugin-playwright": "^2.12.1",
+    "globals": "^16.5.0",
+    "prettier": "^3.9.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.71.2"
   },
   "dependencies": {
     "imap-simple": "^5.1.0",
     "mailparser": "^3.9.36",
     "nodemailer": "^6.10.0"
+  },
+  "engines": {
+    "node": ">=18.17"
   }
 }

@@ -1,68 +1,78 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './base.page';
 
-export class LeftSidePage extends BasePage {
-  // Navigation & Header Locators
-  readonly logoutButton: Locator;
-  readonly userProfile: Locator;
-  readonly orgDropdown: Locator;
-  readonly dashboardNavLink: Locator;
-  readonly documentsNavLink: Locator;
-  readonly clientsNavLink: Locator;
-  readonly analyticsNavLink: Locator;
-  readonly settingsNavLink: Locator;
-  readonly uploadNewFileButton: Locator;
+/** Primary sidebar entries: visible label, route reached after clicking, and the app header title. */
+export const SidebarRoutes = [
+  { label: 'Dashboard', url: /\/dashboard$/, header: 'Dashboard' },
+  { label: 'Documents', url: /\/documents$/, header: 'Documents' },
+  { label: 'PO-ACK Recon', url: /\/po-ack-recon$/, header: 'PO-ACK Recon' },
+  { label: 'Clients', url: /\/clients$/, header: 'Clients' },
+  { label: 'Analytics', url: /\/analytics$/, header: 'Analytics' },
+  { label: 'Audit Logs', url: /\/coming-soon\?from=audit-logs$/, header: 'Audit Logs' },
+] as const;
 
-  // Metric Cards Locators
-  readonly totalDocumentsCard: Locator;
-  readonly totalPOsCard: Locator;
-  readonly processingRateCard: Locator;
-  readonly extractionAccuracyCard: Locator;
-  readonly reviewedCard: Locator;
-  readonly pendingReviewCard: Locator;
-  readonly processingCard: Locator;
-  readonly avgProcessingTimeCard: Locator;
+/**
+ * Application shell shared by every logged-in page: left sidebar (navigation, plan badge, logout)
+ * and the top header (page title, notification bell, signed-in user).
+ */
+export class LeftSidePage extends BasePage {
+  readonly sidebar: Locator;
+  readonly sidebarNav: Locator;
+  readonly collapseSidebarButton: Locator;
+  readonly expandSidebarButton: Locator;
+  readonly logoutButton: Locator;
+  readonly planName: Locator;
+  readonly planValidity: Locator;
+
+  readonly header: Locator;
+  readonly bellButton: Locator;
+  readonly headerAvatar: Locator;
 
   constructor(page: Page) {
     super(page);
 
-    // Sidebar & User controls
-    this.userProfile = page.locator('text=/Admin Riverstone/i, .avatar, button:has([class*="lucide-user"])').first();
-    this.logoutButton = page.locator('aside button:has(svg.lucide-log-out), button:has(svg.lucide-log-out), aside [aria-label*="logout" i], aside [title*="logout" i], button:has-text("Logout")').first();
-    this.orgDropdown = page.locator('button:has-text("All Organizations"), button:has-text("Organization"), [role="combobox"]').first();
-    this.dashboardNavLink = page.locator('aside a:has-text("Dashboard"), button:has-text("Dashboard")').first();
-    this.documentsNavLink = page.locator('aside a:has-text("Documents"), button:has-text("Documents")').first();
-    this.clientsNavLink = page.locator('aside a:has-text("Clients"), button:has-text("Clients")').first();
-    this.analyticsNavLink = page.locator('aside a:has-text("Analytics"), button:has-text("Analytics")').first();
-    this.settingsNavLink = page.locator('aside a:has-text("Settings"), button:has-text("Settings")').first();
-    this.uploadNewFileButton = page.locator('button:has-text("Upload New File")').first();
+    this.sidebar = page.locator('aside');
+    this.sidebarNav = this.sidebar.getByRole('navigation');
+    this.collapseSidebarButton = page.getByRole('button', { name: 'Collapse sidebar' });
+    this.expandSidebarButton = page.getByRole('button', { name: 'Expand sidebar' });
+    this.logoutButton = this.sidebar.getByRole('button', { name: 'Logout' });
+    this.planName = this.sidebar.getByText(/^\w[\w ]* Plan$/);
+    this.planValidity = this.sidebar.getByText(/^Valid until /);
 
-    // Metric Cards (matching exact live dashboard cards)
-    this.totalDocumentsCard = page.locator('div:has-text("Total Documents"), div:has-text("Total POs")').first();
-    this.totalPOsCard = this.totalDocumentsCard;
-    this.processingRateCard = page.locator('div:has-text("Processing Rate"), div:has-text("Processing")').first();
-    this.extractionAccuracyCard = page.locator('div:has-text("Extraction Accuracy"), div:has-text("Reviewed")').first();
-    this.reviewedCard = page.locator('div:has-text("Reviewed")').first();
-    this.pendingReviewCard = page.locator('div:has-text("Pending Review")').first();
-    this.processingCard = page.locator('div:has-text("Processing")').first();
-    this.avgProcessingTimeCard = page.locator('div:has-text("Avg Processing Time"), div:has-text("Requires attention"), div:has-text("Pending Review")').first();
+    this.header = page.getByRole('banner');
+    this.bellButton = this.header.locator('button:has(svg.lucide-bell)');
+    this.headerAvatar = this.header.locator('[data-slot="avatar"]');
   }
 
-  async selectOrganization(orgName: string): Promise<void> {
-    if (await this.orgDropdown.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await this.orgDropdown.click();
-      await this.page.locator(`text=${orgName}`).first().click();
-    }
+  /** Sidebar navigation button (works expanded and collapsed: collapsed buttons keep a title). */
+  navButton(label: string): Locator {
+    return this.sidebarNav.getByRole('button', { name: label, exact: true });
   }
 
+  /** Signed-in user's display name in the header. */
+  headerUserName(name: string): Locator {
+    return this.header.getByText(name, { exact: true });
+  }
+
+  async openDashboard(): Promise<void> {
+    await this.navigateTo('/dashboard');
+    await expect(this.sidebarNav).toBeVisible();
+  }
+
+  async navigateViaSidebar(label: string): Promise<void> {
+    await this.navButton(label).click();
+  }
+
+  /** Click Logout and wait for the Sign-In page. Only use in a test-owned (fresh) login session. */
   async clickLogout(): Promise<void> {
-    if (await this.logoutButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await this.logoutButton.click();
-    } else if (await this.userProfile.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await this.userProfile.click();
-      const popupLogout = this.page.locator('button:has-text("Logout"), button:has-text("Sign out"), a:has-text("Logout")').first();
-      await popupLogout.click();
-    }
-    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.logoutButton.click();
+    await expect(this.page).toHaveURL(/\/$/);
+    await expect(this.page.locator('#email')).toBeVisible();
+  }
+
+  async sidebarWidth(): Promise<number> {
+    const box = await this.sidebar.boundingBox();
+    if (!box) throw new Error('Sidebar is not rendered');
+    return box.width;
   }
 }

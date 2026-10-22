@@ -1,40 +1,56 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
-const TEMP_DIR = path.resolve(__dirname, '../test-data/temp');
+/**
+ * Default location for generated files when the caller does not pass a directory.
+ * Tests should pass `test.info().outputPath()` instead so files live with the test results
+ * and are cleaned up by Playwright; nothing is ever written inside the repository.
+ */
+const DEFAULT_TEMP_DIR = path.join(os.tmpdir(), 'riverstream-automation');
 
 /**
- * Ensure the temporary directory exists.
+ * Ensure the output directory exists and return it.
  */
-export function ensureTempDir(): string {
-  if (!fs.existsSync(TEMP_DIR)) {
-    fs.mkdirSync(TEMP_DIR, { recursive: true });
-  }
-  return TEMP_DIR;
+export function ensureTempDir(outputDir: string = DEFAULT_TEMP_DIR): string {
+  fs.mkdirSync(outputDir, { recursive: true });
+  return outputDir;
+}
+
+function timestamp(): string {
+  return new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14); // YYYYMMDDHHmmss
 }
 
 /**
  * Creates a unique copy of an existing test file with a timestamp/random suffix
  * to prevent duplicate file rejection in River Stream.
- * 
- * Example: 'claims.sif' -> 'claims_20261014_124500_8391.sif'
+ *
+ * Example: 'claims.sif' -> '<outputDir>/claims_20261014124500_8391.sif'
  */
-export function createUniqueTestFile(sourceFilePath: string, customPrefix?: string): string {
+export function createUniqueTestFile(sourceFilePath: string, customPrefix?: string, outputDir?: string): string {
   if (!fs.existsSync(sourceFilePath)) {
     throw new Error(`Source test file not found: ${sourceFilePath}`);
   }
-
-  ensureTempDir();
-
+  const dir = ensureTempDir(outputDir);
   const parsed = path.parse(sourceFilePath);
-  const now = new Date();
-  const dateStr = now.toISOString().replace(/[-:T]/g, '').slice(0, 14); // YYYYMMDDHHmmss
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-  
   const baseName = customPrefix ? `${customPrefix}_${parsed.name}` : parsed.name;
-  const uniqueFileName = `${baseName}_${dateStr}_${randomSuffix}${parsed.ext}`;
-  const targetPath = path.join(TEMP_DIR, uniqueFileName);
+  const targetPath = path.join(dir, `${baseName}_${timestamp()}_${randomSuffix}${parsed.ext}`);
+  fs.copyFileSync(sourceFilePath, targetPath);
+  return targetPath;
+}
 
+/**
+ * Copies a source file to `<outputDir>/<fileName>` (the extension of the source is kept when
+ * `fileName` has none). Use with `uniqueName()` so uploaded documents are traceable test data.
+ */
+export function createNamedCopy(sourceFilePath: string, fileName: string, outputDir?: string): string {
+  if (!fs.existsSync(sourceFilePath)) {
+    throw new Error(`Source test file not found: ${sourceFilePath}`);
+  }
+  const dir = ensureTempDir(outputDir);
+  const finalName = path.extname(fileName) ? fileName : `${fileName}${path.extname(sourceFilePath)}`;
+  const targetPath = path.join(dir, finalName);
   fs.copyFileSync(sourceFilePath, targetPath);
   return targetPath;
 }
@@ -42,47 +58,35 @@ export function createUniqueTestFile(sourceFilePath: string, customPrefix?: stri
 /**
  * Creates an on-the-fly test file (e.g., .exe, .txt, no-ext, corrupted) for validation testing.
  */
-export function createMockFile(fileName: string, content?: string | Buffer): string {
-  ensureTempDir();
-  const targetPath = path.join(TEMP_DIR, fileName);
-
-  if (content !== undefined) {
-    fs.writeFileSync(targetPath, content);
-  } else {
-    // Default dummy content
-    fs.writeFileSync(targetPath, `Mock test content for ${fileName}`);
-  }
-
+export function createMockFile(fileName: string, content?: string | Buffer, outputDir?: string): string {
+  const dir = ensureTempDir(outputDir);
+  const targetPath = path.join(dir, fileName);
+  fs.writeFileSync(targetPath, content !== undefined ? content : `Mock test content for ${fileName}`);
   return targetPath;
 }
 
 /**
- * Creates a large dummy file of a specified size in MB for size limit testing.
+ * Creates a sparse dummy PDF of the given size in MB (1 MB = 1024 * 1024 bytes) for size-limit testing.
  */
-export function createLargeFile(fileName: string, sizeInMb: number = 30): string {
-  ensureTempDir();
-  const targetPath = path.join(TEMP_DIR, fileName);
-
+export function createLargeFile(fileName: string, sizeInMb: number = 30, outputDir?: string): string {
+  const dir = ensureTempDir(outputDir);
+  const targetPath = path.join(dir, fileName);
   const fd = fs.openSync(targetPath, 'w');
-  fs.writeSync(fd, Buffer.from('%PDF-1.4\n% Large test file\n'));
-  fs.ftruncateSync(fd, sizeInMb * 1024 * 1024);
-  fs.closeSync(fd);
-
+  try {
+    fs.writeSync(fd, Buffer.from('%PDF-1.4\n% Large test file\n'));
+    fs.ftruncateSync(fd, Math.round(sizeInMb * 1024 * 1024));
+  } finally {
+    fs.closeSync(fd);
+  }
   return targetPath;
 }
 
 /**
- * Cleans up temporary test files.
+ * Removes every file in the given output directory (defaults to the shared OS temp folder).
  */
-export function cleanupTempFiles(): void {
-  if (fs.existsSync(TEMP_DIR)) {
-    try {
-      const files = fs.readdirSync(TEMP_DIR);
-      for (const file of files) {
-        fs.unlinkSync(path.join(TEMP_DIR, file));
-      }
-    } catch (err) {
-      console.warn(`[file-utils] Warning during temp cleanup: ${(err as Error).message}`);
-    }
+export function cleanupTempFiles(outputDir: string = DEFAULT_TEMP_DIR): void {
+  if (!fs.existsSync(outputDir)) return;
+  for (const file of fs.readdirSync(outputDir)) {
+    fs.rmSync(path.join(outputDir, file), { force: true, recursive: true });
   }
 }

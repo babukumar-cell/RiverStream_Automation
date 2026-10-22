@@ -1,120 +1,173 @@
 import fs from 'fs';
 import path from 'path';
+import {
+  CaseStatus,
+  ReportCase,
+  ReportRun,
+  countStatuses,
+  errorMessage,
+  escapeHtml,
+  formatDuration,
+  formatRunTime,
+  knownDefects,
+  loadRunFromSummary,
+  passRate,
+  summariseModules,
+} from './report-data';
 
 /**
- * Interface definitions for Playwright JSON Report
+ * Elegant dark HTML report.
+ *
+ * - `renderElegantReport(run, out)` is called by the ElegantDarkReporter with data collected in memory.
+ * - `generateElegantReport(summary, out)` (npm run report:build) rebuilds it from test-results/summary.json.
+ *
+ * Screenshots are copied to <report dir>/assets/ and linked; videos and traces are linked in place
+ * (relative path into test-results/), so the HTML stays small. Upload playwright-report/ and
+ * test-results/ together (CI does) to keep every link working.
  */
-interface PlaywrightResult {
-  workerIndex: number;
-  status: 'passed' | 'failed' | 'timedOut' | 'skipped' | 'interrupted';
-  duration: number;
-  errors: Array<{ message?: string; stack?: string }>;
-  stdout: any[];
-  stderr: any[];
-  retry: number;
-  startTime: string;
-  attachments?: Array<{ name: string; contentType: string; path?: string; body?: string }>;
-  steps?: Array<{
-    title: string;
-    duration: number;
-    error?: { message?: string };
-    steps?: any[];
-  }>;
-}
 
-interface PlaywrightSpec {
-  id: string;
-  title: string;
-  file: string;
-  line: number;
-  column: number;
-  ok: boolean;
-  tags: string[];
-  tests: Array<{
-    timeout: number;
-    expectedStatus: string;
-    status: string;
-    results: PlaywrightResult[];
-  }>;
-}
+export const DEFAULT_REPORT_PATH = path.resolve(process.cwd(), 'playwright-report/index.html');
 
 interface MediaItem {
   name: string;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'trace';
   src: string;
 }
 
-interface ProcessedTestCase {
+interface CardView {
   id: string;
   tcId: string;
   title: string;
   moduleKey: string;
   moduleName: string;
+  moduleShort: string;
   file: string;
   line: number;
-  status: 'passed' | 'failed' | 'skipped' | 'flaky';
+  status: CaseStatus;
+  attempts: number;
   durationMs: number;
   error?: string;
   errorStack?: string;
+  inCatalog: boolean;
   description: string;
   plainSteps: string;
   testData: string;
   expectedResult: string;
   actualResult: string;
+  knownDefects: string[];
   steps: Array<{ title: string; durationMs: number; ok: boolean }>;
   media: MediaItem[];
 }
 
-interface ModuleInfo {
+interface ModuleView {
   key: string;
   name: string;
   shortName: string;
   icon: string;
-  order: number;
   total: number;
   passed: number;
   failed: number;
-  skipped: number;
   flaky: number;
-  durationMs: number;
+  skipped: number;
 }
 
-// Escape HTML special characters for attributes and text
-function escapeHtml(str: string | undefined | null): string {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+const STATUS_BADGE: Record<CaseStatus, string> = {
+  passed: '✓ PASS',
+  failed: '✗ FAIL',
+  flaky: '⚠ FLAKY',
+  skipped: '● SKIP',
+};
+
+const ACTUAL_LABEL: Record<CaseStatus, string> = {
+  passed: 'Verified Success',
+  failed: 'Why it Failed',
+  flaky: 'Passed on Retry',
+  skipped: 'Not Executed',
+};
+
+const ACTUAL_ICON: Record<CaseStatus, string> = {
+  passed: '🟢',
+  failed: '🔴',
+  flaky: '🟣',
+  skipped: '●',
+};
+
+function toPosix(p: string): string {
+  return p.split(path.sep).join('/');
 }
 
-// Load master test case catalog
-const catalogPath = path.resolve(__dirname, '../test-data/test-catalog-metadata.json');
-let testCatalog: Record<string, any> = {};
-if (fs.existsSync(catalogPath)) {
-  try {
-    testCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
-    console.log(`[ElegantReport] Loaded ${Object.keys(testCatalog).length} test cases from catalog metadata.`);
-  } catch (err: any) {
-    console.warn('[ElegantReport] Could not load test catalog metadata:', err.message);
-  }
+function safeName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-80);
+}
+
+/** Copies screenshots into assets/ and links videos / traces in place. */
+function collectMedia(tc: ReportCase, index: number, reportDir: string, assetsDir: string): MediaItem[] {
+  const media: MediaItem[] = [];
+  tc.attachments.forEach((att, n) => {
+    if (!fs.existsSync(att.path)) return;
+    const lowerPath = att.path.toLowerCase();
+    const isImage = att.contentType.startsWith('image/') || /\.(png|jpe?g)$/.test(lowerPath);
+    const isVideo = att.contentType.startsWith('video/') || /\.(webm|mp4)$/.test(lowerPath);
+    const isTrace = att.name.startsWith('trace') || lowerPath.endsWith('trace.zip');
+    try {
+      if (isImage) {
+        const fileName = `${index}-${n}-${safeName(path.basename(att.path))}`;
+        fs.copyFileSync(att.path, path.join(assetsDir, fileName));
+        media.push({ name: att.name || 'Screenshot', type: 'image', src: `assets/${fileName}` });
+      } else if (isVideo || isTrace) {
+        media.push({
+          name: att.name || (isVideo ? 'Video' : 'Trace'),
+          type: isVideo ? 'video' : 'trace',
+          src: toPosix(path.relative(reportDir, att.path)),
+        });
+      }
+    } catch (err) {
+      console.warn(`[ElegantReport] Could not attach ${att.path}: ${errorMessage(err)}`);
+    }
+  });
+  return media;
+}
+
+function toCardView(tc: ReportCase, index: number, reportDir: string, assetsDir: string): CardView {
+  return {
+    id: `case_${index}`,
+    tcId: tc.tcId,
+    title: tc.title,
+    moduleKey: tc.module.key,
+    moduleName: tc.module.name,
+    moduleShort: tc.module.shortName,
+    file: tc.file,
+    line: tc.line,
+    status: tc.status,
+    attempts: tc.attempts,
+    durationMs: tc.durationMs,
+    error: tc.error,
+    errorStack: tc.errorStack,
+    inCatalog: tc.inCatalog,
+    description: tc.description,
+    plainSteps: tc.plainSteps,
+    testData: tc.testData,
+    expectedResult: tc.expectedResult,
+    actualResult: tc.actualResult,
+    knownDefects: tc.knownDefects,
+    steps: tc.steps,
+    media: collectMedia(tc, index, reportDir, assetsDir),
+  };
 }
 
 // Format test steps cleanly into HTML list
 function formatPlainStepsHtml(rawSteps: string): string {
   if (!rawSteps || !rawSteps.trim()) {
-    return '<p class="plain-step-fallback">1. Execute test workflow and verify application response.</p>';
+    return '<p class="plain-step-fallback">No documented steps: this test ID has no entry in the test catalog (src/test-data/catalog).</p>';
   }
   const lines = rawSteps
     .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(l => l.length > 0);
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
 
   let html = '<ol class="plain-steps-list">';
   for (const line of lines) {
-    const cleanText = line.replace(/^(?:\d+[\.\)]|\-|\*|•)\s*/, '').trim();
+    const cleanText = line.replace(/^(?:\d+[.)]|-|\*|•)\s*/, '').trim();
     if (cleanText) {
       html += `<li><span class="step-text">${escapeHtml(cleanText)}</span></li>`;
     }
@@ -123,404 +176,229 @@ function formatPlainStepsHtml(rawSteps: string): string {
   return html;
 }
 
-// Categorize raw technical error into clear, non-technical plain English
-function getPlainEnglishFailure(tcId: string, rawError: string, expectedText: string): string {
-  const lower = (rawError || '').toLowerCase();
-
-  if (lower.includes('beforeall') && lower.includes('timeout')) {
-    return 'Setup Timed Out: Inbound mail service / SMTP connection setup did not complete within the allotted timeout (45-90s limit).';
-  }
-  if (lower.includes('hook timeout') || lower.includes('beforeeach')) {
-    return 'Setup Hook Timed Out: The test initialization hook took longer than expected and exceeded the timeout threshold.';
-  }
-  if (lower.includes('tobetruthy') && (lower.includes('visibleprojectnames') || lower.includes('searchproject') || tcId.includes('RECON'))) {
-    return 'Project Not Found: The newly created project was not displayed or visible in the PO-ACK Reconciliation projects table after creation.';
-  }
-  if (lower.includes('tocontain') && (tcId.includes('RECON_020') || lower.includes('project'))) {
-    return 'Sorting Verification Failed: The newly created project did not appear at the top of the project list table.';
-  }
-  if (lower.includes('tobetruthy') || lower.includes('received: false')) {
-    return 'Assertion Failed: The expected UI component, project record, or confirmation state was not met (evaluated to false).';
-  }
-  if (lower.includes('tocontain')) {
-    return 'Content Mismatch: The expected text, project name, or data was not found in the target UI element or table row.';
-  }
-  if (lower.includes('tobevisible') || lower.includes('waiting for locator')) {
-    return 'Element Not Visible: The expected UI component, button, or modal dialog was not rendered on screen within the timeout.';
-  }
-  if (lower.includes('tobedisabled') || lower.includes('tobeenabled')) {
-    return 'State Mismatch: Interactive control (button/input) was not in the expected enabled or disabled state.';
-  }
-  if (lower.includes('tohavetext') || lower.includes('tohavevalue')) {
-    return 'Value Mismatch: The displayed field value or label did not match the expected value.';
-  }
-  if (lower.includes('timeout') || lower.includes('timed out')) {
-    return 'Execution Timeout: The application or server took longer to respond than the configured waiting threshold.';
-  }
-  if (lower.includes('500') || lower.includes('internal server error')) {
-    return 'Backend Server Error: The server returned an HTTP 500 error while processing the request.';
-  }
-  if (lower.includes('401') || lower.includes('403') || lower.includes('unauthorized')) {
-    return 'Authentication Error: Operation was blocked due to expired session or insufficient permissions.';
-  }
-
-  return 'Verification Failed: System outcome did not match acceptance criteria during execution.';
+function pct(part: number, total: number): number {
+  return total > 0 ? (part / total) * 100 : 0;
 }
 
-// Formulate plain English actual result
-function formulateActualResult(
-  status: 'passed' | 'failed' | 'skipped' | 'flaky',
-  tcId: string,
-  errorReason: string | undefined,
-  expectedResult: string
-): string {
-  if (status === 'passed') {
-    return 'All verification checkpoints passed successfully. The application interface and backend state behaved exactly as expected.';
+function renderMedia(m: MediaItem): string {
+  if (m.type === 'image') {
+    return `<img src="${escapeHtml(m.src)}" alt="${escapeHtml(m.name)}" class="media-thumb" loading="lazy" title="${escapeHtml(m.name)} (Click to zoom)">`;
   }
-  if (status === 'flaky') {
-    return 'Passed on retry: The test encountered an initial transient delay, but succeeded on retry.';
+  if (m.type === 'video') {
+    return `<video controls preload="none" class="video-player" title="${escapeHtml(m.name)}"><source src="${escapeHtml(m.src)}" type="video/webm">Your browser does not support video playback.</video>`;
   }
-  if (status === 'skipped') {
-    return 'Test execution skipped: Preconditions or target document types were not enabled for this test iteration.';
-  }
-  return getPlainEnglishFailure(tcId, errorReason || '', expectedResult);
+  return `<a class="trace-link" href="${escapeHtml(m.src)}" download>🧭 ${escapeHtml(m.name)} — open with <code>npx playwright show-trace</code></a>`;
 }
 
-// Lookup catalog metadata with fuzzy matching and title fallback
-function lookupCatalog(tcId: string, title: string): {
-  description: string;
-  steps: string;
-  testData: string;
-  expectedResult: string;
-} {
-  // 1. Direct match
-  if (testCatalog[tcId]) {
-    const entry = testCatalog[tcId];
-    return {
-      description: entry.description || title,
-      steps: entry.steps || '',
-      testData: entry.testData || '',
-      expectedResult: entry.expectedResult || '',
-    };
-  }
-
-  // 2. Normalized match (dashes, spaces, underscores)
-  const normId = tcId.replace(/[- ]/g, '_').toUpperCase();
-  for (const [k, v] of Object.entries(testCatalog)) {
-    const kNorm = k.replace(/[- ]/g, '_').toUpperCase();
-    if (kNorm === normId || kNorm.replace(/_/g, '') === normId.replace(/_/g, '')) {
-      return {
-        description: v.description || title,
-        steps: v.steps || '',
-        testData: v.testData || '',
-        expectedResult: v.expectedResult || '',
-      };
-    }
-  }
-
-  // 3. Match by description/title text
-  const cleanTitle = title.replace(/^TC[_-]?[A-Za-z0-9_ -]+?:\s*/i, '').trim().toLowerCase();
-  for (const [k, v] of Object.entries(testCatalog)) {
-    if (v.description && v.description.toLowerCase().trim() === cleanTitle) {
-      return {
-        description: v.description,
-        steps: v.steps || '',
-        testData: v.testData || '',
-        expectedResult: v.expectedResult || '',
-      };
-    }
-  }
-
-  // 4. Intelligent fallback based on title
-  const pureTitle = title.replace(/^TC[_-]?[A-Za-z0-9_ -]+?:\s*/i, '').trim();
-  return {
-    description: pureTitle,
-    steps: `1. Authenticate to RiverStream application with valid credentials.\n2. Navigate to target module/screen.\n3. Execute test verification actions for: ${pureTitle}.\n4. Verify application behavior and state.`,
-    testData: 'Standard RiverStream environment configuration and user credentials',
-    expectedResult: `System should successfully verify and complete: ${pureTitle}, without throwing errors.`,
-  };
+function renderKnownDefectsSection(run: ReportRun): string {
+  const defects = knownDefects(run.cases);
+  if (defects.length === 0) return '';
+  return `
+    <section class="defects-section" id="knownDefectsSection">
+      <div class="defects-header">
+        <span>🐞 Known Application Defects (${defects.length})</span>
+        <span class="defects-hint">Tests annotated with <code>{ type: 'issue' }</code>: failures here are expected until the app is fixed</span>
+      </div>
+      <table class="defects-table">
+        <thead><tr><th>Test ID</th><th>Test</th><th>Defect</th><th>Status</th></tr></thead>
+        <tbody>
+          ${defects
+            .map(
+              (d) => `
+            <tr>
+              <td class="mono">${escapeHtml(d.tcId)}</td>
+              <td>${escapeHtml(d.title)}</td>
+              <td>${escapeHtml(d.description)}</td>
+              <td><span class="status-badge ${d.status}">${STATUS_BADGE[d.status]}</span></td>
+            </tr>`,
+            )
+            .join('')}
+        </tbody>
+      </table>
+    </section>`;
 }
 
-// Module mapping helper
-function resolveModuleInfo(filePath: string, title: string): { key: string; name: string; shortName: string; icon: string; order: number } {
-  const norm = (filePath + ' ' + title).replace(/\\/g, '/').toLowerCase();
-  
-  if (norm.includes('auth') || norm.includes('sign-in') || norm.includes('login')) {
-    return { key: 'mod_01', name: 'Module 01: Authentication & Session', shortName: 'Authentication', icon: '🔐', order: 1 };
-  }
-  if (norm.includes('left-side') || norm.includes('navigation') || norm.includes('dashboard')) {
-    return { key: 'mod_02', name: 'Module 02: Dashboard & Navigation', shortName: 'Navigation', icon: '🧭', order: 2 };
-  }
-  if (norm.includes('upload') || norm.includes('dropzone') || norm.includes('sif')) {
-    return { key: 'mod_03', name: 'Module 03: Document Upload & Processing', shortName: 'Upload & SIF', icon: '📤', order: 3 };
-  }
-  if (norm.includes('documents') && !norm.includes('po-ack')) {
-    return { key: 'mod_04', name: 'Module 04: Documents Management', shortName: 'Documents', icon: '📑', order: 4 };
-  }
-  if (norm.includes('po-ack-recon') || norm.includes('recon')) {
-    return { key: 'mod_05', name: 'Module 05: PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: '⚖️', order: 5 };
-  }
-  if (norm.includes('review')) {
-    return { key: 'mod_06', name: 'Module 06: Document Review & Verification', shortName: 'Doc Review', icon: '🔍', order: 6 };
-  }
-  if (norm.includes('settings') || norm.includes('organization') || norm.includes('tenant')) {
-    return { key: 'mod_07', name: 'Module 07: Settings & Tenant Configuration', shortName: 'Settings', icon: '⚙️', order: 7 };
-  }
-  if (norm.includes('email') || norm.includes('riverstone-email')) {
-    return { key: 'mod_08', name: 'Module 08: Riverstone Email Order Ingestion', shortName: 'Email Flow', icon: '✉️', order: 8 };
-  }
-
-  return { key: 'mod_00', name: 'General Test Suite', shortName: 'General', icon: '📁', order: 99 };
+function renderGlobalErrors(run: ReportRun): string {
+  if (run.globalErrors.length === 0) return '';
+  return `
+    <section class="global-errors">
+      <strong>⚠ Run-level errors (not tied to a single test):</strong>
+      <pre class="error-stack">${escapeHtml(run.globalErrors.join('\n\n'))}</pre>
+    </section>`;
 }
 
-// Extract standard Test Case ID from title
-function extractTcId(title: string): string {
-  const match = title.match(/^(TC[_-]?[A-Za-z0-9_ -]+?)(?::|\s-)/i);
-  if (match) return match[1].trim();
-  const secondary = title.match(/\b(TC[_-]?[A-Za-z0-9_]+)\b/i);
-  if (secondary) return secondary[1].trim();
-  return 'TC_CASE';
+function renderCard(tc: CardView): string {
+  const search = [tc.title, tc.tcId, tc.description, tc.expectedResult, tc.actualResult, tc.moduleName, tc.testData, ...tc.knownDefects]
+    .join(' ')
+    .toLowerCase();
+  return `
+          <div class="test-card" data-id="${escapeHtml(tc.id)}" data-status="${tc.status}" data-module="${escapeHtml(tc.moduleKey)}" data-defect="${tc.knownDefects.length > 0 ? 'yes' : 'no'}" data-title="${escapeHtml(tc.title.toLowerCase())} ${escapeHtml(tc.tcId.toLowerCase())}" data-search="${escapeHtml(search)}">
+            <div class="test-card-summary">
+              <div class="test-card-left">
+                <span class="status-badge ${tc.status}">${STATUS_BADGE[tc.status]}</span>
+                <span class="tc-id">${escapeHtml(tc.tcId)}</span>
+                <span class="tc-title" title="${escapeHtml(tc.title)}">${escapeHtml(tc.title)}</span>
+              </div>
+              <div class="test-card-right">
+                ${tc.knownDefects.length > 0 ? '<span class="defect-chip" title="Annotated as a known application defect">🐞 known defect</span>' : ''}
+                ${tc.attempts > 1 ? `<span class="retry-chip" title="Number of attempts including retries">${tc.attempts} attempts</span>` : ''}
+                ${tc.media.length > 0 ? `<span class="media-indicator" title="${tc.media.length} media attached">📸 ${tc.media.length}</span>` : ''}
+                <span class="mod-tag">${escapeHtml(tc.moduleShort)}</span>
+                <span class="duration-tag">${formatDuration(tc.durationMs)}</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+
+            <div class="test-card-details">
+              <div class="details-grid">
+
+                <!-- 1. Objective & Test Data Bar -->
+                <div class="tc-objective-bar">
+                  <div class="tc-objective-title">
+                    <span class="tc-badge-id">${escapeHtml(tc.tcId)}</span>
+                    <span class="tc-desc-text">${escapeHtml(tc.description || tc.title)}</span>
+                    ${tc.inCatalog ? '' : '<span class="catalog-chip" title="Add this ID to src/test-data/catalog/*.json">not in test catalog</span>'}
+                  </div>
+                  ${
+                    tc.testData
+                      ? `
+                    <div class="tc-data-badge" title="Input test parameters">
+                      <span class="tc-data-label">DATA:</span>
+                      <span class="tc-data-val">${escapeHtml(tc.testData)}</span>
+                    </div>`
+                      : ''
+                  }
+                </div>
+                <div class="location-text">${escapeHtml(tc.file)}:${tc.line}</div>
+
+                <!-- 2. Expected vs. Actual (Plain English) -->
+                <div class="results-comparison-grid">
+                  <div class="result-card expected-box">
+                    <div class="result-card-header">
+                      <span class="result-icon">🟢</span>
+                      <span class="result-label">Expected Result (Acceptance Criteria)</span>
+                    </div>
+                    <div class="result-card-body">
+                      ${escapeHtml(tc.expectedResult || 'Not documented in the test catalog.')}
+                    </div>
+                  </div>
+
+                  <div class="result-card actual-box ${tc.status}">
+                    <div class="result-card-header">
+                      <span class="result-icon">${ACTUAL_ICON[tc.status]}</span>
+                      <span class="result-label">Actual Result (${ACTUAL_LABEL[tc.status]})</span>
+                    </div>
+                    <div class="result-card-body">
+                      ${escapeHtml(tc.actualResult)}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Plain English Test Steps -->
+                <div class="plain-steps-box">
+                  <h4>📋 Documented Test Steps</h4>
+                  ${formatPlainStepsHtml(tc.plainSteps)}
+                </div>
+
+                <!-- 4. Technical Diagnostics -->
+                ${
+                  tc.error
+                    ? `
+                  <details class="dev-diagnostics-details">
+                    <summary class="dev-diagnostics-summary">
+                      <span>🛠️ View Technical Stack Trace & Playwright Diagnostic${tc.status === 'flaky' ? ' (first failed attempt)' : ''}</span>
+                      <span class="dev-summary-hint">For Engineers & Developers</span>
+                    </summary>
+                    <div class="failure-box">
+                      <div class="failure-header">
+                        <span>Playwright Failure Stack:</span>
+                        <button class="copy-btn">Copy Stack</button>
+                      </div>
+                      <pre class="error-stack">${escapeHtml(tc.errorStack || tc.error)}</pre>
+                    </div>
+                  </details>`
+                    : ''
+                }
+
+                <!-- 5. Step & Hook Timings -->
+                <details class="pw-steps-details">
+                  <summary class="pw-steps-summary">
+                    <span>⏱️ View Recorded Steps (${tc.steps.length})</span>
+                    <span style="font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">${formatDuration(tc.durationMs)} total</span>
+                  </summary>
+                  <ul class="steps-list">
+                    ${
+                      tc.steps.length === 0
+                        ? '<li class="step-item"><div class="step-left"><span>No steps were recorded for this attempt.</span></div></li>'
+                        : tc.steps
+                            .map(
+                              (s) => `
+                      <li class="step-item">
+                        <div class="step-left">
+                          <span class="step-icon ${s.ok ? 'ok' : 'fail'}">${s.ok ? '✓' : '✗'}</span>
+                          <span>${escapeHtml(s.title)}</span>
+                        </div>
+                        <span class="step-dur">${formatDuration(s.durationMs)}</span>
+                      </li>`,
+                            )
+                            .join('')
+                    }
+                  </ul>
+                </details>
+
+                <!-- 6. Evidence -->
+                ${
+                  tc.media.length > 0
+                    ? `
+                  <div class="media-box">
+                    <h4>📸 Evidence & Media Attachments (${tc.media.length})</h4>
+                    <div class="media-container">
+                      ${tc.media.map(renderMedia).join('')}
+                    </div>
+                  </div>`
+                    : ''
+                }
+
+              </div>
+            </div>
+          </div>`;
 }
 
-// Format duration in ms
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  const sec = (ms / 1000).toFixed(1);
-  if (parseFloat(sec) < 60) return `${sec}s`;
-  const mins = Math.floor(parseFloat(sec) / 60);
-  const remSec = Math.round(parseFloat(sec) % 60);
-  return `${mins}m ${remSec}s`;
-}
-
-// Recursively traverse Playwright suites
-function collectPlaywrightSpecs(suite: any, list: PlaywrightSpec[] = []): PlaywrightSpec[] {
-  if (!suite) return list;
-  if (Array.isArray(suite.specs)) {
-    for (const spec of suite.specs) {
-      list.push({
-        ...spec,
-        file: spec.file || suite.file || '',
-      });
-    }
-  }
-  if (Array.isArray(suite.suites)) {
-    for (const sub of suite.suites) {
-      collectPlaywrightSpecs(sub, list);
-    }
-  }
-  return list;
-}
-
-// Inlines local file as Base64 data URL
-function readFileAsBase64(filePath: string, mimeType: string): string {
-  try {
-    if (fs.existsSync(filePath)) {
-      const buffer = fs.readFileSync(filePath);
-      return `data:${mimeType};base64,${buffer.toString('base64')}`;
-    }
-  } catch (err) {
-    // ignore
-  }
-  return '';
-}
-
-/**
- * Main report generator
- */
-export function generateElegantReport(
-  summaryJsonPath: string = path.resolve(process.cwd(), 'test-results/summary.json'),
-  outputHtmlPath: string = path.resolve(process.cwd(), 'playwright-report/index.html')
-): void {
-  console.log('[ElegantReport] Initiating Dark & Colorful Report Generation...');
-
-  let rawSpecs: PlaywrightSpec[] = [];
-
-  if (fs.existsSync(summaryJsonPath)) {
-    try {
-      const jsonContent = fs.readFileSync(summaryJsonPath, 'utf-8');
-      const parsed = JSON.parse(jsonContent);
-      rawSpecs = collectPlaywrightSpecs(parsed);
-      console.log(`[ElegantReport] Found ${rawSpecs.length} specs in ${summaryJsonPath}`);
-    } catch (e: any) {
-      console.warn(`[ElegantReport] Could not parse ${summaryJsonPath}:`, e.message);
-    }
-  }
-
-  // Ensure media directory in report output
+/** Renders the report for an already-built run. Returns the size of the HTML in bytes. */
+export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEFAULT_REPORT_PATH): number {
   const outputDir = path.dirname(outputHtmlPath);
-  const mediaDir = path.join(outputDir, 'media');
-  if (!fs.existsSync(mediaDir)) {
-    fs.mkdirSync(mediaDir, { recursive: true });
-  }
+  const assetsDir = path.join(outputDir, 'assets');
+  // Start from a clean asset folder so screenshots of earlier runs never leak into this report.
+  fs.rmSync(assetsDir, { recursive: true, force: true });
+  fs.rmSync(path.join(outputDir, 'media'), { recursive: true, force: true });
+  fs.mkdirSync(assetsDir, { recursive: true });
 
-  const processedCases: ProcessedTestCase[] = [];
-  const moduleMap: Map<string, ModuleInfo> = new Map();
+  const processedCases = run.cases.map((tc, i) => toCardView(tc, i, outputDir, assetsDir));
+  const sortedModules: ModuleView[] = summariseModules(run.cases, true).map((s) => ({
+    key: s.module.key,
+    name: s.module.name,
+    shortName: s.module.shortName,
+    icon: s.module.icon,
+    total: s.total,
+    passed: s.passed,
+    failed: s.failed,
+    flaky: s.flaky,
+    skipped: s.skipped,
+  }));
 
-  for (let idx = 0; idx < rawSpecs.length; idx++) {
-    const spec = rawSpecs[idx];
-    const modInfo = resolveModuleInfo(spec.file, spec.title);
-    if (!moduleMap.has(modInfo.key)) {
-      moduleMap.set(modInfo.key, {
-        key: modInfo.key,
-        name: modInfo.name,
-        shortName: modInfo.shortName,
-        icon: modInfo.icon,
-        order: modInfo.order,
-        total: 0,
-        passed: 0,
-        failed: 0,
-        skipped: 0,
-        flaky: 0,
-        durationMs: 0,
-      });
-    }
-    const currentMod = moduleMap.get(modInfo.key)!;
-
-    const testItem = spec.tests?.[0];
-    const results = testItem?.results || [];
-    const latestResult = results[results.length - 1];
-
-    let status: 'passed' | 'failed' | 'skipped' | 'flaky' = 'passed';
-    if (!latestResult || latestResult.status === 'skipped') {
-      status = 'skipped';
-    } else if (latestResult.status === 'passed') {
-      status = results.length > 1 ? 'flaky' : 'passed';
-    } else {
-      status = 'failed';
-    }
-
-    const durationMs = latestResult?.duration || 0;
-    currentMod.total++;
-    currentMod.durationMs += durationMs;
-    if (status === 'passed') currentMod.passed++;
-    else if (status === 'failed') currentMod.failed++;
-    else if (status === 'skipped') currentMod.skipped++;
-    else if (status === 'flaky') currentMod.flaky++;
-
-    let errorReason: string | undefined;
-    let errorStack: string | undefined;
-    if (latestResult?.errors && latestResult.errors.length > 0) {
-      const err = latestResult.errors[0];
-      errorReason = (err.message || '').replace(/\u001b\[[0-9;]*m/g, '').trim();
-      errorStack = (err.stack || err.message || '').replace(/\u001b\[[0-9;]*m/g, '').trim();
-    }
-
-    // Media (Screenshots & Videos)
-    const media: MediaItem[] = [];
-    if (latestResult?.attachments) {
-      for (const att of latestResult.attachments) {
-        if (!att.path || !fs.existsSync(att.path)) continue;
-
-        const isImage = (att.contentType && att.contentType.startsWith('image/')) || att.path.endsWith('.png') || att.path.endsWith('.jpg');
-        const isVideo = (att.contentType && att.contentType.startsWith('video/')) || att.path.endsWith('.webm') || att.path.endsWith('.mp4');
-
-        if (isImage) {
-          const b64 = readFileAsBase64(att.path, att.contentType || 'image/png');
-          if (b64) {
-            media.push({
-              name: att.name || 'Screenshot',
-              type: 'image',
-              src: b64,
-            });
-          }
-        } else if (isVideo) {
-          // Copy video to report media folder for seamless browser playback
-          const videoName = `vid_${idx}_${path.basename(att.path)}`;
-          const destPath = path.join(mediaDir, videoName);
-          try {
-            fs.copyFileSync(att.path, destPath);
-            media.push({
-              name: att.name || 'Video Recording',
-              type: 'video',
-              src: `media/${videoName}`,
-            });
-          } catch (e) {
-            // ignore
-          }
-        }
-      }
-    }
-
-    // Extracted steps or mock sequential steps
-    const steps: Array<{ title: string; durationMs: number; ok: boolean }> = [];
-    if (latestResult?.steps && latestResult.steps.length > 0) {
-      for (const st of latestResult.steps) {
-        steps.push({
-          title: st.title,
-          durationMs: st.duration || 0,
-          ok: !st.error,
-        });
-      }
-    } else {
-      steps.push({ title: 'Before Hooks & Browser Setup', durationMs: Math.min(200, durationMs), ok: true });
-      steps.push({ title: `Execute: ${spec.title}`, durationMs: Math.max(0, durationMs - 250), ok: status === 'passed' });
-      steps.push({ title: 'After Hooks & Teardown', durationMs: 50, ok: true });
-    }
-
-    const extractedTcId = extractTcId(spec.title);
-    const catData = lookupCatalog(extractedTcId, spec.title);
-    const actualResult = formulateActualResult(status, extractedTcId, errorReason, catData.expectedResult);
-
-    processedCases.push({
-      id: `case_${idx}`,
-      tcId: extractedTcId,
-      title: spec.title,
-      moduleKey: modInfo.key,
-      moduleName: modInfo.name,
-      file: spec.file,
-      line: spec.line || 1,
-      status,
-      durationMs,
-      error: errorReason,
-      errorStack,
-      description: catData.description,
-      plainSteps: catData.steps,
-      testData: catData.testData,
-      expectedResult: catData.expectedResult,
-      actualResult,
-      steps,
-      media,
-    });
-  }
-
-  // Ensure all 8 canonical modules exist in navigation
-  const canonicalModules = [
-    { key: 'mod_01', name: 'Module 01: Authentication & Session', shortName: 'Authentication', icon: '🔐', order: 1 },
-    { key: 'mod_02', name: 'Module 02: Dashboard & Navigation', shortName: 'Navigation', icon: '🧭', order: 2 },
-    { key: 'mod_03', name: 'Module 03: Document Upload & Processing', shortName: 'Upload & SIF', icon: '📤', order: 3 },
-    { key: 'mod_04', name: 'Module 04: Documents Management', shortName: 'Documents', icon: '📑', order: 4 },
-    { key: 'mod_05', name: 'Module 05: PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: '⚖️', order: 5 },
-    { key: 'mod_06', name: 'Module 06: Document Review & Verification', shortName: 'Doc Review', icon: '🔍', order: 6 },
-    { key: 'mod_07', name: 'Module 07: Settings & Tenant Configuration', shortName: 'Settings', icon: '⚙️', order: 7 },
-    { key: 'mod_08', name: 'Module 08: Riverstone Email Order Ingestion', shortName: 'Email Flow', icon: '✉️', order: 8 },
-  ];
-
-  for (const cm of canonicalModules) {
-    if (!moduleMap.has(cm.key)) {
-      moduleMap.set(cm.key, {
-        ...cm,
-        total: 0,
-        passed: 0,
-        failed: 0,
-        skipped: 0,
-        flaky: 0,
-        durationMs: 0,
-      });
-    }
-  }
-
-  const sortedModules = Array.from(moduleMap.values()).sort((a, b) => a.order - b.order);
-
-  const totalTests = processedCases.length;
-  const passedTests = processedCases.filter(c => c.status === 'passed').length;
-  const failedTests = processedCases.filter(c => c.status === 'failed').length;
-  const skippedTests = processedCases.filter(c => c.status === 'skipped').length;
-  const totalDurationMs = processedCases.reduce((acc, c) => acc + c.durationMs, 0);
-  const passRate = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 100;
-
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  const counts = countStatuses(run.cases);
+  const totalTests = counts.total;
+  const passedTests = counts.passed;
+  const failedTests = counts.failed;
+  const flakyTests = counts.flaky;
+  const skippedTests = counts.skipped;
+  const overallPassRate = passRate(counts);
+  const totalDurationMs = run.durationMs || counts.durationMs;
+  const activeModules = sortedModules.filter((m) => m.total > 0).length;
+  const { date: dateStr, time, zone } = formatRunTime(run.startTime);
+  const timeStr = `${time} ${zone}`;
+  const defectsSection = renderKnownDefectsSection(run);
+  const globalErrorsSection = renderGlobalErrors(run);
 
   const htmlReport = `<!DOCTYPE html>
 <html lang="en">
@@ -528,6 +406,7 @@ export function generateElegantReport(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RiverStream QA Automation — Executive Test Report</title>
+  <meta name="rs-run-start" content="${escapeHtml(run.startTime)}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -551,6 +430,8 @@ export function generateElegantReport(
       --color-fail-glow: rgba(239, 68, 68, 0.3);
       --color-skip: #f59e0b;
       --color-skip-glow: rgba(245, 158, 11, 0.25);
+      --color-flaky: #a855f7;
+      --color-flaky-glow: rgba(168, 85, 247, 0.3);
       --color-brand: #6366f1;
       --color-cyan: #06b6d4;
     }
@@ -728,6 +609,12 @@ export function generateElegantReport(
       color: #34d399;
       border: 1px solid rgba(16, 185, 129, 0.3);
     }
+    .nav-badge.flaky {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+    .nav-item.empty { opacity: 0.45; }
 
     .sidebar-footer {
       padding: 14px 18px;
@@ -812,6 +699,11 @@ export function generateElegantReport(
       color: #fff;
       box-shadow: 0 2px 10px var(--color-fail-glow);
     }
+    .pill-btn.active[data-filter="flaky"] {
+      background: var(--color-flaky);
+      color: #fff;
+      box-shadow: 0 2px 10px var(--color-flaky-glow);
+    }
     .pill-btn.active[data-filter="skipped"] {
       background: var(--color-skip);
       color: #fff;
@@ -851,6 +743,7 @@ export function generateElegantReport(
     .kpi-card.total::before { background: linear-gradient(90deg, #6366f1, #06b6d4); }
     .kpi-card.passed::before { background: #10b981; }
     .kpi-card.failed::before { background: #ef4444; }
+    .kpi-card.flaky::before { background: #a855f7; }
     .kpi-card.rate::before { background: linear-gradient(90deg, #10b981, #06b6d4); }
 
     .kpi-title {
@@ -877,6 +770,7 @@ export function generateElegantReport(
     .kpi-card.total .kpi-number { color: #f8fafc; }
     .kpi-card.passed .kpi-number { color: #34d399; text-shadow: 0 0 16px rgba(16, 185, 129, 0.4); }
     .kpi-card.failed .kpi-number { color: #f87171; text-shadow: 0 0 16px rgba(239, 68, 68, 0.4); }
+    .kpi-card.flaky .kpi-number { color: #c084fc; text-shadow: 0 0 16px rgba(168, 85, 247, 0.4); }
     .kpi-card.rate .kpi-number { color: #38bdf8; }
 
     .kpi-subtext {
@@ -915,6 +809,7 @@ export function generateElegantReport(
     }
     .prog-segment.pass { background: #10b981; box-shadow: 0 0 8px #10b981; }
     .prog-segment.fail { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+    .prog-segment.flaky { background: #a855f7; }
     .prog-segment.skip { background: #f59e0b; }
     .split-legend {
       display: flex;
@@ -936,7 +831,54 @@ export function generateElegantReport(
     }
     .legend-dot.pass { background: #10b981; }
     .legend-dot.fail { background: #ef4444; }
+    .legend-dot.flaky { background: #a855f7; }
     .legend-dot.skip { background: #f59e0b; }
+
+    /* Known defects & run-level errors */
+    .defects-section, .global-errors {
+      background: var(--bg-card);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 26px;
+    }
+    .global-errors { border-color: rgba(239, 68, 68, 0.45); color: #fecaca; font-size: 13px; }
+    .global-errors .error-stack { margin-top: 10px; }
+    .defects-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .defects-hint { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    .defects-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .defects-table th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .defects-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; color: #e2e8f0; }
+    .defects-table .mono, .mono { font-family: 'JetBrains Mono', monospace; color: #a5b4fc; white-space: nowrap; }
+    .defect-chip, .retry-chip, .catalog-chip {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .defect-chip { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .retry-chip { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-subtle); }
+    .catalog-chip { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .trace-link { color: var(--color-cyan); font-size: 13px; align-self: center; }
+    .location-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
 
     /* Test Cases Table / List */
     .test-list-header {
@@ -1048,6 +990,11 @@ export function generateElegantReport(
       background: rgba(239, 68, 68, 0.18);
       color: #f87171;
       border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .status-badge.flaky {
+      background: rgba(168, 85, 247, 0.16);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
     }
     .status-badge.skipped {
       background: rgba(245, 158, 11, 0.15);
@@ -1205,6 +1152,10 @@ export function generateElegantReport(
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(185, 28, 28, 0.06) 100%);
       border: 1px solid rgba(239, 68, 68, 0.45);
     }
+    .result-card.actual-box.flaky {
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
     .result-card.actual-box.skipped {
       background: rgba(245, 158, 11, 0.08);
       border: 1px solid rgba(245, 158, 11, 0.35);
@@ -1234,6 +1185,13 @@ export function generateElegantReport(
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: #f87171;
+    }
+    .result-card.actual-box.flaky .result-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #c084fc;
     }
     .result-card.actual-box.skipped .result-label {
       font-size: 12px;
@@ -1495,6 +1453,9 @@ export function generateElegantReport(
     @media (max-width: 1024px) {
       aside.sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
       aside.sidebar.mobile-open { transform: translateX(0); }
+      main.main-content { margin-left: 0 !important; }
+    }
+
     /* Print & PDF Export Styles */
     @media print {
       body {
@@ -1509,7 +1470,9 @@ export function generateElegantReport(
       .filter-pills,
       .copy-btn,
       .lightbox-modal,
-      .chevron {
+      .chevron,
+      #emptyState,
+      .empty-state {
         display: none !important;
       }
       main.main-content {
@@ -1517,8 +1480,22 @@ export function generateElegantReport(
         padding: 0 !important;
         max-width: 100% !important;
       }
+      .top-header {
+        margin-bottom: 20px !important;
+        border-bottom: 2px solid #0f172a !important;
+        padding-bottom: 12px !important;
+      }
+      .header-titles h2 {
+        color: #0f172a !important;
+        font-size: 24px !important;
+        font-weight: 800 !important;
+      }
+      .header-titles p {
+        color: #475569 !important;
+        font-size: 13px !important;
+      }
       .kpi-card, .split-bar-container {
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         background: #f8fafc !important;
         color: #0f172a !important;
         box-shadow: none !important;
@@ -1526,18 +1503,81 @@ export function generateElegantReport(
       .kpi-title, .kpi-subtext {
         color: #475569 !important;
       }
+      .kpi-number {
+        color: #0f172a !important;
+        font-size: 26px !important;
+        font-weight: 800 !important;
+      }
+      .kpi-card.passed .kpi-number {
+        color: #16a34a !important;
+      }
+      .kpi-card.failed .kpi-number {
+        color: #dc2626 !important;
+      }
+      .kpi-card.flaky .kpi-number {
+        color: #9333ea !important;
+      }
+      .kpi-card.rate .kpi-number {
+        color: #0284c7 !important;
+      }
+      .split-bar-header {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+      }
+      .test-list-header {
+        margin-top: 24px !important;
+        margin-bottom: 12px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding-bottom: 8px !important;
+      }
+      .test-list-title, .test-list-title span {
+        color: #0f172a !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+      }
+      .count-indicator {
+        color: #64748b !important;
+        font-size: 13px !important;
+      }
       .test-card {
-        break-inside: avoid;
-        page-break-inside: avoid;
+        display: block !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
         border: 1px solid #cbd5e1 !important;
         background: #ffffff !important;
-        margin-bottom: 16px !important;
+        margin-bottom: 14px !important;
         box-shadow: none !important;
+      }
+      .test-card-summary {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 12px 16px !important;
+      }
+      .tc-id {
+        color: #4338ca !important;
+        font-weight: 800 !important;
+        font-size: 13px !important;
+      }
+      .tc-title {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+      }
+      .mod-tag {
+        color: #334155 !important;
+        background: #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
+        font-weight: 600 !important;
+      }
+      .duration-tag {
+        color: #64748b !important;
+        font-weight: 600 !important;
       }
       .test-card-details {
         display: block !important;
         background: #ffffff !important;
         border-top: 1px solid #e2e8f0 !important;
+        padding: 16px 18px !important;
       }
       .tc-objective-bar {
         background: #f8fafc !important;
@@ -1545,32 +1585,67 @@ export function generateElegantReport(
       }
       .tc-desc-text {
         color: #0f172a !important;
+        font-weight: 600 !important;
+      }
+      .tc-data-badge {
+        background: #f0f9ff !important;
+        border: 1px solid #bae6fd !important;
+      }
+      .tc-data-label {
+        color: #0369a1 !important;
+      }
+      .tc-data-val {
+        color: #0c4a6e !important;
+        font-weight: 600 !important;
       }
       .result-card.expected-box {
         background: #f0fdf4 !important;
         border: 1px solid #86efac !important;
-        color: #166534 !important;
+        color: #15803d !important;
       }
       .result-card.actual-box.failed {
         background: #fef2f2 !important;
         border: 1px solid #fca5a5 !important;
-        color: #991b1b !important;
+        color: #b91c1c !important;
       }
       .result-card.actual-box.passed {
         background: #f0fdf4 !important;
         border: 1px solid #86efac !important;
-        color: #166534 !important;
+        color: #15803d !important;
       }
-      .result-card.expected-box .result-card-body,
+      .result-card.actual-box.flaky {
+        background: #faf5ff !important;
+        border: 1px solid #d8b4fe !important;
+        color: #6b21a8 !important;
+      }
+      .result-card.actual-box.skipped {
+        background: #fffbeb !important;
+        border: 1px solid #fcd34d !important;
+        color: #92400e !important;
+      }
+      .result-card.expected-box .result-card-body {
+        color: #14532d !important;
+        font-weight: 500 !important;
+      }
       .result-card.actual-box .result-card-body {
         color: #1e293b !important;
+        font-weight: 500 !important;
+      }
+      .defects-section, .global-errors {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+      }
+      .defects-table td { color: #0f172a !important; }
+      .video-player, .trace-link, .pw-steps-details {
+        display: none !important;
       }
       .plain-steps-box {
         background: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
       }
       .plain-steps-list li {
-        color: #334155 !important;
+        color: #1e293b !important;
       }
       .dev-diagnostics-details {
         display: none !important; /* Hide raw Playwright code dumps in formal executive printed PDF */
@@ -1604,7 +1679,7 @@ export function generateElegantReport(
           <span>📊</span>
           <span>Executive Overview</span>
         </div>
-        <span class="nav-badge pass">${passedTests}/${totalTests}</span>
+        <span class="nav-badge pass">${passedTests + flakyTests}/${totalTests}</span>
       </div>
 
       <div class="nav-item" data-nav="failures">
@@ -1615,6 +1690,26 @@ export function generateElegantReport(
         <span class="nav-badge ${failedTests > 0 ? 'fail' : 'pass'}">${failedTests}</span>
       </div>
 
+      <div class="nav-item" data-nav="flaky">
+        <div class="nav-item-left">
+          <span>🟣</span>
+          <span>Flaky Tests</span>
+        </div>
+        <span class="nav-badge ${flakyTests > 0 ? 'flaky' : 'pass'}">${flakyTests}</span>
+      </div>
+
+      ${
+        defectsSection
+          ? `<div class="nav-item" data-nav="defects">
+        <div class="nav-item-left">
+          <span>🐞</span>
+          <span>Known Defects</span>
+        </div>
+        <span class="nav-badge flaky">${knownDefects(run.cases).length}</span>
+      </div>`
+          : ''
+      }
+
       <div class="nav-item" data-nav="gallery">
         <div class="nav-item-left">
           <span>📸</span>
@@ -1623,15 +1718,19 @@ export function generateElegantReport(
       </div>
 
       <div class="menu-category">Modules (Clickable Navigation)</div>
-      ${sortedModules.map(m => `
-        <div class="nav-item" data-nav="module" data-module-key="${m.key}">
+      ${sortedModules
+        .map(
+          (m) => `
+        <div class="nav-item${m.total === 0 ? ' empty' : ''}" data-nav="module" data-module-key="${m.key}" title="${escapeHtml(m.name)}${m.total === 0 ? ' (not part of this run)' : ''}">
           <div class="nav-item-left">
             <span>${m.icon}</span>
-            <span title="${escapeHtml(m.name)}">${escapeHtml(m.shortName)}</span>
+            <span>${escapeHtml(m.shortName)}</span>
           </div>
-          <span class="nav-badge ${m.failed > 0 ? 'fail' : 'pass'}">${m.passed}/${m.total}</span>
+          <span class="nav-badge ${m.failed > 0 ? 'fail' : m.flaky > 0 ? 'flaky' : 'pass'}">${m.total === 0 ? '—' : `${m.passed + m.flaky}/${m.total}`}</span>
         </div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     </div>
 
     <div class="sidebar-footer">
@@ -1662,6 +1761,9 @@ export function generateElegantReport(
           <button class="pill-btn" data-filter="failed">
             ● Failed (${failedTests})
           </button>
+          <button class="pill-btn" data-filter="flaky">
+            ● Flaky (${flakyTests})
+          </button>
           <button class="pill-btn" data-filter="skipped">
             ● Skipped (${skippedTests})
           </button>
@@ -1679,7 +1781,7 @@ export function generateElegantReport(
         <div class="kpi-value-row">
           <span class="kpi-number">${totalTests}</span>
         </div>
-        <div class="kpi-subtext">Across ${sortedModules.length} core test modules · Click to view all</div>
+        <div class="kpi-subtext">Across ${activeModules} test modules · Click to view all</div>
       </div>
 
       <div class="kpi-card passed" data-filter="passed" title="Click to filter passed cases">
@@ -1690,7 +1792,7 @@ export function generateElegantReport(
         <div class="kpi-value-row">
           <span class="kpi-number">${passedTests}</span>
         </div>
-        <div class="kpi-subtext">${passRate}% overall success rate · Click to filter</div>
+        <div class="kpi-subtext">Passed on the first attempt · Click to filter</div>
       </div>
 
       <div class="kpi-card failed" data-filter="failed" title="Click to filter failed cases">
@@ -1704,15 +1806,26 @@ export function generateElegantReport(
         <div class="kpi-subtext">${failedTests === 0 ? 'Zero regression defects' : 'Needs immediate QA review · Click to filter'}</div>
       </div>
 
+      <div class="kpi-card flaky" data-filter="flaky" title="Click to filter flaky cases">
+        <div class="kpi-title">
+          <span>Flaky Cases</span>
+          <span style="color: #a855f7; font-size: 16px;">⚠</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-number">${flakyTests}</span>
+        </div>
+        <div class="kpi-subtext">${flakyTests === 0 ? 'No test needed a retry' : 'Failed first, passed on retry · Click to filter'}</div>
+      </div>
+
       <div class="kpi-card rate" data-filter="all" title="Total Execution Duration">
         <div class="kpi-title">
           <span>Pass Rate & Duration</span>
           <span>⏱️</span>
         </div>
         <div class="kpi-value-row">
-          <span class="kpi-number">${passRate}%</span>
+          <span class="kpi-number">${overallPassRate}%</span>
         </div>
-        <div class="kpi-subtext">Total time: ${formatDuration(totalDurationMs)}</div>
+        <div class="kpi-subtext">Passed + flaky of all tests · Run time: ${formatDuration(totalDurationMs)}</div>
       </div>
     </section>
 
@@ -1720,19 +1833,24 @@ export function generateElegantReport(
     <section class="split-bar-container">
       <div class="split-bar-header">
         <span>Execution Status Split</span>
-        <span>${passedTests} Passed · ${failedTests} Failed · ${skippedTests} Skipped</span>
+        <span>${passedTests} Passed · ${failedTests} Failed · ${flakyTests} Flaky · ${skippedTests} Skipped</span>
       </div>
       <div class="multi-progress">
-        <div class="prog-segment pass" style="width: ${totalTests > 0 ? (passedTests / totalTests) * 100 : 100}%;" title="Passed: ${passedTests}"></div>
-        <div class="prog-segment fail" style="width: ${totalTests > 0 ? (failedTests / totalTests) * 100 : 0}%;" title="Failed: ${failedTests}"></div>
-        <div class="prog-segment skip" style="width: ${totalTests > 0 ? (skippedTests / totalTests) * 100 : 0}%;" title="Skipped: ${skippedTests}"></div>
+        <div class="prog-segment pass" style="width: ${pct(passedTests, totalTests)}%;" title="Passed: ${passedTests}"></div>
+        <div class="prog-segment fail" style="width: ${pct(failedTests, totalTests)}%;" title="Failed: ${failedTests}"></div>
+        <div class="prog-segment flaky" style="width: ${pct(flakyTests, totalTests)}%;" title="Flaky: ${flakyTests}"></div>
+        <div class="prog-segment skip" style="width: ${pct(skippedTests, totalTests)}%;" title="Skipped: ${skippedTests}"></div>
       </div>
       <div class="split-legend">
         <div class="legend-item" data-filter="passed"><span class="legend-dot pass"></span> Passed (${passedTests})</div>
         <div class="legend-item" data-filter="failed"><span class="legend-dot fail"></span> Failed (${failedTests})</div>
+        <div class="legend-item" data-filter="flaky"><span class="legend-dot flaky"></span> Flaky (${flakyTests})</div>
         <div class="legend-item" data-filter="skipped"><span class="legend-dot skip"></span> Skipped (${skippedTests})</div>
       </div>
     </section>
+
+    ${globalErrorsSection}
+    ${defectsSection}
 
     <!-- Test List Section -->
     <section class="test-list-section" id="testListSection">
@@ -1750,129 +1868,7 @@ export function generateElegantReport(
       </div>
 
       <div class="test-cards-wrapper" id="testCardsWrapper">
-        ${processedCases.map(tc => `
-          <div class="test-card" data-id="${escapeHtml(tc.id)}" data-status="${escapeHtml(tc.status)}" data-module="${escapeHtml(tc.moduleKey)}" data-title="${escapeHtml(tc.title.toLowerCase())} ${escapeHtml(tc.tcId.toLowerCase())}" data-search="${escapeHtml((tc.title + ' ' + tc.tcId + ' ' + tc.description + ' ' + tc.expectedResult + ' ' + tc.actualResult + ' ' + tc.moduleName + ' ' + tc.testData).toLowerCase())}">
-            <div class="test-card-summary">
-              <div class="test-card-left">
-                <span class="status-badge ${escapeHtml(tc.status)}">
-                  ${tc.status === 'passed' ? '✓ PASS' : tc.status === 'failed' ? '✗ FAIL' : '● SKIP'}
-                </span>
-                <span class="tc-id">${escapeHtml(tc.tcId)}</span>
-                <span class="tc-title" title="${escapeHtml(tc.title)}">${escapeHtml(tc.title)}</span>
-              </div>
-              <div class="test-card-right">
-                ${tc.media.length > 0 ? `<span class="media-indicator" title="${tc.media.length} media attached">📸 ${tc.media.length}</span>` : ''}
-                <span class="mod-tag">${escapeHtml(tc.moduleName.split(':')[0])}</span>
-                <span class="duration-tag">${formatDuration(tc.durationMs)}</span>
-                <span class="chevron">▼</span>
-              </div>
-            </div>
-
-            <div class="test-card-details">
-              <div class="details-grid">
-                
-                <!-- 1. Executive Objective & Test Data Bar -->
-                <div class="tc-objective-bar">
-                  <div class="tc-objective-title">
-                    <span class="tc-badge-id">${escapeHtml(tc.tcId)}</span>
-                    <span class="tc-desc-text">${escapeHtml(tc.description || tc.title)}</span>
-                  </div>
-                  ${tc.testData && tc.testData !== '-' ? `
-                    <div class="tc-data-badge" title="Input test parameters">
-                      <span class="tc-data-label">DATA:</span>
-                      <span class="tc-data-val">${escapeHtml(tc.testData)}</span>
-                    </div>
-                  ` : ''}
-                </div>
-
-                <!-- 2. The Core Expected vs. Actual Results (Plain English) -->
-                <div class="results-comparison-grid">
-                  <!-- Expected Result Card -->
-                  <div class="result-card expected-box">
-                    <div class="result-card-header">
-                      <span class="result-icon">🟢</span>
-                      <span class="result-label">Expected Result (Acceptance Criteria)</span>
-                    </div>
-                    <div class="result-card-body">
-                      ${escapeHtml(tc.expectedResult || 'System should execute the workflow successfully and verify expected UI state without errors.')}
-                    </div>
-                  </div>
-
-                  <!-- Actual Result Card -->
-                  <div class="result-card actual-box ${escapeHtml(tc.status)}">
-                    <div class="result-card-header">
-                      <span class="result-icon">${tc.status === 'passed' ? '🟢' : tc.status === 'failed' ? '🔴' : '●'}</span>
-                      <span class="result-label">Actual Result (${tc.status === 'passed' ? 'Verified Success' : tc.status === 'failed' ? 'Why it Failed' : 'Execution Skipped'})</span>
-                    </div>
-                    <div class="result-card-body">
-                      ${escapeHtml(tc.actualResult)}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 3. Plain English Test Execution Steps -->
-                <div class="plain-steps-box">
-                  <h4>📋 Test Steps Executed (Plain English Walkthrough)</h4>
-                  ${formatPlainStepsHtml(tc.plainSteps)}
-                </div>
-
-                <!-- 4. Developer Technical Diagnostics (Collapsible if error exists) -->
-                ${tc.error ? `
-                  <details class="dev-diagnostics-details">
-                    <summary class="dev-diagnostics-summary">
-                      <span>🛠️ View Technical Stack Trace & Playwright Diagnostic</span>
-                      <span class="dev-summary-hint">For Engineers & Developers</span>
-                    </summary>
-                    <div class="failure-box">
-                      <div class="failure-header">
-                        <span>Playwright Failure Stack:</span>
-                        <button class="copy-btn">Copy Stack</button>
-                      </div>
-                      <pre class="error-stack">${escapeHtml(tc.errorStack || tc.error)}</pre>
-                    </div>
-                  </details>
-                ` : ''}
-
-                <!-- 5. Internal Step & Hook Timings (Collapsible) -->
-                <details class="pw-steps-details">
-                  <summary class="pw-steps-summary">
-                    <span>⏱️ View Browser Action & Hook Timings (${tc.steps.length} checkpoints)</span>
-                    <span style="font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">${formatDuration(tc.durationMs)} total</span>
-                  </summary>
-                  <ul class="steps-list">
-                    ${tc.steps.map(s => `
-                      <li class="step-item">
-                        <div class="step-left">
-                          <span class="step-icon ${s.ok ? 'ok' : 'fail'}">${s.ok ? '✓' : '✗'}</span>
-                          <span>${escapeHtml(s.title)}</span>
-                        </div>
-                        <span class="step-dur">${formatDuration(s.durationMs)}</span>
-                      </li>
-                    `).join('')}
-                  </ul>
-                </details>
-
-                <!-- 6. Evidence & Media Attachments -->
-                ${tc.media.length > 0 ? `
-                  <div class="media-box">
-                    <h4>📸 Evidence & Media Attachments (${tc.media.length})</h4>
-                    <div class="media-container">
-                      ${tc.media.map(m => m.type === 'image' ? `
-                        <img src="${m.src}" alt="${escapeHtml(m.name)}" class="media-thumb" title="${escapeHtml(m.name)} (Click to zoom)">
-                      ` : `
-                        <video controls class="video-player">
-                          <source src="${m.src}" type="video/webm">
-                          Your browser does not support video playback.
-                        </video>
-                      `).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-
-              </div>
-            </div>
-          </div>
-        `).join('')}
+        ${processedCases.map(renderCard).join('')}
       </div>
 
       <div class="empty-state" id="emptyState" style="display: none;">
@@ -2035,6 +2031,19 @@ export function generateElegantReport(
           document.getElementById('viewHeading').textContent = 'Failures Hub';
           const listSec = document.getElementById('testListSection');
           if (listSec) listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (nav === 'flaky') {
+          currentModule = 'all';
+          setStatusFilter('flaky');
+          document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+          navItem.classList.add('active');
+          document.getElementById('viewHeading').textContent = 'Flaky Tests (passed only on retry)';
+          const listSec = document.getElementById('testListSection');
+          if (listSec) listSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (nav === 'defects') {
+          document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+          navItem.classList.add('active');
+          const defectsSec = document.getElementById('knownDefectsSection');
+          if (defectsSec) defectsSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else if (nav === 'gallery') {
           currentModule = 'all';
           setStatusFilter('all');
@@ -2044,7 +2053,7 @@ export function generateElegantReport(
 
           // Show & expand all cards that have media
           document.querySelectorAll('.test-card').forEach(card => {
-            const hasMedia = card.querySelector('.media-thumb, .video-player');
+            const hasMedia = card.querySelector('.media-thumb, .video-player, .trace-link');
             if (hasMedia) {
               card.classList.add('open');
               card.style.display = 'block';
@@ -2155,18 +2164,36 @@ export function generateElegantReport(
 </html>
 `;
 
+  fs.mkdirSync(outputDir, { recursive: true });
   fs.writeFileSync(outputHtmlPath, htmlReport, 'utf-8');
-  console.log(`[ElegantReport] Report successfully generated at: ${outputHtmlPath} (${(htmlReport.length / 1024).toFixed(1)} KB)`);
-
-  const copyPath = path.resolve(process.cwd(), 'test-results/elegant-report.html');
-  try {
-    fs.writeFileSync(copyPath, htmlReport, 'utf-8');
-  } catch (e) {
-    // ignore
-  }
+  const bytes = Buffer.byteLength(htmlReport, 'utf-8');
+  const flakyNote = flakyTests > 0 ? `, ${flakyTests} flaky` : '';
+  console.log(
+    `[ElegantReport] ${totalTests} tests (${passedTests} passed, ${failedTests} failed${flakyNote}, ${skippedTests} skipped) -> ${outputHtmlPath} (${(bytes / 1024).toFixed(1)} KB)`,
+  );
+  return bytes;
 }
 
-// Auto-run if executed directly
+/** Rebuilds the report from test-results/summary.json (npm run report:build). Throws on unreadable input. */
+export function generateElegantReport(
+  summaryJsonPath: string = path.resolve(process.cwd(), 'test-results/summary.json'),
+  outputHtmlPath: string = DEFAULT_REPORT_PATH,
+): number {
+  const run = loadRunFromSummary(summaryJsonPath);
+  console.log(`[ElegantReport] Building from ${summaryJsonPath} (run started ${run.startTime}).`);
+  return renderElegantReport(run, outputHtmlPath);
+}
+
+// Standalone: npm run report:build [-- <summary.json> [<output.html>]]
 if (require.main === module) {
-  generateElegantReport();
+  const [summaryArg, outputArg] = process.argv.slice(2);
+  try {
+    generateElegantReport(
+      summaryArg ? path.resolve(summaryArg) : undefined,
+      outputArg ? path.resolve(outputArg) : undefined,
+    );
+  } catch (err) {
+    console.error(`[ElegantReport] ${errorMessage(err)}`);
+    process.exit(1);
+  }
 }

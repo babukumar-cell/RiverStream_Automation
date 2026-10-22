@@ -2,7 +2,7 @@ name: River Stream Regression Suite
 
 on:
   schedule:
-    # Runs weekly every Monday at 05:00 UTC (10:30 AM IST) so test suite finishes and report email arrives by 11:00 AM IST
+    # Runs weekly every Monday at 05:00 UTC (10:30 AM IST)
     - cron: '0 5 * * 1'
   workflow_dispatch:
     inputs:
@@ -12,36 +12,60 @@ on:
         default: 'test:main'
         type: choice
         options:
-          - 'test:main'      # Core 7 modules (Auth, LeftNav, Upload, Docs, Recon, Review, Email)
-          - 'test:full'      # All 8 modules including Settings (273 tests)
-          - 'test:settings'  # Standalone Settings module (82 tests)
+          - 'test:main'       # Every module
+          - 'test:auth'
+          - 'test:left-side'
+          - 'test:clients'
+          - 'test:analytics'
+          - 'test:upload'
+          - 'test:documents'
+          - 'test:recon'
+          - 'test:review'
+          - 'test:settings'
+          - 'test:email'
       report_recipients:
         description: 'Override Email Recipients (comma-separated, optional)'
         required: false
         default: ''
 
 permissions:
-  contents: write
-  actions: read
+  contents: read
 
 jobs:
+  secret-scan:
+    name: Scan for Committed Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   regression-tests:
     name: Execute Playwright Regression Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install Dependencies
         run: npm ci
+
+      - name: Type Check
+        run: npm run typecheck
 
       - name: Install Playwright Browsers & System Dependencies
         run: npx playwright install --with-deps chromium
@@ -80,14 +104,20 @@ jobs:
         run: |
           npm run report:build
 
-      - name: Deploy Playwright HTML Report to GitHub Pages
+      # Reports contain screenshots of customer data, so they are kept as private
+      # workflow artifacts instead of being published to GitHub Pages.
+      - name: Upload Test Results & Artifacts
+        id: upload_artifacts
         if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        continue-on-error: true
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report
-          keep_files: false
+          name: playwright-execution-artifacts-${{ github.run_number }}
+          path: |
+            playwright-report/
+            reports/
+            test-results/
+            allure-report/
+          retention-days: 14
 
       - name: Send Execution Email Report
         if: always()
@@ -95,29 +125,18 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL || 'https://riverstream-qa.azurewebsites.net/' }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
-          REPORT_RECIPIENTS: ${{ github.event.inputs.report_recipients || secrets.REPORT_RECIPIENTS || secrets.SENDER_EMAIL }}
+          REPORT_RECIPIENTS: ${{ github.event.inputs.report_recipients || secrets.REPORT_RECIPIENTS }}
           SMTP_HOST: smtp.gmail.com
           SMTP_PORT: 465
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          REPORT_WEB_URL: https://babukumar-cell.github.io/RiverStream_Automation/
+          REPORT_WEB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           npm run report:email
-
-      - name: Upload Test Results & Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-execution-artifacts-${{ github.run_number }}
-          path: |
-            playwright-report/
-            test-results/
-            allure-report/
-          retention-days: 14
 
       - name: Check Overall Test Run Status
         if: steps.run_tests.outcome != 'success'
         run: |
-          echo "Playwright tests encountered failures. Check the attached summary email and artifacts."
+          echo "Playwright tests encountered failures. Check the summary email and the run artifacts."
           exit 1

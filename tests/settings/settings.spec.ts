@@ -74,7 +74,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
     await settingsPage.userEmailInput.fill(uniqueEmail);
 
     if (await settingsPage.userPasswordInput.isVisible()) {
-      await settingsPage.userPasswordInput.fill('River@123');
+      await settingsPage.userPasswordInput.fill('Auto@Pass2026!');
     }
 
     await expect(settingsPage.submitCreateUserButton).toBeVisible();

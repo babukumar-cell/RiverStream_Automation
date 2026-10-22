@@ -21,7 +21,7 @@ export const AuthTestData = {
     testCaseId: 'TC_002',
     description: 'Verify that an error message is displayed for an incorrect Email/password',
     email: Config.adminEmail,
-    password: 'River@123456',
+    password: 'WrongPass@987',
     expectedOutcome: 'error' as const,
     expectedErrorMessage: /Invalid Email or password|Email username or password/i,
   },

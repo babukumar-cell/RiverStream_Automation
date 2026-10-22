@@ -11,3 +11,5 @@ src/test-data/temp/
 ~$*.xlsx
 scratch/
 
+.auth/
+reports/

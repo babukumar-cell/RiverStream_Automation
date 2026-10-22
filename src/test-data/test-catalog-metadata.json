@@ -3,8 +3,8 @@
     "tcId": "TC_AUTH_001",
     "module": "Authentication",
     "description": "Verify user is able to sign in with valid credentials",
-    "steps": "1. Navigate to the login page by using https://riverstream.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
-    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : River@123",
+    "steps": "1. Navigate to the login page by using https://riverstream-qa.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
+    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : <ADMIN_PASSWORD from .env>",
     "expectedResult": "User is successfully logged in, and the system should redirects the user to the dashboard.",
     "actualResult": ""
   },
@@ -13,7 +13,7 @@
     "module": "Authentication",
     "description": "Verify that an error message is displayed for an incorrect Email/password",
     "steps": "1. Enter the invalid Email. \n2. Enter the invalid password. \n3. Click on the 'Sign in' button.",
-    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"River@123456\"",
+    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"WrongPass@987\"",
     "expectedResult": "User verify an error message should be displayed : \"Email username or password\".",
     "actualResult": ""
   },
@@ -40,7 +40,7 @@
     "module": "Authentication",
     "description": "Verify login with only the valid password filled",
     "steps": "1. Enter the valid password. \n2. Click on the 'Sign in' button.",
-    "testData": "Valid Password : \"River@123\"",
+    "testData": "Valid Password : \"<ADMIN_PASSWORD from .env>\"",
     "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
     "actualResult": ""
   },
@@ -1538,60 +1538,6 @@
     "expectedResult": "Review is finalized, Complete button disables or shows completed state, and document status updates to reflect completion (Matched, Critical, or Medium discrepancy) in document list.",
     "actualResult": ""
   },
-  "TC_RECON_068": {
-    "tcId": "TC_RECON_068",
-    "module": "PO-ACK Recon",
-    "description": "Verify Edit All allows editing of line-item fields",
-    "steps": "1. Open the Review page.\n2. Click Edit All in the Line Items section.\n3. Try to edit line-item fields.",
-    "testData": "PO/ACK line items",
-    "expectedResult": "All applicable line-item fields should become editable.",
-    "actualResult": ""
-  },
-  "TC_RECON_069": {
-    "tcId": "TC_RECON_069",
-    "module": "PO-ACK Recon",
-    "description": "Verify discrepancy highlighting is created after editing line items",
-    "steps": "1. Click Edit All.\n2. Modify a line-item value.\n3. Click Save and Continue.\n4. Check the modified field.",
-    "testData": "Modified line-item field",
-    "expectedResult": "Based on the updated value, the appropriate discrepancy highlighting should be displayed after saving.",
-    "actualResult": ""
-  },
-  "TC_RECON_070": {
-    "tcId": "TC_RECON_070",
-    "module": "PO-ACK Recon",
-    "description": "Verify selected ACK file displays its corresponding extracted data",
-    "steps": "1. Open a PO with multiple ACK files.\n2. Open the ACK dropdown.\n3. Select an ACK file.",
-    "testData": "Multiple ACK files",
-    "expectedResult": "The extracted data corresponding to the selected ACK file should be displayed.",
-    "actualResult": ""
-  },
-  "TC_RECON_071": {
-    "tcId": "TC_RECON_071",
-    "module": "PO-ACK Recon",
-    "description": "Verify switching between ACK files retains selected flags",
-    "steps": "1. Select flags for an ACK file.\n2. Switch to another ACK file from the dropdown.\n3. Switch back to the previous ACK file.\n4. Check the selected flags.",
-    "testData": "Multiple ACK files with discrepancies",
-    "expectedResult": "The previously selected flags should remain unchanged when returning to the ACK file.",
-    "actualResult": ""
-  },
-  "TC_RECON_072": {
-    "tcId": "TC_RECON_072",
-    "module": "PO-ACK Recon",
-    "description": "Verify Extracted data changes based on selected ACK file",
-    "steps": "1. Open a PO with multiple ACK files.\n2. Select an ACK file from the dropdown.\n3. Select another ACK file and check the PDF.",
-    "testData": "Multiple ACK PDF files",
-    "expectedResult": "The Extracted data displayed should correspond to the selected ACK file.",
-    "actualResult": ""
-  },
-  "TC_RECON_073": {
-    "tcId": "TC_RECON_073",
-    "module": "PO-ACK Recon",
-    "description": "Verify edited values are retained after Save and Continue",
-    "steps": "1. Click Edit All.\n2. Modify one or more line-item values.\n3. Click Save and Continue.\n4. Recheck the edited fields.",
-    "testData": "Modified line-item values",
-    "expectedResult": "The updated values should be saved and displayed correctly after saving.",
-    "actualResult": ""
-  },
   "TC_REV_001": {
     "tcId": "TC_REV_001",
     "module": "Document Review",
@@ -2092,7 +2038,7 @@
     "module": "Settings & Org",
     "description": "Verify Direct Estimate Creation can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": ""
   },
@@ -2110,7 +2056,7 @@
     "module": "Settings & Org",
     "description": "Verify Life Line Traking can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": ""
   },
@@ -2524,7 +2470,7 @@
     "module": "Settings & Org",
     "description": "Verify Edit User functionality",
     "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
-    "testData": "Viewer \u2192 Admin",
+    "testData": "Viewer → Admin",
     "expectedResult": "User role should be updated successfully.",
     "actualResult": ""
   },
@@ -2542,7 +2488,7 @@
     "module": "Settings & Org",
     "description": "Verify Organization Details update",
     "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
-    "testData": "Corpdesign \u2192 Corpdesign QA",
+    "testData": "Corpdesign → Corpdesign QA",
     "expectedResult": "Updated organization details should be displayed.",
     "actualResult": ""
   },
@@ -2748,8 +2694,8 @@
     "tcId": "TC_001",
     "module": "Sign-In page",
     "description": "Verify user is able to sign in with valid credentials",
-    "steps": "1. Navigate to the login page by using https://riverstream.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
-    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : River@123",
+    "steps": "1. Navigate to the login page by using https://riverstream-qa.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
+    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : <ADMIN_PASSWORD from .env>",
     "expectedResult": "User is successfully logged in, and the system should redirects the user to the dashboard.",
     "actualResult": "User is successfully logged in, and the system redirects the user to the dashboard as expected."
   },
@@ -2758,7 +2704,7 @@
     "module": "Sign-In page",
     "description": "Verify that an error message is displayed for an incorrect Email/password",
     "steps": "1. Enter the invalid Email. \n2. Enter the invalid password. \n3. Click on the 'Sign in' button.",
-    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"River@123456\"",
+    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"WrongPass@987\"",
     "expectedResult": "User verify an error message should be displayed : \"Email username or password\".",
     "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
   },
@@ -2785,7 +2731,7 @@
     "module": "Sign-In page",
     "description": "Verify login with only the valid password filled",
     "steps": "1. Enter the valid password. \n2. Click on the 'Sign in' button.",
-    "testData": "Valid Password : \"River@123\"",
+    "testData": "Valid Password : \"<ADMIN_PASSWORD from .env>\"",
     "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
     "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
   },
@@ -3595,7 +3541,7 @@
     "module": "Left side fields",
     "description": "Verify Direct Estimate Creation can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": "Toggle returns to disabled state."
   },
@@ -3613,7 +3559,7 @@
     "module": "Left side fields",
     "description": "Verify Life Line Traking can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": "Toggle returns to disabled state."
   },
@@ -4027,7 +3973,7 @@
     "module": "Left side fields",
     "description": "Verify Edit User functionality",
     "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
-    "testData": "Viewer \u2192 Admin",
+    "testData": "Viewer → Admin",
     "expectedResult": "User role should be updated successfully.",
     "actualResult": "User role updated successfully"
   },
@@ -4045,7 +3991,7 @@
     "module": "Left side fields",
     "description": "Verify Organization Details update",
     "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
-    "testData": "Corpdesign \u2192 Corpdesign QA",
+    "testData": "Corpdesign → Corpdesign QA",
     "expectedResult": "Updated organization details should be displayed.",
     "actualResult": "Updated organization details successfully"
   },

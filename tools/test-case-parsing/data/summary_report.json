@@ -1,0 +1,332 @@
+{
+  "Sign-In page": {
+    "total_rows": 6,
+    "valid_test_cases_count": 5,
+    "header": [
+      "Test Case ID",
+      "Test Case Description",
+      "Steps to Reproduce",
+      "Test Data",
+      "Expected Result",
+      "Actual Result",
+      "Result"
+    ],
+    "sections": [],
+    "sample_cases": [
+      {
+        "id": "TC_001",
+        "desc": "Verify user is able to sign in with valid credentials",
+        "steps": "1. Navigate to the login page by using https://riverstream-qa.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
+        "test_data": "Email : \"admin@riverstonetech.com\" \nPassword  : <ADMIN_PASSWORD from .env>",
+        "expected": "User is successfully logged in, and the system should redirects the user to the dashboard.",
+        "actual": "User is successfully logged in, and the system redirects the user to the dashboard as expected.",
+        "result": "PASS",
+        "sheet": "Sign-In page"
+      },
+      {
+        "id": "TC_002",
+        "desc": "Verify that an error message is displayed for an incorrect Email/password",
+        "steps": "1. Enter the invalid Email. \n2. Enter the invalid password. \n3. Click on the 'Sign in' button.",
+        "test_data": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"WrongPass@987\"",
+        "expected": "User verify an error message should be displayed : \"Email username or password\".",
+        "actual": "User verifies that an error message \"Invalid Email or password\" is displayed as expected.",
+        "result": "PASS",
+        "sheet": "Sign-In page"
+      },
+      {
+        "id": "TC_003",
+        "desc": "Verify login with empty Email and password fields",
+        "steps": "Click on the 'Sign in' button.",
+        "test_data": "-",
+        "expected": "User verify an error message should be displayed : \"Email is required\nPassword is required\".",
+        "actual": "User verifies that an error message \"Email is required\nPassword is required\". is displayed as expected.",
+        "result": "PASS",
+        "sheet": "Sign-In page"
+      }
+    ]
+  },
+  "Left side fields": {
+    "total_rows": 171,
+    "valid_test_cases_count": 149,
+    "header": [
+      "Test Case ID",
+      "Test Case Description",
+      "Steps to Reproduce",
+      "Test Data",
+      "Expected Result",
+      "Actual Result",
+      "Result"
+    ],
+    "sections": [
+      "Dashboard field Functionality",
+      "Documents field Functionality",
+      "Client field functionality",
+      "Analytics field functionality",
+      "Setting field"
+    ],
+    "sample_cases": [
+      {
+        "id": "TC_001",
+        "desc": "Verify Logout button visibility and location",
+        "steps": "1. Login to the application\n2. Navigate to Dashboard",
+        "test_data": "Valid user credentials",
+        "expected": "Logout button should be visible at the bottom-left corner of the dashboard",
+        "actual": "Logout button is visible at the top-right corner of the dashboard",
+        "result": "PASS",
+        "sheet": "Left side fields"
+      },
+      {
+        "id": "TC_002",
+        "desc": "Verify Logout button functionality",
+        "steps": "1. Click on Logout button",
+        "test_data": "",
+        "expected": "User should be logged out and redirected to the Login page",
+        "actual": "User is getting logged out and redirected to the Login page",
+        "result": "PASS",
+        "sheet": "Left side fields"
+      },
+      {
+        "id": "TC_003",
+        "desc": "Verify Organization dropdown is displayed",
+        "steps": "1. Navigate to Dashboard page.\n2. Observe the Organization field.",
+        "test_data": "",
+        "expected": "Organization dropdown should be displayed with a default value.",
+        "actual": "Organization dropdown is displayed successfully with the default value selected.",
+        "result": "PASS",
+        "sheet": "Left side fields"
+      }
+    ]
+  },
+  "Po-ACK Recon": {
+    "total_rows": 75,
+    "valid_test_cases_count": 73,
+    "header": [
+      "Test Case ID",
+      "Test Case Description",
+      "Steps to Reproduce",
+      "Test Data",
+      "Expected Result",
+      "Actual Result",
+      "Result"
+    ],
+    "sections": [
+      "Review Page"
+    ],
+    "sample_cases": [
+      {
+        "id": "TC_001",
+        "desc": "Verify PO-ACK Recon Projects page loads successfully",
+        "steps": "1. Login to the application.\n2. Navigate to PO-ACK Recon Projects page.",
+        "test_data": "Valid User",
+        "expected": "PO-ACK Recon Projects page should load successfully with project list, search bar, and New Project button displayed.",
+        "actual": "PO-ACK Recon Projects page loaded successfully with project list, search bar, and New Project button displayed as expected.",
+        "result": "PASS",
+        "sheet": "Po-ACK Recon"
+      },
+      {
+        "id": "TC_002",
+        "desc": "Verify project list is displayed",
+        "steps": "1. Login to the application.\n2. Navigate to PO-ACK Recon Projects page.",
+        "test_data": "Existing Projects",
+        "expected": "List of available projects should be displayed with Project Name, Org Name, and Created Date columns.",
+        "actual": "Project list was displayed successfully with Project Name, Org Name, and Created Date columns.",
+        "result": "PASS",
+        "sheet": "Po-ACK Recon"
+      },
+      {
+        "id": "TC_003",
+        "desc": "Verify project details are displayed correctly",
+        "steps": "1. Navigate PO-ACK Recon Projects page.\n2. Review project records.",
+        "test_data": "Existing Projects",
+        "expected": "Each project row should display the document list.",
+        "actual": "Each project row displayed the associated document list correctly.",
+        "result": "PASS",
+        "sheet": "Po-ACK Recon"
+      }
+    ]
+  },
+  "Upload Document page": {
+    "total_rows": 999,
+    "valid_test_cases_count": 18,
+    "header": [
+      "Test Case ID",
+      "Test Case Description",
+      "Steps to Reproduce",
+      "Test Data",
+      "Expected Result",
+      "Actual Result",
+      "Result"
+    ],
+    "sections": [],
+    "sample_cases": [
+      {
+        "id": "TC_001",
+        "desc": "Verify user can upload a valid PDF file using Choose File",
+        "steps": "1. Navigate to Upload Document page\n2. Click Choose File\n3. Select a valid PDF file",
+        "test_data": "invoice.pdf",
+        "expected": "The system should accept the PDF file and upload it successfully",
+        "actual": "The PDF file was accepted and uploaded successfully",
+        "result": "PASS",
+        "sheet": "Upload Document page"
+      },
+      {
+        "id": "TC_002",
+        "desc": "Verify user can upload a valid PDF file using drag and drop",
+        "steps": "1. Navigate to Upload Document page\n2. Drag and drop a valid PDF into upload area",
+        "test_data": "invoice.pdf",
+        "expected": "The system should upload the PDF file successfully",
+        "actual": "The PDF file was uploaded successfully",
+        "result": "PASS",
+        "sheet": "Upload Document page"
+      },
+      {
+        "id": "TC_003",
+        "desc": "Verify user can upload a valid EDI file",
+        "steps": "1. Click Choose File\n2. Select a valid EDI file",
+        "test_data": "order.edi",
+        "expected": "The system should accept and process the EDI file",
+        "actual": "The EDI file was accepted and processed successfully",
+        "result": "PASS",
+        "sheet": "Upload Document page"
+      }
+    ]
+  },
+  "Review page": {
+    "total_rows": 37,
+    "valid_test_cases_count": 28,
+    "header": [
+      "Test Case ID",
+      "Test Case Description",
+      "Steps to Reproduce",
+      "Test Data",
+      "Expected Result",
+      "Actual Result",
+      "Result"
+    ],
+    "sections": [],
+    "sample_cases": [
+      {
+        "id": "TC_001",
+        "desc": "Verify Document Review page loads successfully",
+        "steps": "1. Open a processed document from the dashboard.",
+        "test_data": "Extracted document",
+        "expected": "Document Review page should load with PDF preview and extracted data.",
+        "actual": "Document Review page loaded successfully with PDF preview and extracted data.",
+        "result": "PASS",
+        "sheet": "Review page"
+      },
+      {
+        "id": "TC_002",
+        "desc": "Verify PDF document preview display",
+        "steps": "1. Open the Document Review page.",
+        "test_data": "Valid PDF document",
+        "expected": "Uploaded PDF should be displayed correctly in the preview panel.",
+        "actual": "PDF document is displayed correctly in the preview panel.",
+        "result": "PASS",
+        "sheet": "Review page"
+      },
+      {
+        "id": "TC_003",
+        "desc": "Verify page navigation and ciatation controls by clicking the Source number and the order line items value",
+        "steps": "1. Use the Previous/Next page controls.",
+        "test_data": "Multi-page PDF",
+        "expected": "User should be able to navigation and citation between document pages.",
+        "actual": "User is able to navigation and citaion between document pages successfully.",
+        "result": "PASS",
+        "sheet": "Review page"
+      }
+    ]
+  },
+  "Email Process for Corp design": {
+    "total_rows": 31,
+    "valid_test_cases_count": 30,
+    "header": [
+      "Test Case ID",
+      "Test Case Description",
+      "Steps to Reproduce",
+      "Test Data",
+      "Expected Result",
+      "Actual Result",
+      "Result"
+    ],
+    "sections": [],
+    "sample_cases": [
+      {
+        "id": "TC_001",
+        "desc": "Verify \"Unknown User\" reply for non-organization user",
+        "steps": "1. Send an email from an email address that is not associated with the organization.\n2. Include a valid organization name in the email subject.\n3. Process the email.",
+        "test_data": "",
+        "expected": "System should send a reply email with the message \"Unknown User\".",
+        "actual": "Reply email was received with the message \"Unknown User\".",
+        "result": "PASS",
+        "sheet": "Email Process for Corp design"
+      },
+      {
+        "id": "TC_002",
+        "desc": "Verify direct estimation email processing when toggle is enabled",
+        "steps": "1. Enable the Direct Estimate Creation toggle in Organization Settings.\n2. Send a SIF/PDF file through email.",
+        "test_data": "SIF/PDF file",
+        "expected": "Email should be processed successfully and an estimate should be created.",
+        "actual": "Email was processed successfully and an estimate was created.",
+        "result": "PASS",
+        "sheet": "Email Process for Corp design"
+      },
+      {
+        "id": "TC_003",
+        "desc": "Verify direct estimation with draw file attachment",
+        "steps": "1. Enable the Direct Estimate Creation toggle.\n2. Send a SIF/PDF file with a draw file attachment through email.",
+        "test_data": "SIF/PDF + Draw file",
+        "expected": "System should process the files and generate an estimate successfully.",
+        "actual": "Files were processed and the estimate was generated successfully.",
+        "result": "PASS",
+        "sheet": "Email Process for Corp design"
+      }
+    ]
+  },
+  "Email Process for Hightower": {
+    "total_rows": 21,
+    "valid_test_cases_count": 16,
+    "header": [
+      "Test Case ID",
+      "Test Case Description",
+      "Steps to Reproduce",
+      "Test Data",
+      "Expected Result",
+      "Actual Result",
+      "Result"
+    ],
+    "sections": [],
+    "sample_cases": [
+      {
+        "id": "TC_001",
+        "desc": "Verify \"No Attachment\" notification is sent when email is received without an attachment",
+        "steps": "1. Send an email without any attachment.\n2. Check the response email.",
+        "test_data": "Email without attachment.",
+        "expected": "System should send a \"No Attachment Found\" notification email to the sender.",
+        "actual": "Notification email received successfully.",
+        "result": "PASS",
+        "sheet": "Email Process for Hightower"
+      },
+      {
+        "id": "TC_002",
+        "desc": "Verify successful extraction when a valid attachment is sent in reply to the \"No Attachment\" email",
+        "steps": "1. Send an email without attachment.\n2. Receive \"No Attachment\" notification.\n3. Reply with a valid attachment.\n4. Verify processing status.",
+        "test_data": "Reply email with pdf.",
+        "expected": "File should be processed successfully and display Success status.",
+        "actual": "File processed successfully with Success status.",
+        "result": "PASS",
+        "sheet": "Email Process for Hightower"
+      },
+      {
+        "id": "TC_003",
+        "desc": "Verify email subject format when attachment is sent in reply",
+        "steps": "1. Send an email without attachment.\n2. Receive notification.\n3. Reply with attachment.\n4. Check the subject of the processed email.",
+        "test_data": "Subject: \"Lease Extraction Request\".",
+        "expected": "Subject should contain only one Re: prefix (e.g., \"Re: Lease Extraction Request\").",
+        "actual": "Subject displayed as Re: Re: Lease Extraction Request.",
+        "result": "PASS",
+        "sheet": "Email Process for Hightower"
+      }
+    ]
+  }
+}

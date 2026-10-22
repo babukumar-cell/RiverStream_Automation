@@ -7,6 +7,8 @@ import { LeftSidePage } from '../pages/left-side.page';
 import { PoAckReconPage } from '../pages/po-ack-recon.page';
 import { DocumentsPage } from '../pages/documents.page';
 import { SettingsPage } from '../pages/settings.page';
+import { ClientsPage } from '../pages/clients.page';
+import { AnalyticsPage } from '../pages/analytics.page';
 import { MailService } from '../utils/mail.service';
 
 type Fixtures = {
@@ -18,6 +20,8 @@ type Fixtures = {
   poAckReconPage: PoAckReconPage;
   documentsPage: DocumentsPage;
   settingsPage: SettingsPage;
+  clientsPage: ClientsPage;
+  analyticsPage: AnalyticsPage;
   mailService: MailService;
 };
 
@@ -45,6 +49,12 @@ export const test = base.extend<Fixtures>({
   },
   settingsPage: async ({ page }, use) => {
     await use(new SettingsPage(page));
+  },
+  clientsPage: async ({ page }, use) => {
+    await use(new ClientsPage(page));
+  },
+  analyticsPage: async ({ page }, use) => {
+    await use(new AnalyticsPage(page));
   },
   mailService: async ({}, use) => {
     await use(new MailService());

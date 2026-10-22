@@ -1,58 +1,56 @@
-import { chromium } from '@playwright/test';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+import { chromium, type Browser } from '@playwright/test';
+import { errorMessage } from '../reporters/report-data';
 
 /**
- * Generates an executive PDF report from the HTML dashboard
- * using Playwright's headless browser and @media print styling.
+ * Prints the elegant HTML report (playwright-report/index.html) to an executive PDF using its
+ * @media print styles. Throws on any problem; when run directly (npm run report:pdf) it exits 1.
  */
 export async function generatePdfReport(
   htmlPath: string = path.resolve(process.cwd(), 'playwright-report/index.html'),
-  outputPdfPath: string = path.resolve(process.cwd(), 'test-results/RiverStream_QA_Execution_Report.pdf')
-): Promise<string | null> {
+  outputPdfPath: string = path.resolve(process.cwd(), 'test-results/RiverStream_QA_Execution_Report.pdf'),
+): Promise<string> {
   if (!fs.existsSync(htmlPath)) {
-    console.warn(`[PdfGenerator] HTML report not found at: ${htmlPath}. Skipping PDF export.`);
-    return null;
+    throw new Error(`HTML report not found at ${htmlPath}. Run the tests or npm run report:build first.`);
   }
+  fs.mkdirSync(path.dirname(outputPdfPath), { recursive: true });
 
-  const outDir = path.dirname(outputPdfPath);
-  if (!fs.existsSync(outDir)) {
-    fs.mkdirSync(outDir, { recursive: true });
-  }
-
-  console.log('[PdfGenerator] Launching headless browser for PDF generation...');
-  let browser;
+  let browser: Browser | undefined;
   try {
     browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage({
-      viewport: { width: 1440, height: 1080 }
-    });
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1080 } });
+    await page.goto(`file:///${htmlPath.replace(/\\/g, '/')}`, { waitUntil: 'load', timeout: 30000 });
+    await page.emulateMedia({ media: 'print' });
 
-    // Navigate to local HTML report
-    const fileUrl = 'file:///' + htmlPath.replace(/\\/g, '/');
-    await page.goto(fileUrl, { waitUntil: 'load', timeout: 30000 });
-
-    // Expand all test cards so all plain English expected and actual results are visible
-    await page.evaluate(() => {
-      document.querySelectorAll('.test-card').forEach(card => {
+    // Ensure all test cards are visible and open so expected/actual results print, hide empty state, then wait for images and fonts.
+    await page.evaluate(async () => {
+      document.querySelectorAll('.test-card').forEach((card) => {
+        (card as HTMLElement).style.display = 'block';
         card.classList.add('open');
       });
+      const emptyState = document.getElementById('emptyState');
+      if (emptyState) (emptyState as HTMLElement).style.display = 'none';
+
+      const images = Array.from(document.images);
+      images.forEach((img) => (img.loading = 'eager'));
+      const pending = images
+        .filter((img) => !img.complete)
+        .map(
+          (img) =>
+            new Promise<void>((resolve) => {
+              img.addEventListener('load', () => resolve(), { once: true });
+              img.addEventListener('error', () => resolve(), { once: true });
+            }),
+        );
+      await Promise.all([document.fonts.ready, ...pending]);
     });
 
-    // Short wait to ensure DOM reflects expanded state
-    await page.waitForTimeout(600);
-
-    // Generate PDF with executive styling
     await page.pdf({
       path: outputPdfPath,
       format: 'A4',
       printBackground: true,
-      margin: {
-        top: '12mm',
-        bottom: '12mm',
-        left: '12mm',
-        right: '12mm'
-      },
+      margin: { top: '12mm', bottom: '12mm', left: '12mm', right: '12mm' },
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
       footerTemplate: `
@@ -60,25 +58,20 @@ export async function generatePdfReport(
           <span>RiverStream QA Automation — Executive Test Execution Report</span>
           <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
         </div>
-      `
+      `,
     });
 
-    const stat = fs.statSync(outputPdfPath);
-    console.log(`[PdfGenerator] Executive PDF report successfully generated at: ${outputPdfPath} (${(stat.size / 1024).toFixed(1)} KB)`);
+    const sizeKb = (fs.statSync(outputPdfPath).size / 1024).toFixed(1);
+    console.log(`[PdfGenerator] PDF report written to ${outputPdfPath} (${sizeKb} KB)`);
     return outputPdfPath;
-  } catch (err: any) {
-    console.error('[PdfGenerator] Error during PDF generation:', err.message);
-    return null;
   } finally {
-    if (browser) {
-      await browser.close().catch(() => {});
-    }
+    await browser?.close();
   }
 }
 
-// Auto-run if executed directly
 if (require.main === module) {
   generatePdfReport().catch((err) => {
-    console.error('[PdfGenerator Fatal]', err);
+    console.error(`[PdfGenerator] ${errorMessage(err)}`);
+    process.exit(1);
   });
 }
