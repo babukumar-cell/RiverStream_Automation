@@ -1,0 +1,101 @@
+name: River Stream - Quick Report Verification (2 Mins)
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Verification Suite to Execute'
+        required: true
+        default: 'test:smoke:po-quote'
+        type: choice
+        options:
+          - 'test:smoke:po-quote'    # Fast Smoke (13 tests, ~2 mins)
+          - 'test:left-side'         # Navigation & KPIs (15 tests, ~2 mins)
+          - 'test:auth'              # Authentication (7 tests, ~1 min)
+          - 'report:only'            # Skip tests, instantly publish report & send email (~45s)
+      report_recipients:
+        description: 'Override Email Recipients (comma-separated, optional)'
+        required: false
+        default: 'babukumar@riverstonetech.com,rajkamal@riverstonetech.com,divya.d@riverstonetech.com'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  quick-verify:
+    name: Quick Report & Email Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers & System Dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Quick Verification Tests
+        id: run_tests
+        continue-on-error: true
+        env:
+          CI: true
+          HEADLESS: true
+          SUITE_NAME: 'River Stream Quick Verification Suite'
+          BASE_URL: ${{ secrets.BASE_URL || 'https://riverstream-qa.azurewebsites.net/' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
+          INGESTION_EMAIL: ${{ secrets.INGESTION_EMAIL || 'riverstream.qa@riverstonetech.in' }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: 465
+          IMAP_HOST: imap.gmail.com
+          IMAP_PORT: 993
+        run: |
+          SUITE="${{ github.event.inputs.test_suite }}"
+          if [ "$SUITE" = "report:only" ]; then
+            echo "Skipping test execution; generating report from baseline."
+          else
+            echo "Executing quick test suite: npm run $SUITE"
+            npm run "$SUITE"
+          fi
+
+      - name: Build Elegant Dark HTML Report
+        if: always()
+        run: npm run report:build
+
+      - name: Deploy Playwright HTML Report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          keep_files: false
+
+      - name: Send Execution Email Report
+        if: always()
+        env:
+          SUITE_NAME: 'River Stream Quick Verification Suite'
+          BASE_URL: ${{ secrets.BASE_URL || 'https://riverstream-qa.azurewebsites.net/' }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
+          REPORT_RECIPIENTS: ${{ github.event.inputs.report_recipients || secrets.REPORT_RECIPIENTS || 'babukumar@riverstonetech.com,rajkamal@riverstonetech.com,divya.d@riverstonetech.com' }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: 465
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          REPORT_WEB_URL: https://babukumar-cell.github.io/RiverStream_Automation/
+        run: |
+          npm run report:email
