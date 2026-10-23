@@ -149,6 +149,13 @@ function failureRow(c: ReportCase, accent: string, label: string, reason: string
 
   const cleanWhy = reason || c.actualResult || 'Action timed out or assertion failed.';
 
+  const hasVideo = c.attachments?.some(
+    (a) => a.contentType?.startsWith('video/') || /\.(webm|mp4)$/i.test(a.path || ''),
+  );
+  const videoNotice = hasVideo
+    ? `<div style="margin-top: 8px; font-size: 11px; color: #b91c1c; font-weight: 700; background-color: #fee2e2; border: 1px solid #fecaca; border-radius: 4px; padding: 4px 8px; display: inline-block;">🎬 Video Reference: Failure Recording Available in Full Report</div>`
+    : '';
+
   const technical = c.error
     ? `<details style="margin-top: 8px; font-size: 11px;">
         <summary style="color: ${accent}; cursor: pointer; font-weight: 600;">Show Technical Trace</summary>
@@ -173,6 +180,7 @@ function failureRow(c: ReportCase, accent: string, label: string, reason: string
             <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 6px 10px; color: #991b1b; font-size: 12px; line-height: 1.4;">
               <strong>🔴 ${label}:</strong> ${escapeHtml(cleanWhy)}
             </div>
+            ${videoNotice}
             ${technical}
           </td>
         </tr>`;

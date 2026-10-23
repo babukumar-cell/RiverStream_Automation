@@ -100,7 +100,7 @@ function safeName(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-80);
 }
 
-/** Copies screenshots into assets/ and links videos / traces in place. */
+/** Copies screenshots, failure video recordings, and traces into assets/ for self-contained reports. */
 function collectMedia(tc: ReportCase, index: number, reportDir: string, assetsDir: string): MediaItem[] {
   const media: MediaItem[] = [];
   tc.attachments.forEach((att, n) => {
@@ -110,15 +110,18 @@ function collectMedia(tc: ReportCase, index: number, reportDir: string, assetsDi
     const isVideo = att.contentType.startsWith('video/') || /\.(webm|mp4)$/.test(lowerPath);
     const isTrace = att.name.startsWith('trace') || lowerPath.endsWith('trace.zip');
     try {
-      if (isImage) {
-        const fileName = `${index}-${n}-${safeName(path.basename(att.path))}`;
+      if (isImage || isVideo || isTrace) {
+        const baseName = safeName(path.basename(att.path));
+        const fileName = `${index}-${n}-${baseName}`;
         fs.copyFileSync(att.path, path.join(assetsDir, fileName));
-        media.push({ name: att.name || 'Screenshot', type: 'image', src: `assets/${fileName}` });
-      } else if (isVideo || isTrace) {
+        const type: 'image' | 'video' | 'trace' = isImage ? 'image' : isVideo ? 'video' : 'trace';
+        let defaultName = 'Screenshot Evidence';
+        if (isVideo) defaultName = 'Failure Execution Video';
+        else if (isTrace) defaultName = 'Playwright Trace';
         media.push({
-          name: att.name || (isVideo ? 'Video' : 'Trace'),
-          type: isVideo ? 'video' : 'trace',
-          src: toPosix(path.relative(reportDir, att.path)),
+          name: att.name || defaultName,
+          type,
+          src: `assets/${fileName}`,
         });
       }
     } catch (err) {
@@ -300,10 +303,28 @@ function pct(part: number, total: number): number {
 
 function renderMedia(m: MediaItem): string {
   if (m.type === 'image') {
-    return `<img src="${escapeHtml(m.src)}" alt="${escapeHtml(m.name)}" class="media-thumb" loading="lazy" title="${escapeHtml(m.name)} (Click to zoom)">`;
+    return `
+      <div class="media-thumb-card">
+        <div class="media-card-title">📸 ${escapeHtml(m.name)}</div>
+        <img src="${escapeHtml(m.src)}" alt="${escapeHtml(m.name)}" class="media-thumb" loading="lazy" title="${escapeHtml(m.name)} (Click to zoom)">
+      </div>`;
   }
   if (m.type === 'video') {
-    return `<video controls preload="none" class="video-player" title="${escapeHtml(m.name)}"><source src="${escapeHtml(m.src)}" type="video/webm">Your browser does not support video playback.</video>`;
+    return `
+      <div class="video-container-card">
+        <div class="video-card-header">
+          <span class="video-icon">🎬</span>
+          <span class="video-title">${escapeHtml(m.name || 'Failure Execution Recording')}</span>
+        </div>
+        <video controls preload="metadata" class="video-player" title="${escapeHtml(m.name)}">
+          <source src="${escapeHtml(m.src)}" type="video/webm">
+          <source src="${escapeHtml(m.src)}" type="video/mp4">
+          Your browser does not support video playback.
+        </video>
+        <div class="video-card-footer">
+          <a href="${escapeHtml(m.src)}" download class="video-download-btn">⬇ Download Video (.webm)</a>
+        </div>
+      </div>`;
   }
   return `<a class="trace-link" href="${escapeHtml(m.src)}" download>🧭 ${escapeHtml(m.name)} — open with <code>npx playwright show-trace</code></a>`;
 }
@@ -360,7 +381,8 @@ function renderCard(tc: CardView): string {
               <div class="test-card-right">
                 ${tc.knownDefects.length > 0 ? '<span class="defect-chip" title="Annotated as a known application defect">🐞 known defect</span>' : ''}
                 ${tc.attempts > 1 ? `<span class="retry-chip" title="Number of attempts including retries">${tc.attempts} attempts</span>` : ''}
-                ${tc.media.length > 0 ? `<span class="media-indicator" title="${tc.media.length} media attached">📸 ${tc.media.length}</span>` : ''}
+                ${tc.media.filter((m) => m.type === 'video').length > 0 ? `<span class="media-indicator video" title="Failure video recording available">🎬 Video</span>` : ''}
+                ${tc.media.filter((m) => m.type === 'image').length > 0 ? `<span class="media-indicator" title="${tc.media.filter((m) => m.type === 'image').length} screenshot(s) attached">📸 ${tc.media.filter((m) => m.type === 'image').length}</span>` : ''}
                 <span class="mod-tag">${escapeHtml(tc.moduleShort)}</span>
                 <span class="duration-tag">${formatDuration(tc.durationMs)}</span>
                 <span class="chevron">▼</span>
@@ -1142,11 +1164,21 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       white-space: nowrap;
     }
     .media-indicator {
-      font-size: 13px;
+      font-size: 11px;
+      font-weight: 700;
       color: var(--color-cyan);
-      display: flex;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      border-radius: 6px;
+      padding: 2px 7px;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
+    }
+    .media-indicator.video {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.45);
     }
     .mod-tag {
       font-size: 11px;
@@ -1607,6 +1639,17 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       gap: 16px;
       flex-wrap: wrap;
     }
+    .media-thumb-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .media-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.03em;
+    }
     .media-thumb {
       max-width: 320px;
       max-height: 200px;
@@ -1619,11 +1662,51 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       transform: scale(1.02);
       border-color: var(--color-cyan);
     }
+    .video-container-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      max-width: 520px;
+    }
+    .video-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fca5a5;
+    }
+    .video-card-header .video-icon { font-size: 14px; }
     .video-player {
+      width: 100%;
       max-width: 480px;
       border-radius: 8px;
-      border: 1px solid var(--border-subtle);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       background: #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .video-card-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .video-download-btn {
+      font-size: 11px;
+      font-weight: 600;
+      color: #93c5fd;
+      text-decoration: none;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      transition: all 0.2s ease;
+    }
+    .video-download-btn:hover {
+      background: rgba(59, 130, 246, 0.2);
+      color: #bfdbfe;
     }
 
     /* Lightbox Modal */
