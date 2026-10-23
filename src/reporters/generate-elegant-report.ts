@@ -155,8 +155,79 @@ function toCardView(tc: ReportCase, index: number, reportDir: string, assetsDir:
   };
 }
 
-// Format test steps cleanly into HTML list
-function formatPlainStepsHtml(rawSteps: string): string {
+function findFailingStepIndex(lines: string[], tc: CardView): number {
+  if (lines.length <= 1) return 0;
+
+  const errText = `${tc.error || ''} ${tc.errorStack || ''} ${tc.actualResult || ''}`.toLowerCase();
+
+  let bestIdx = -1;
+  let maxScore = 0;
+
+  lines.forEach((line, idx) => {
+    const clean = line.replace(/^(?:\d+[.)]|-|\*|•)\s*/, '').toLowerCase();
+    const words = clean.split(/\s+/).filter(w => w.length > 3 && !['click', 'enter', 'verify', 'select', 'check', 'should', 'ensure', 'page', 'user'].includes(w));
+    let score = 0;
+    for (const w of words) {
+      if (errText.includes(w)) {
+        score += 2;
+      }
+    }
+    if (clean.includes('click') && errText.includes('click')) score += 1;
+    if (clean.includes('fill') && (errText.includes('fill') || errText.includes('type'))) score += 1;
+    if (clean.includes('upload') && errText.includes('upload')) score += 2;
+    if (clean.includes('search') && errText.includes('search')) score += 2;
+    if (clean.includes('toast') && errText.includes('toast')) score += 3;
+    if (clean.includes('modal') && errText.includes('modal')) score += 2;
+    if (clean.includes('dropdown') && errText.includes('dropdown')) score += 2;
+    if (clean.includes('header') && errText.includes('header')) score += 2;
+    if (clean.includes('table') && errText.includes('table')) score += 2;
+
+    if (score > maxScore) {
+      maxScore = score;
+      bestIdx = idx;
+    }
+  });
+
+  if (bestIdx >= 0 && maxScore > 0) {
+    return bestIdx;
+  }
+
+  if (tc.steps && tc.steps.length > 0) {
+    const failedPwStepIdx = tc.steps.findIndex(s => !s.ok);
+    if (failedPwStepIdx >= 0) {
+      const ratio = failedPwStepIdx / tc.steps.length;
+      return Math.min(lines.length - 1, Math.floor(ratio * lines.length));
+    }
+  }
+
+  let lastVerifyIdx = -1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (/verify|assert|expect|ensure|check/i.test(lines[i])) {
+      lastVerifyIdx = i;
+      break;
+    }
+  }
+  if (lastVerifyIdx >= 0) {
+    return lastVerifyIdx;
+  }
+
+  return lines.length - 1;
+}
+
+function extractStepError(tc: CardView): string {
+  if (tc.actualResult && !tc.actualResult.toLowerCase().startsWith('failed:')) {
+    return tc.actualResult;
+  }
+  if (tc.error) {
+    const lines = tc.error.split('\n').map(l => l.trim()).filter(Boolean);
+    const mainErr = lines.find(l => !l.startsWith('at ') && !l.startsWith('Error: locator.') && l.length > 5) || lines[0];
+    return mainErr || 'Assertion or action failed at this step';
+  }
+  return tc.actualResult || 'Action timed out or assertion failed at this step';
+}
+
+// Format test steps cleanly into HTML list with step-by-step tick/cross indicators
+function formatPlainStepsHtml(rawSteps: string, tc?: CardView): string {
   if (!rawSteps || !rawSteps.trim()) {
     return '<p class="plain-step-fallback">No documented steps: this test ID has no entry in the test catalog (src/test-data/catalog).</p>';
   }
@@ -165,14 +236,61 @@ function formatPlainStepsHtml(rawSteps: string): string {
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
 
-  let html = '<ol class="plain-steps-list">';
-  for (const line of lines) {
+  const status = tc?.status || 'passed';
+  const failedIdx = status === 'failed' && tc ? findFailingStepIndex(lines, tc) : -1;
+  const stepError = status === 'failed' && tc ? extractStepError(tc) : '';
+
+  let html = '<div class="plain-steps-list">';
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const cleanText = line.replace(/^(?:\d+[.)]|-|\*|•)\s*/, '').trim();
-    if (cleanText) {
-      html += `<li><span class="step-text">${escapeHtml(cleanText)}</span></li>`;
+    if (!cleanText) continue;
+
+    const stepNum = i + 1;
+    let stepClass = 'step-passed';
+    let iconHtml = '<span class="step-status-icon pass-icon" title="Step Passed">✔</span>';
+    let badgeHtml = '<span class="step-status-badge badge-pass">PASSED</span>';
+    let errorBox = '';
+
+    if (status === 'skipped') {
+      stepClass = 'step-skipped';
+      iconHtml = '<span class="step-status-icon skip-icon" title="Not Executed">○</span>';
+      badgeHtml = '<span class="step-status-badge badge-skip">NOT EXECUTED</span>';
+    } else if (status === 'failed') {
+      if (i < failedIdx) {
+        stepClass = 'step-passed';
+        iconHtml = '<span class="step-status-icon pass-icon" title="Step Passed">✔</span>';
+        badgeHtml = '<span class="step-status-badge badge-pass">PASSED</span>';
+      } else if (i === failedIdx) {
+        stepClass = 'step-failed';
+        iconHtml = '<span class="step-status-icon fail-icon" title="Failed at this Step">✖</span>';
+        badgeHtml = '<span class="step-status-badge badge-fail">FAILED HERE</span>';
+        errorBox = `
+          <div class="step-failure-alert">
+            <span class="failure-alert-icon">⚠️</span>
+            <div class="failure-alert-content">
+              <strong>Failure Detail:</strong> ${escapeHtml(stepError)}
+            </div>
+          </div>`;
+      } else {
+        stepClass = 'step-unreached';
+        iconHtml = '<span class="step-status-icon unreached-icon" title="Not Reached">―</span>';
+        badgeHtml = '<span class="step-status-badge badge-unreached">NOT REACHED</span>';
+      }
     }
+
+    html += `
+      <div class="plain-step-row ${stepClass}">
+        <div class="plain-step-header">
+          <span class="step-num">${stepNum}.</span>
+          ${iconHtml}
+          <span class="step-text">${escapeHtml(cleanText)}</span>
+          ${badgeHtml}
+        </div>
+        ${errorBox}
+      </div>`;
   }
-  html += '</ol>';
+  html += '</div>';
   return html;
 }
 
@@ -297,7 +415,7 @@ function renderCard(tc: CardView): string {
                 <!-- 3. Plain English Test Steps -->
                 <div class="plain-steps-box">
                   <h4>📋 Documented Test Steps</h4>
-                  ${formatPlainStepsHtml(tc.plainSteps)}
+                  ${formatPlainStepsHtml(tc.plainSteps, tc)}
                 </div>
 
                 <!-- 4. Technical Diagnostics -->
@@ -1211,7 +1329,7 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       font-weight: 600;
     }
 
-    /* Plain English Steps List */
+    /* Plain English Steps List with Status Icons */
     .plain-steps-box {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border-subtle);
@@ -1224,27 +1342,126 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-dim);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
     .plain-steps-list {
       margin: 0;
-      padding-left: 20px;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
-    .plain-steps-list li {
+    .plain-step-row {
+      display: flex;
+      flex-direction: column;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 6px;
+      padding: 10px 14px;
+      transition: all 0.2s ease;
+    }
+    .plain-step-row.step-passed {
+      border-left: 3.5px solid #22c55e;
+      background: rgba(34, 197, 94, 0.04);
+    }
+    .plain-step-row.step-failed {
+      border-left: 3.5px solid #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    .plain-step-row.step-skipped, .plain-step-row.step-unreached {
+      border-left: 3.5px solid #64748b;
+      opacity: 0.75;
+    }
+    .plain-step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      min-width: 22px;
+    }
+    .step-status-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
       font-size: 13px;
-      color: #cbd5e1;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .step-status-icon.pass-icon {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.45);
+    }
+    .step-status-icon.fail-icon {
+      background: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.6);
+    }
+    .step-status-icon.skip-icon, .step-status-icon.unreached-icon {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    .step-text {
+      flex: 1;
+      font-size: 13px;
+      color: #e2e8f0;
       line-height: 1.45;
     }
-    .plain-steps-list li::marker {
-      color: #818cf8;
-      font-weight: 700;
+    .step-failed .step-text {
+      color: #fca5a5;
+      font-weight: 600;
+    }
+    .step-status-badge {
       font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .badge-pass {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .badge-fail {
+      background: rgba(239, 68, 68, 0.25);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    .badge-skip, .badge-unreached {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    .step-failure-alert {
+      margin-top: 8px;
+      margin-left: 32px;
+      background: rgba(153, 27, 27, 0.35);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: #fecaca;
+      line-height: 1.4;
     }
     .plain-step-fallback {
       font-size: 13px;
@@ -1644,8 +1861,22 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
         background: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
       }
-      .plain-steps-list li {
+      .plain-step-row {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+      .plain-step-row.step-passed {
+        border-left: 3px solid #16a34a !important;
+      }
+      .plain-step-row.step-failed {
+        border-left: 3px solid #dc2626 !important;
+        background: #fef2f2 !important;
+      }
+      .step-text {
         color: #1e293b !important;
+      }
+      .step-failed .step-text {
+        color: #991b1b !important;
       }
       .dev-diagnostics-details {
         display: none !important; /* Hide raw Playwright code dumps in formal executive printed PDF */
