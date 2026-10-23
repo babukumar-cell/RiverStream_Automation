@@ -31,7 +31,7 @@ export default defineConfig({
     actionTimeout: 15000,
     navigationTimeout: 30000,
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    screenshot: 'on',
     video: 'retain-on-failure',
     viewport: { width: 1280, height: 720 },
     launchOptions: {

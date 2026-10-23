@@ -7,6 +7,19 @@ test.describe('River Stream - Authentication Suite (Sign-In)', () => {
     await loginPage.navigate();
   });
 
+  test.afterEach(async ({ page }, testInfo) => {
+    if (!page.isClosed()) {
+      const shot = await page.screenshot({ fullPage: true }).catch(() => null);
+      if (shot) {
+        const id = testInfo.title.split(':')[0].trim();
+        await testInfo.attach(`${id}-Evidence`, {
+          body: shot,
+          contentType: 'image/png',
+        });
+      }
+    }
+  });
+
   test(`${AuthTestData.validUser.testCaseId}: ${AuthTestData.validUser.description}`, async ({ loginPage, dashboardPage, page }) => {
     const data = AuthTestData.validUser;
 
