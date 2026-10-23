@@ -12,14 +12,14 @@ on:
         default: 'test:po-quote'
         type: choice
         options:
-          - 'test:po-quote'          # Complete PO & Quote Suite (152 tests)
-          - 'test:upload'            # Upload Module (37 tests)
-          - 'test:documents'         # Documents Library (29 tests)
-          - 'test:review'            # Review & Line Items (27 tests)
-          - 'test:email'             # Email Ingestion Flow (29 tests)
-          - 'test:auth'              # Authentication (22 tests)
-          - 'test:left-side'         # Navigation & KPIs (15 tests)
-          - 'test:smoke:po-quote'    # Smoke PO & Quote (18 tests)
+          - 'test:po-quote'          # Complete PO & Quote Suite (145 tests)
+          - 'test:left-side'         # Left Side: Dashboard (40 tests)
+          - 'test:documents'         # Left Side: Documents Library (32 tests)
+          - 'test:upload'            # Upload Module (20 tests)
+          - 'test:review'            # Review & Line Items (32 tests)
+          - 'test:email'             # Email Ingestion Flow (16 tests)
+          - 'test:auth'              # Authentication (5 tests)
+          - 'test:smoke:po-quote'    # Smoke PO & Quote
       report_recipients:
         description: 'Override Email Recipients (comma-separated, optional)'
         required: false
