@@ -334,8 +334,7 @@ export function buildEmailHtml(run: ReportRun, opts: { pdfFileName?: string; htm
   <div style="max-width: 900px; margin: 0 auto; background: #ffffff; padding: 28px 32px; border-radius: 8px; border: 1px solid #e5e7eb;">
     <p style="margin: 0 0 12px 0; font-size: 14px;">Hi Team,</p>
     <p style="margin: 0 0 20px 0; font-size: 14px; color: #374151; line-height: 1.5;">
-      Here is the execution summary of the <strong>${escapeHtml(suiteTitle)}</strong> run started on <strong>${escapeHtml(date)}</strong> at <strong>${escapeHtml(`${time} ${zone}`)}</strong> against <strong>QA</strong>.
-      Overall status: <strong style="color: ${suiteStatus === 'PASSED' ? COLORS.pass : COLORS.fail};">${suiteStatus}</strong>.
+      Here is the execution summary of the <strong>${escapeHtml(suiteTitle)}</strong> run started on <strong>${escapeHtml(date)}</strong> at <strong>${escapeHtml(`${time} ${zone}`)}</strong> against <strong>QA</strong>:
     </p>
 
     <table style="width: 100%; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed; margin-bottom: 22px;"><tr>${kpis}</tr></table>
