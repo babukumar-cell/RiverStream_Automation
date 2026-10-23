@@ -184,4 +184,39 @@ export class UploadPage extends BasePage {
     await this.page.waitForURL(`**/${from}`, { timeout: 30000 });
     return result;
   }
+
+  // Convenience aliases and helpers for test suites
+  get docTypeDropdown(): Locator {
+    return this.documentTypeDropdown;
+  }
+
+  get uploadSuccessTitle(): Locator {
+    return this.uploadSuccessToast;
+  }
+
+  get backToDashboardLink(): Locator {
+    return this.backToDashboardButton;
+  }
+
+  get processButton(): Locator {
+    return this.uploadAndProcessButton;
+  }
+
+  get attachedFileTag(): Locator {
+    return this.dropZone.locator('span, div').filter({ hasText: /AUTO_MULTI|\.pdf|\.edi|\.xlsx|\.xls|\.sif/i });
+  }
+
+  async uploadViaInput(filePath: string): Promise<UploadResult> {
+    await this.attachFile(filePath);
+    return this.submitUpload();
+  }
+
+  async uploadViaDrop(filePath: string): Promise<UploadResult> {
+    await this.dropFiles([UploadPage.toDroppedFile(filePath)]);
+    return this.submitUpload();
+  }
+
+  async clickProcess(): Promise<void> {
+    await this.uploadAndProcessButton.click();
+  }
 }

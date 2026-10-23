@@ -378,4 +378,45 @@ export class DocumentsPage extends BasePage {
       iso,
     );
   }
+
+  // Convenience aliases and helpers for test suites
+  get docTypeHeading(): Locator {
+    return this.page.getByRole('heading', { name: 'Document type' });
+  }
+
+  get clearAllFiltersButton(): Locator {
+    return this.clearFiltersBtn;
+  }
+
+  get filtersPanel(): Locator {
+    return this.fileFormatHeading.locator('xpath=ancestor::div[contains(@class,"border") or contains(@class,"rounded")][1]');
+  }
+
+  get filterSummaryPill(): Locator {
+    return this.activeFilterBadge;
+  }
+
+  get tableHeaderCells(): Locator {
+    return this.tableHeaders;
+  }
+
+  async collapseFilters(): Promise<void> {
+    if (await this.collapseFiltersButton.isVisible()) {
+      await this.collapseFiltersButton.click();
+    }
+  }
+
+  async search(term: string): Promise<LibraryPage> {
+    return this.searchDocument(term);
+  }
+
+  async filterByDocType(type: string): Promise<LibraryPage> {
+    const normalized: DocumentTypeFilter = (type.toLowerCase().includes('purchase') ? 'Purchase order' : 'Quote request');
+    return this.filterByDocumentType(normalized);
+  }
+
+  async openReview(indexOrRow: number | Locator = 0): Promise<void> {
+    const row = typeof indexOrRow === 'number' ? this.dataRows.nth(indexOrRow) : indexOrRow;
+    await this.reviewButton(row).click();
+  }
 }

@@ -289,14 +289,14 @@ export function lookupCatalog(tcId: string, catalog: Catalog): CatalogEntry | un
 // ---------------------------------------------------------------------------
 
 export const MODULES: ModuleDef[] = [
-  { key: 'auth', order: 1, name: 'Authentication & Session', shortName: 'Authentication', icon: '🔐', idPrefixes: ['AUTH'], pathHints: ['auth', 'signin', 'sign-in', 'login'] },
-  { key: 'dashboard', order: 2, name: 'Dashboard & Navigation', shortName: 'Dashboard', icon: '🧭', idPrefixes: ['DASH'], pathHints: ['dashboard', 'left-side', 'navigation'] },
+  { key: 'auth', order: 1, name: 'Authentication & Session', shortName: 'Authentication', icon: '🔐', idPrefixes: ['AUTH', 'LOGIN'], pathHints: ['auth', 'signin', 'sign-in', 'login'] },
+  { key: 'dashboard', order: 2, name: 'Dashboard & Navigation', shortName: 'Dashboard', icon: '🧭', idPrefixes: ['DASH', 'DASHBOARD', 'LEFIT_SIDE_FIELDS', 'LEFT_SIDE_FIELDS'], pathHints: ['dashboard', 'left-side', 'navigation'] },
   { key: 'clients', order: 3, name: 'Clients', shortName: 'Clients', icon: '👥', idPrefixes: ['CLIE'], pathHints: ['clients'] },
   { key: 'analytics', order: 4, name: 'Analytics', shortName: 'Analytics', icon: '📈', idPrefixes: ['ANAL'], pathHints: ['analytics'] },
-  { key: 'upload', order: 5, name: 'Document Upload & Processing', shortName: 'Upload', icon: '📤', idPrefixes: ['UP'], pathHints: ['upload'] },
-  { key: 'documents', order: 6, name: 'Documents Library', shortName: 'Documents', icon: '📑', idPrefixes: ['DOCU', 'DOC'], pathHints: ['documents'] },
+  { key: 'upload', order: 5, name: 'Document Upload & Processing', shortName: 'Upload', icon: '📤', idPrefixes: ['UP', 'FILE_UPLOAD'], pathHints: ['upload'] },
+  { key: 'documents', order: 6, name: 'Documents Library', shortName: 'Documents', icon: '📑', idPrefixes: ['DOCU', 'DOC', 'DOCUMENT'], pathHints: ['documents'] },
   { key: 'recon', order: 7, name: 'PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: '⚖️', idPrefixes: ['RECON'], pathHints: ['po-ack-recon', 'recon'] },
-  { key: 'review', order: 8, name: 'Document Review', shortName: 'Review', icon: '🔍', idPrefixes: ['REV'], pathHints: ['review'] },
+  { key: 'review', order: 8, name: 'Document Review', shortName: 'Review', icon: '🔍', idPrefixes: ['REV', 'REVIEW_PAGE'], pathHints: ['review'] },
   { key: 'settings', order: 9, name: 'Settings & Organizations', shortName: 'Settings', icon: '⚙️', idPrefixes: ['SETT'], pathHints: ['settings'] },
   { key: 'email', order: 10, name: 'Email Order Ingestion', shortName: 'Email', icon: '✉️', idPrefixes: ['EM', 'RS_EM'], pathHints: ['email'] },
 ];

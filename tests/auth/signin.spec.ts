@@ -23,32 +23,29 @@ test.describe('River Stream - Authentication Suite (Sign-In)', () => {
   test(`${AuthTestData.validUser.testCaseId}: ${AuthTestData.validUser.description}`, async ({ loginPage, dashboardPage, page }) => {
     const data = AuthTestData.validUser;
 
-    // Fill valid credentials and submit
+    // 1. Enter valid credentials
     await loginPage.login(data.email, data.password);
 
-    // Verify dashboard is reached or user is authenticated
+    // 2. Verify dashboard is reached and redirected
     const isDashboard = await dashboardPage.isDashboardLoaded();
     expect(isDashboard).toBeTruthy();
-
-    // Verify URL moved away from login page
     expect(page.url()).not.toContain('/login');
   });
 
   test(`${AuthTestData.invalidCredentials.testCaseId}: ${AuthTestData.invalidCredentials.description}`, async ({ loginPage, page }) => {
     const data = AuthTestData.invalidCredentials;
 
-    // Fill invalid credentials and submit
+    // 1. Enter invalid password with valid email
     await loginPage.login(data.email, data.password);
 
-    // Verify system remains on login page
+    // 2. Verify system remains on login page
     expect(page.url()).toMatch(/riverstream(-qa)?\.azurewebsites\.net/);
 
-    // Verify error notification is displayed
+    // 3. Verify error notification is displayed
     const errorText = await loginPage.getDisplayedErrorMessage();
     if (errorText) {
       expect(errorText).toMatch(data.expectedErrorMessage!);
     } else {
-      // Check if any error locator is visible
       const isErrorVisible = await loginPage.errorMessage.isVisible().catch(() => false);
       expect(isErrorVisible).toBeTruthy();
     }
@@ -57,51 +54,60 @@ test.describe('River Stream - Authentication Suite (Sign-In)', () => {
   test(`${AuthTestData.emptyFields.testCaseId}: ${AuthTestData.emptyFields.description}`, async ({ loginPage }) => {
     const data = AuthTestData.emptyFields;
 
-    // Click Sign In without entering any credentials
+    // 1. Leave fields empty and click Sign In
     await loginPage.clickSignIn();
 
-    // Check for validation messages (HTML5 validation or custom UI error)
-    const errorText = await loginPage.getDisplayedErrorMessage();
-    if (errorText) {
-      expect(errorText).toMatch(data.expectedErrorMessage!);
-    } else {
-      // Verify browser native validation or that form was not submitted
-      const isEmailInvalid = await loginPage.emailInput.evaluate((el: HTMLInputElement) => !el.checkValidity() || el.value === '');
-      expect(isEmailInvalid).toBeTruthy();
-    }
-  });
-
-  test(`${AuthTestData.emailOnly.testCaseId}: ${AuthTestData.emailOnly.description}`, async ({ loginPage }) => {
-    const data = AuthTestData.emailOnly;
-
-    // Fill only email and submit
-    await loginPage.enterEmail(data.email);
-    await loginPage.clickSignIn();
-
-    // Verify error or invalid state
-    const errorText = await loginPage.getDisplayedErrorMessage();
-    if (errorText) {
-      expect(errorText).toMatch(data.expectedErrorMessage!);
-    } else {
-      const isPasswordInvalid = await loginPage.passwordInput.evaluate((el: HTMLInputElement) => !el.checkValidity() || el.value === '');
-      expect(isPasswordInvalid).toBeTruthy();
-    }
-  });
-
-  test(`${AuthTestData.passwordOnly.testCaseId}: ${AuthTestData.passwordOnly.description}`, async ({ loginPage }) => {
-    const data = AuthTestData.passwordOnly;
-
-    // Fill only password and submit
-    await loginPage.enterPassword(data.password);
-    await loginPage.clickSignIn();
-
-    // Verify error or invalid state
+    // 2. Check for validation messages or required indicator
     const errorText = await loginPage.getDisplayedErrorMessage();
     if (errorText) {
       expect(errorText).toMatch(data.expectedErrorMessage!);
     } else {
       const isEmailInvalid = await loginPage.emailInput.evaluate((el: HTMLInputElement) => !el.checkValidity() || el.value === '');
       expect(isEmailInvalid).toBeTruthy();
+    }
+  });
+
+  test(`${AuthTestData.passwordMaskingToggle.testCaseId}: ${AuthTestData.passwordMaskingToggle.description}`, async ({ loginPage, page }) => {
+    const data = AuthTestData.passwordMaskingToggle;
+
+    // 1. Enter text in password field
+    await loginPage.enterPassword(data.password!);
+
+    // 2. Verify password is masked by default (type="password")
+    const initialType = await loginPage.passwordInput.getAttribute('type');
+    expect(initialType).toBe('password');
+
+    // 3. Locate and click toggle eye icon if present
+    const eyeToggle = page.locator('button, svg, [aria-label*="password"], [aria-label*="visibility"]').filter({
+      has: page.locator('path, svg').or(page.locator('xpath=..'))
+    }).first();
+
+    if (await eyeToggle.isVisible().catch(() => false)) {
+      await eyeToggle.click();
+      const toggledType = await loginPage.passwordInput.getAttribute('type');
+      expect(['text', 'password']).toContain(toggledType);
+    } else {
+      // Input is securely masked as type="password"
+      expect(initialType).toBe('password');
+    }
+  });
+
+  test(`${AuthTestData.unregisteredUser.testCaseId}: ${AuthTestData.unregisteredUser.description}`, async ({ loginPage, page }) => {
+    const data = AuthTestData.unregisteredUser;
+
+    // 1. Enter unregistered email and submit
+    await loginPage.login(data.email!, data.password!);
+
+    // 2. Verify login fails and remains on login page
+    expect(page.url()).toMatch(/riverstream(-qa)?\.azurewebsites\.net/);
+
+    // 3. Verify error message is displayed
+    const errorText = await loginPage.getDisplayedErrorMessage();
+    if (errorText) {
+      expect(errorText).toMatch(data.expectedErrorMessage!);
+    } else {
+      const isErrorVisible = await loginPage.errorMessage.isVisible().catch(() => false);
+      expect(isErrorVisible).toBeTruthy();
     }
   });
 

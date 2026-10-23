@@ -98,6 +98,11 @@ export class DashboardPage extends BasePage {
     return true;
   }
 
+  async openOrgDropdown(): Promise<void> {
+    await this.orgCombobox.click();
+    await this.orgListbox.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  }
+
   // ---------- KPI cards ----------
 
   kpiTab(name: KpiName): Locator {

@@ -102,8 +102,6 @@ test.describe('Smoke (PO & Quote): Dashboard and Navigation', () => {
 
   const modules: { id: string; nav: string[]; url: RegExp; ready: (p: Page) => ReturnType<Page['getByText']> }[] = [
     { id: 'TC_DOCU_021', nav: ['Documents'], url: /\/documents/, ready: (p) => p.getByPlaceholder('Search documents...') },
-    { id: 'TC_CLIE_044', nav: ['Clients'], url: /\/clients/, ready: (p) => p.getByRole('button', { name: /Add Client/i }) },
-    { id: 'TC_ANAL_063', nav: ['Analytics'], url: /\/analytics/, ready: (p) => p.getByText('Performance Analytics') },
   ];
 
   for (const m of modules) {

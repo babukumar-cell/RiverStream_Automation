@@ -210,4 +210,35 @@ export class ReviewPage extends BasePage {
     }
     await this.lineItemsModal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
   }
+
+  // Convenience helpers
+  async openJsonView(): Promise<void> {
+    await this.jsonViewTab.click();
+  }
+
+  async openExtractedData(): Promise<void> {
+    await this.extractedDataTab.click();
+  }
+
+  async getJsonContent(): Promise<string> {
+    return (await this.jsonContainer.innerText().catch(() => '')) || '';
+  }
+
+  async openLineItemsModal(): Promise<void> {
+    await this.expandOrderLineItems();
+  }
+
+  async closeLineItemsModal(): Promise<void> {
+    await this.closeOrderLineItems();
+  }
+
+  async isInEditMode(): Promise<boolean> {
+    return this.cancelEditButton.isVisible({ timeout: 2000 }).catch(() => false);
+  }
+
+  async cancelEditing(): Promise<void> {
+    if (await this.cancelEditButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await this.cancelEditButton.click();
+    }
+  }
 }

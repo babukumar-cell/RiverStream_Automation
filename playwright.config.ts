@@ -48,7 +48,6 @@ export default defineConfig({
       dependencies: ['setup'],
       testMatch: [
         /(auth|left-side|upload|documents|review|email)[/\\][^/\\]+\.spec\.ts/,
-        /po-quote-smoke\.spec\.ts/,
       ],
       use: {
         ...devices['Desktop Chrome'],

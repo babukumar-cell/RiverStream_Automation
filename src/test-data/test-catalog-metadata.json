@@ -2038,7 +2038,7 @@
     "module": "Settings & Org",
     "description": "Verify Direct Estimate Creation can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON → OFF",
+    "testData": "Toggle: ON \u2192 OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": ""
   },
@@ -2056,7 +2056,7 @@
     "module": "Settings & Org",
     "description": "Verify Life Line Traking can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON → OFF",
+    "testData": "Toggle: ON \u2192 OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": ""
   },
@@ -2470,7 +2470,7 @@
     "module": "Settings & Org",
     "description": "Verify Edit User functionality",
     "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
-    "testData": "Viewer → Admin",
+    "testData": "Viewer \u2192 Admin",
     "expectedResult": "User role should be updated successfully.",
     "actualResult": ""
   },
@@ -2488,7 +2488,7 @@
     "module": "Settings & Org",
     "description": "Verify Organization Details update",
     "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
-    "testData": "Corpdesign → Corpdesign QA",
+    "testData": "Corpdesign \u2192 Corpdesign QA",
     "expectedResult": "Updated organization details should be displayed.",
     "actualResult": ""
   },
@@ -2692,120 +2692,107 @@
   },
   "TC_001": {
     "tcId": "TC_001",
-    "module": "Sign-In page",
-    "description": "Verify user is able to sign in with valid credentials",
-    "steps": "1. Navigate to the login page by using https://riverstream-qa.azurewebsites.net/\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
-    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : <ADMIN_PASSWORD from .env>",
-    "expectedResult": "User is successfully logged in, and the system should redirects the user to the dashboard.",
-    "actualResult": "User is successfully logged in, and the system redirects the user to the dashboard as expected."
+    "module": "email",
+    "description": "Verify system handles Purchase Order email when Purchase Order document type is not enabled",
+    "steps": "1. Disable Purchase Order document type for the organization.\n2. Send an email with a valid Purchase Order attachment.\n3. Check the reply email and system processing status.",
+    "testData": "Valid Purchase Order PDF",
+    "expectedResult": "System should not process the document. A relevant reply email should be sent informing the user that the Purchase Order document type is not enabled/configured for the organization."
   },
   "TC_002": {
     "tcId": "TC_002",
-    "module": "Sign-In page",
-    "description": "Verify that an error message is displayed for an incorrect Email/password",
-    "steps": "1. Enter the invalid Email. \n2. Enter the invalid password. \n3. Click on the 'Sign in' button.",
-    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"WrongPass@987\"",
-    "expectedResult": "User verify an error message should be displayed : \"Email username or password\".",
-    "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
+    "module": "email",
+    "description": "Verify system handles Quotation email when Quotation document type is not enabled",
+    "steps": "1. Disable Quotation document type for the organization.\n2. Send an email with a valid Quotation attachment.\n3. Check the reply email and system processing status.",
+    "testData": "Valid Quotation PDF",
+    "expectedResult": "System should not process the document. A relevant reply email should be sent informing the user that the Quotation document type is not enabled/configured for the organization."
   },
   "TC_003": {
     "tcId": "TC_003",
-    "module": "Sign-In page",
-    "description": "Verify login with empty Email and password fields",
-    "steps": "Click on the 'Sign in' button.",
-    "testData": "-",
-    "expectedResult": "User verify an error message should be displayed : \"Email is required\nPassword is required\".",
-    "actualResult": "User verifies that an error message \"Email is required\nPassword is required\". is displayed as expected."
+    "module": "email",
+    "description": "Verify system handles PO-ACK Recon email when PO-ACK Recon document type is not enabled",
+    "steps": "1. Disable PO-ACK Recon document type for the organization.\n2. Send an email with valid PO-ACK Recon documents.\n3. Check the reply email and system processing status.",
+    "testData": "Valid PO and ACK files",
+    "expectedResult": "System should not process the documents. A relevant reply email should be sent informing the user that the PO-ACK Recon document type is not enabled/configured for the organization."
   },
   "TC_004": {
     "tcId": "TC_004",
-    "module": "Sign-In page",
-    "description": "Verify login with only the valid Email filled",
-    "steps": "1. Enter the valid Email. \n2. Click on the 'Sign in' button.",
-    "testData": "Valid Email : \"admin@riverstonetech.com\"",
-    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
-    "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
+    "module": "email",
+    "description": "Verify correct reply email content for unsupported document type submission",
+    "steps": "1. Disable a document type.\n2. Send a valid document belonging to the disabled document type.\n3. Review the reply email content.",
+    "testData": "Any valid disabled document type",
+    "expectedResult": "Reply email should clearly mention that the submitted document type is not enabled for the organization and provide appropriate guidance to the user."
   },
   "TC_005": {
     "tcId": "TC_005",
-    "module": "Sign-In page",
-    "description": "Verify login with only the valid password filled",
-    "steps": "1. Enter the valid password. \n2. Click on the 'Sign in' button.",
-    "testData": "Valid Password : \"<ADMIN_PASSWORD from .env>\"",
-    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\".",
-    "actualResult": "User verifies that an error message \"Invalid Email or password\" is displayed as expected."
+    "module": "email",
+    "description": "Verify document is not extracted or inserted into ERP when document type is disabled",
+    "steps": "1. Disable a document type.\n2. Send a valid document of that type.\n3. Monitor processing logs, extraction status, and ERP records.",
+    "testData": "Valid Purchase Order / Quotation / PO-ACK Recon file",
+    "expectedResult": "Document should not proceed to extraction, review, or ERP insertion. Only the appropriate notification email should be sent to the user."
   },
   "TC_006": {
     "tcId": "TC_006",
-    "module": "Left side fields",
-    "description": "Verify Total POs card is displayed",
-    "steps": "1. Open Dashboard page.\n2. Locate the Total POs card.",
+    "module": "email",
+    "description": "Verify the system process the attachment without subject reference.",
+    "steps": "1. Enable Purchase Order, Quotation, and PO-ACK Recon document types.\n2. Send an email with a Purchase Order attachment and Purchase Order keyword in the subject.\n3. Verify document processing.",
     "testData": "",
-    "expectedResult": "Total POs card should be visible with count and trend information.",
-    "actualResult": "Total POs card is displayed correctly with count and trend information."
+    "expectedResult": "System should read the attachment, process it and submit to the ERP without subject reference."
   },
   "TC_007": {
     "tcId": "TC_007",
-    "module": "Left side fields",
-    "description": "Verify Processing Rate card is displayed",
-    "steps": "1. Open Dashboard page.\n2. Locate the Processing Rate card.",
+    "module": "email",
+    "description": "Verify system differentiates document types correctly when all document types are enabled",
+    "steps": "1. Enable all three document types.\n2. Send separate emails for each document type using the appropriate subject keywords.\n3. Verify processing results.",
     "testData": "",
-    "expectedResult": "Processing Rate card should display a valid percentage value.",
-    "actualResult": "Processing Rate card displays a valid percentage value as expected."
+    "expectedResult": "\"View In ERP\" link should be display in the Reply mail body."
   },
   "TC_008": {
     "tcId": "TC_008",
-    "module": "Left side fields",
-    "description": "Verify Extraction Accuracy card is displayed",
-    "steps": "1. Open Dashboard page.\n2. Locate the Extraction Accuracy card.",
+    "module": "email",
+    "description": "Verify Request Type Doesn't Match Attachment Email is Sent When Subject Indicates Quote but Attachment is a Purchase Order",
+    "steps": "1. Send an email with the subject containing Quotation/Estimation.\n2. Attach a valid Purchase Order document.\n3. Submit the email for processing.",
     "testData": "",
-    "expectedResult": "Extraction Accuracy card should display percentage and target value.",
-    "actualResult": "Extraction Accuracy card displays the correct percentage and target value."
+    "expectedResult": "The system identifies that the request type in the subject (Quotation/Estimation) does not match the attached document type (Purchase Order). The document is not processed, extracted, reviewed, or submitted to ERP. A \"Request Type Doesn't Match Attachment\" email is sent to the user with instructions to either provide the correct request type or the correct attachment."
   },
   "TC_009": {
     "tcId": "TC_009",
-    "module": "Left side fields",
-    "description": "Verify Reviewed card is displayed",
-    "steps": "1. Open Dashboard page.\n2. Locate the Reviewed card.",
-    "testData": "",
-    "expectedResult": "Reviewed card should display the total reviewed document count.",
-    "actualResult": "Reviewed card displays the total reviewed document count correctly."
+    "module": "email",
+    "description": "Verify \"No Attachment Found\" reply for email without attachments from a known user",
+    "steps": "1. Send an email from a registered (known) user.\n2. Do not attach any files to the email.\n3. Submit the email.\n4. Check the reply email.",
+    "testData": "Known user account, email with no attachments",
+    "expectedResult": "System should send a reply email with the message \"No Attachment Found\"."
   },
   "TC_010": {
     "tcId": "TC_010",
-    "module": "Left side fields",
-    "description": "Verify Reviewed count accuracy",
-    "steps": "1. Compare Reviewed count with reviewed records.",
-    "testData": "Reviewed records",
-    "expectedResult": "Reviewed count should match the actual reviewed documents.",
-    "actualResult": "Reviewed count matches the actual reviewed documents."
+    "module": "email",
+    "description": "Verify user attaching an attachment for No attachment found reply.",
+    "steps": "1. Send an email from a registered (known) user.\n2. Do not attach any files to the email.\n3. Submit the email.\n4. Check the reply email.\n5. Attach a valid attachment for reply mail.\n6. Observe the Reply mail",
+    "testData": "",
+    "expectedResult": "System should process the file without any error."
   },
   "TC_011": {
     "tcId": "TC_011",
-    "module": "Left side fields",
-    "description": "Verify Pending Review card is displayed",
-    "steps": "1. Open Dashboard page.\n2. Locate the Pending Review card.",
+    "module": "email",
+    "description": "Verify the reply mail",
+    "steps": "1. Sent a rmail with valid attachment.\n2. Observe the reply mail.",
     "testData": "",
-    "expectedResult": "Pending Review card should display pending review count and status message.",
-    "actualResult": "Pending Review card displays the correct pending review count and status message."
+    "expectedResult": "Review in Stream button, Status, Order line items should be available."
   },
   "TC_012": {
     "tcId": "TC_012",
-    "module": "Left side fields",
-    "description": "Verify Pending Review count accuracy",
-    "steps": "1. Compare Pending Review count with pending records.",
-    "testData": "Pending review records",
-    "expectedResult": "Pending Review count should match actual pending records.",
-    "actualResult": "Pending Review count matches the actual pending records."
+    "module": "email",
+    "description": "Verify the Review in Stream Button functionality.",
+    "steps": "1. Sent a rmail with valid attachment.\n2. Observe the reply mail.\n3. Click on Review in Stream button.",
+    "testData": "",
+    "expectedResult": "The button should be clickable and should redirect to the particular file review page."
   },
   "TC_013": {
     "tcId": "TC_013",
-    "module": "Left side fields",
-    "description": "Verify Processing card is displayed",
-    "steps": "1. Open Dashboard page.\n2. Locate the Processing card.",
-    "testData": "",
-    "expectedResult": "Processing card should display the number of files currently being processed.",
-    "actualResult": "Processing card displays the correct number of files currently being processed."
+    "module": "email",
+    "description": "Verify \"Too Many Attachments\" reply when more than two attachments are sent",
+    "steps": "1. Send an email from a registered (known) user.\n2. Attach more than two files to the email.\n3. Submit the email.\n4. Check the reply email.",
+    "testData": "Known user account, email with 3 or more attachments",
+    "expectedResult": "System should not process the email and should send a reply email with the message \"Too Many Attachments\"."
   },
   "TC_014": {
     "tcId": "TC_014",
@@ -2818,30 +2805,27 @@
   },
   "TC_015": {
     "tcId": "TC_015",
-    "module": "Left side fields",
-    "description": "Verify Avg Processing Time card is displayed",
-    "steps": "1. Open Dashboard page.\n2. Locate the Avg Processing Time card.",
+    "module": "email",
+    "description": "Verify \"Attachment Couldn't Be Read\" reply for unreadable attachment",
+    "steps": "1. Send an email from a registered (known) user.\n2. Attach blank, or unreadable document or send image attachement with .PDF or .SIF extention.\n3. Submit the email.\n4. Check the reply email.",
     "testData": "",
-    "expectedResult": "Avg Processing Time card should display a valid processing time value.",
-    "actualResult": "Avg Processing Time card displays a valid processing time value."
+    "expectedResult": "The system should not process the document and should send a reply email with the message \"Attachment Appears to Be Corrupted\"."
   },
   "TC_016": {
     "tcId": "TC_016",
-    "module": "Left side fields",
-    "description": "Verify Avg Processing Time accuracy",
-    "steps": "1. Compare displayed value with calculated average processing time.",
-    "testData": "Processing logs",
-    "expectedResult": "Displayed average processing time should be accurate.",
-    "actualResult": "Displayed average processing time is accurate."
+    "module": "email",
+    "description": "Verify \"Document Already Processed\" reply for previously processed document",
+    "steps": "1. Send a document from a registered (known) user and allow it to be processed successfully.\n2. Send the same document again from the same registered user.\n3. Check the reply email.",
+    "testData": "Known user account, previously processed document",
+    "expectedResult": "System should identify that the document has already been processed and send a reply email with the message \"Document Already Processed\" along with the already processed file content"
   },
   "TC_017": {
     "tcId": "TC_017",
-    "module": "Left side fields",
-    "description": "Verify dashboard card alignment",
-    "steps": "1. Open Dashboard page.\n2. Inspect all metric cards.",
-    "testData": "",
-    "expectedResult": "All cards should be properly aligned with consistent spacing and formatting.",
-    "actualResult": "All dashboard cards are properly aligned with consistent spacing and formatting."
+    "module": "email",
+    "description": "Verify \"Document Already in Processing\" reply for a document currently being processed",
+    "steps": "1. Send a document from a registered (known) user.\n2. Before the document processing is completed, send the same document again from the same registered user.\n3. Check the reply email.",
+    "testData": "Known user account, document currently in processing state",
+    "expectedResult": "System should identify that the document is already being processed and send a reply email with the message \"Document Already in Processing\"."
   },
   "TC_018": {
     "tcId": "TC_018",
@@ -3541,7 +3525,7 @@
     "module": "Left side fields",
     "description": "Verify Direct Estimate Creation can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON → OFF",
+    "testData": "Toggle: ON \u2192 OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": "Toggle returns to disabled state."
   },
@@ -3559,7 +3543,7 @@
     "module": "Left side fields",
     "description": "Verify Life Line Traking can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON → OFF",
+    "testData": "Toggle: ON \u2192 OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": "Toggle returns to disabled state."
   },
@@ -3973,7 +3957,7 @@
     "module": "Left side fields",
     "description": "Verify Edit User functionality",
     "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
-    "testData": "Viewer → Admin",
+    "testData": "Viewer \u2192 Admin",
     "expectedResult": "User role should be updated successfully.",
     "actualResult": "User role updated successfully"
   },
@@ -3991,7 +3975,7 @@
     "module": "Left side fields",
     "description": "Verify Organization Details update",
     "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
-    "testData": "Corpdesign → Corpdesign QA",
+    "testData": "Corpdesign \u2192 Corpdesign QA",
     "expectedResult": "Updated organization details should be displayed.",
     "actualResult": "Updated organization details successfully"
   },
@@ -4030,5 +4014,1037 @@
     "testData": "Existing Organization",
     "expectedResult": "All organization data should remain unchanged.",
     "actualResult": "All organization data remain unchanged."
+  },
+  "TC_Login_001": {
+    "tcId": "TC_Login_001",
+    "module": "auth",
+    "description": "Verify user is able to sign in with valid credentials",
+    "steps": "1. Navigate to the login page by using https://riverstream-qa.azurewebsites.net/dashboard\n2. Enter the valid Email.\n3. Enter the valid password.\n4. Click on the 'Sign in' button.\n5. Verify successful login.",
+    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : River@123",
+    "expectedResult": "User is successfully logged in, and the system should redirects the user to the dashboard."
+  },
+  "TC_Login_002": {
+    "tcId": "TC_Login_002",
+    "module": "auth",
+    "description": "Verify that an error message is displayed for an incorrect Email/password",
+    "steps": "1. Enter the invalid Email. \n2. Enter the invalid password. \n3. Click on the 'Sign in' button.",
+    "testData": "Invalid Email  : \"admin@riverstonetech.com\"\nInvalid Password   : \"River@123456\"",
+    "expectedResult": "User verify an error message should be displayed : \"Email username or password\"."
+  },
+  "TC_Login_003": {
+    "tcId": "TC_Login_003",
+    "module": "auth",
+    "description": "Verify login with empty Email and password fields",
+    "steps": "Click on the 'Sign in' button.",
+    "testData": "-",
+    "expectedResult": "User verify an error message should be displayed : \"Email is required\nPassword is required\"."
+  },
+  "TC_Login_004": {
+    "tcId": "TC_Login_004",
+    "module": "auth",
+    "description": "Verify login with only the valid Email filled",
+    "steps": "1. Enter the valid Email. \n2. Click on the 'Sign in' button.",
+    "testData": "Valid Email : \"admin@riverstonetech.com\"",
+    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\"."
+  },
+  "TC_Login_005": {
+    "tcId": "TC_Login_005",
+    "module": "auth",
+    "description": "Verify login with only the valid password filled",
+    "steps": "1. Enter the valid password. \n2. Click on the 'Sign in' button.",
+    "testData": "Valid Password : \"River@123\"",
+    "expectedResult": "User verify an error message should be displayed : \"Invalid Email or password\"."
+  },
+  "TC_Lefit-side-fields_001": {
+    "tcId": "TC_Lefit-side-fields_001",
+    "module": "dashboard",
+    "description": "Verify Logout button visibility and location",
+    "steps": "1. Login to the application\n2. Navigate to Dashboard",
+    "testData": "Valid user credentials",
+    "expectedResult": "Logout button should be visible at the bottom-left corner of the dashboard"
+  },
+  "TC_Left-side-fields_001": {
+    "tcId": "TC_Left-side-fields_001",
+    "module": "dashboard",
+    "description": "Verify Logout button functionality",
+    "steps": "1. Click on Logout button",
+    "testData": "",
+    "expectedResult": "User should be logged out and redirected to the Login page"
+  },
+  "TC_Dashboard_003": {
+    "tcId": "TC_Dashboard_003",
+    "module": "dashboard",
+    "description": "Verify Total Documents metric card with counts displayed",
+    "steps": "1. Navigate to Dashboard page.\n2. Observe the Organization field.",
+    "testData": "",
+    "expectedResult": "Total Documents metric should be there in the Dashboard page with count displayed."
+  },
+  "TC_Dashboard_004": {
+    "tcId": "TC_Dashboard_004",
+    "module": "dashboard",
+    "description": "Verify Organization dropdown is displayed",
+    "steps": "1. Navigate to Dashboard page.\n2. Observe the Organization field.",
+    "testData": "",
+    "expectedResult": "Organization dropdown should be displayed with a default value."
+  },
+  "TC_Dashboard_005": {
+    "tcId": "TC_Dashboard_005",
+    "module": "dashboard",
+    "description": "Verify Organization dropdown options",
+    "steps": "1. Click the Organization dropdown.\n2. View available options.",
+    "testData": "Multiple organizations",
+    "expectedResult": "All available organizations should be listed in the dropdown."
+  },
+  "TC_Dashboard_006": {
+    "tcId": "TC_Dashboard_006",
+    "module": "dashboard",
+    "description": "Verify Organization selection functionality",
+    "steps": "1. Select any organization name in the \"All Organizations\" from the dropdown.\n2. Observe dashboard.",
+    "testData": "Valid organization",
+    "expectedResult": "All metrics card count should get change based on the Organization selection compare with the prevous metric cards count."
+  },
+  "TC_Dashboard_007": {
+    "tcId": "TC_Dashboard_007",
+    "module": "dashboard",
+    "description": "Verify Reviewed metric card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Reviewed card.",
+    "testData": "",
+    "expectedResult": "Reviewed metric card should display in the Dashboard page with reviewed document count."
+  },
+  "TC_Dashboard_008": {
+    "tcId": "TC_Dashboard_008",
+    "module": "dashboard",
+    "description": "Verify Pending Review metric card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Pending Review card.",
+    "testData": "",
+    "expectedResult": "Pending Review metric card should display pending review count and status message."
+  },
+  "TC_Dashboard_009": {
+    "tcId": "TC_Dashboard_009",
+    "module": "dashboard",
+    "description": "Verify Processing metric card is displayed",
+    "steps": "1. Open Dashboard page.\n2. Locate the Processing card.",
+    "testData": "",
+    "expectedResult": "Processing metric card should display the number of files currently being processed."
+  },
+  "TC_Dashboard_010": {
+    "tcId": "TC_Dashboard_010",
+    "module": "dashboard",
+    "description": "Verify dashboard card alignment",
+    "steps": "1. Open Dashboard page.\n2. Inspect all metric cards.",
+    "testData": "",
+    "expectedResult": "All cards should be properly aligned with consistent spacing and formatting."
+  },
+  "TC_Dashboard_011": {
+    "tcId": "TC_Dashboard_011",
+    "module": "dashboard",
+    "description": "Verify dashboard data refresh on page reload",
+    "steps": "1. Open Dashboard page.\n2. Refresh the page.\n3. Observe metrics.",
+    "testData": "",
+    "expectedResult": "Dashboard should load successfully and display updated metrics without errors."
+  },
+  "TC_Dashboard_012": {
+    "tcId": "TC_Dashboard_012",
+    "module": "dashboard",
+    "description": "Verify dashboard responsiveness",
+    "steps": "1. Resize browser window.\n2. Observe dashboard layout.",
+    "testData": "Different screen sizes",
+    "expectedResult": "Dashboard cards should adjust properly without overlap or UI issues."
+  },
+  "TC_Dashboard_014": {
+    "tcId": "TC_Dashboard_014",
+    "module": "dashboard",
+    "description": "Verify Uploaded By column on Dashboard",
+    "steps": "1. Navigate to the Dashboard. \n2. Check the documents list.",
+    "testData": "",
+    "expectedResult": "The Uploaded By column should be displayed with the correct uploader name."
+  },
+  "TC_Dashboard_015": {
+    "tcId": "TC_Dashboard_015",
+    "module": "dashboard",
+    "description": "Verify Uploaded By column on Documents page",
+    "steps": "1. Navigate to the Documents page. \n2. Check the documents list.",
+    "testData": "",
+    "expectedResult": "The Uploaded By column should be displayed with the correct uploader name."
+  },
+  "TC_Dashboard_016": {
+    "tcId": "TC_Dashboard_016",
+    "module": "dashboard",
+    "description": "Verify name for website-uploaded documents",
+    "steps": "1. Log in to the application. \n2. Upload a document through the website. \n3. Check the Uploaded By column.",
+    "testData": "",
+    "expectedResult": "The name of the user who uploaded the document should be displayed."
+  },
+  "TC_Dashboard_017": {
+    "tcId": "TC_Dashboard_017",
+    "module": "dashboard",
+    "description": "Verify name for email-received documents",
+    "steps": "1. Send a document through email. \n2. Open the documents list. \n3. Check the Uploaded By column.",
+    "testData": "",
+    "expectedResult": "The sender's name should be displayed."
+  },
+  "TC_Dashboard_018": {
+    "tcId": "TC_Dashboard_018",
+    "module": "dashboard",
+    "description": "Verify Uploaded By for different users",
+    "steps": "1. Upload documents using different user accounts. \n2. Check the documents list.",
+    "testData": "",
+    "expectedResult": "Each document should display the correct uploader's name."
+  },
+  "TC_Dashboard_019": {
+    "tcId": "TC_Dashboard_019",
+    "module": "dashboard",
+    "description": "Verify Uploaded By values match across pages",
+    "steps": "1. Upload a document through the website or email. \n2. Check its uploader on the Dashboard. \n3. Check the same document on the Documents page.",
+    "testData": "",
+    "expectedResult": "The same correct uploader name or email address should appear on both pages."
+  },
+  "TC_Dashboard_020": {
+    "tcId": "TC_Dashboard_020",
+    "module": "dashboard",
+    "description": "Verify Uploaded By for existing documents",
+    "steps": "1. Navigate to the Dashboard and Documents page. \n2. Check documents uploaded before the Uploaded By feature was implemented.",
+    "testData": "",
+    "expectedResult": "The Uploaded By column should display the correct uploader name or sender's email address for existing documents."
+  },
+  "TC_Dashboard_021": {
+    "tcId": "TC_Dashboard_021",
+    "module": "dashboard",
+    "description": "Verify the Export icon is visible for all user logins.",
+    "steps": "1. Login the application as multiple user\n2. Observe the Dashbord.",
+    "testData": "Email : \"admin@riverstonetech.com\" \nPassword  : \"River@123\"\n               or\nEmail : \"divya.d@riverstonetech.com\" \nPassword  : \"River@123\"",
+    "expectedResult": "The Export icon should be accessible to all users."
+  },
+  "TC_Dashboard_022": {
+    "tcId": "TC_Dashboard_022",
+    "module": "dashboard",
+    "description": "Verify the CSV download option.",
+    "steps": "1. Login the application as multiple user\n2. Observe the Dashbord.\n3. Click on the Export icon.\n4. Choose the CSV.",
+    "testData": "",
+    "expectedResult": "The report should download successfully in CSV format."
+  },
+  "TC_Dashboard_023": {
+    "tcId": "TC_Dashboard_023",
+    "module": "dashboard",
+    "description": "Verify the XLSX download option.",
+    "steps": "1. Login the application as multiple user\n2. Observe the Dashbord.\n3. Click on the Export icon.\n4. Choose the XLSX.",
+    "testData": "",
+    "expectedResult": "The report should download successfully in XLSX format."
+  },
+  "TC_Dashboard_024": {
+    "tcId": "TC_Dashboard_024",
+    "module": "dashboard",
+    "description": "Verify the exported report based on the applied filters.",
+    "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX.",
+    "testData": "",
+    "expectedResult": "The report should contain data matching the applied filters."
+  },
+  "TC_Dashboard_025": {
+    "tcId": "TC_Dashboard_025",
+    "module": "dashboard",
+    "description": "Verify the Document Name column in the exported report.",
+    "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX or CSV.\n5. Observe the report.",
+    "testData": "",
+    "expectedResult": "The correct document names should be displayed."
+  },
+  "TC_Dashboard_026": {
+    "tcId": "TC_Dashboard_026",
+    "module": "dashboard",
+    "description": "Verify the Customer column in the exported report.",
+    "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX or CSV.\n5. Observe the report.",
+    "testData": "",
+    "expectedResult": "The correct customer names should be displayed."
+  },
+  "TC_Dashboard_027": {
+    "tcId": "TC_Dashboard_027",
+    "module": "dashboard",
+    "description": "Verify the Uploaded By and Uploader Email columns.",
+    "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX or CSV.\n5. Observe the report.",
+    "testData": "",
+    "expectedResult": "The correct uploader name and email address should be displayed."
+  },
+  "TC_Dashboard_028": {
+    "tcId": "TC_Dashboard_028",
+    "module": "dashboard",
+    "description": "Verify the Uploaded From column.",
+    "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX or CSV.\n5. Observe the report.",
+    "testData": "",
+    "expectedResult": "The correct upload source should be displayed."
+  },
+  "TC_Dashboard_029": {
+    "tcId": "TC_Dashboard_029",
+    "module": "dashboard",
+    "description": "Verify the Upload Date column.",
+    "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX or CSV.\n5. Observe the report.",
+    "testData": "",
+    "expectedResult": "The correct document upload date should be displayed."
+  },
+  "TC_Dashboard_030": {
+    "tcId": "TC_Dashboard_030",
+    "module": "dashboard",
+    "description": "Verify the Status Details column.",
+    "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX or CSV.\n5. Observe the report.",
+    "testData": "",
+    "expectedResult": "The correct document status details should be displayed."
+  },
+  "TC_Dashboard_031": {
+    "tcId": "TC_Dashboard_031",
+    "module": "dashboard",
+    "description": "Verify the date filter is displayed in the Dashboard header.",
+    "steps": "1. Login into the application.\n2. Observe the Dashboard.",
+    "testData": "",
+    "expectedResult": "The date filter dropdown should be displayed in the Dashboard header."
+  },
+  "TC_Dashboard_032": {
+    "tcId": "TC_Dashboard_032",
+    "module": "dashboard",
+    "description": "Verify the default date filter option.",
+    "steps": "1. Login into the application.\n2. Observe the Date filter.",
+    "testData": "",
+    "expectedResult": "All time should be selected by default, and the dashboard cards should display the same values as before."
+  },
+  "TC_Dashboard_033": {
+    "tcId": "TC_Dashboard_033",
+    "module": "dashboard",
+    "description": "Verify the This week filter.",
+    "steps": "1. Login into the application.\n2. Select This week in Date filter.",
+    "testData": "",
+    "expectedResult": "Total, Reviewed, Pending Review, and Processing cards should display data for the current week only."
+  },
+  "TC_Dashboard_034": {
+    "tcId": "TC_Dashboard_034",
+    "module": "dashboard",
+    "description": "Verify the Last week filter.",
+    "steps": "1. Login into the application.\n2. Select Last week in Date filter.",
+    "testData": "",
+    "expectedResult": "All documents should display data for the previous week only."
+  },
+  "TC_Dashboard_035": {
+    "tcId": "TC_Dashboard_035",
+    "module": "dashboard",
+    "description": "Verify the This month filter.",
+    "steps": "1. Login into the application.\n2. Select This month in Date filter.",
+    "testData": "",
+    "expectedResult": "All documents should display data for the current month only."
+  },
+  "TC_Dashboard_036": {
+    "tcId": "TC_Dashboard_036",
+    "module": "dashboard",
+    "description": "Verify the Last month filter.",
+    "steps": "1. Login into the application.\n2. Select Last month in Date filter.",
+    "testData": "",
+    "expectedResult": "All documents should display data for the previous month only."
+  },
+  "TC_Dashboard_037": {
+    "tcId": "TC_Dashboard_037",
+    "module": "dashboard",
+    "description": "Verify the single date filter.",
+    "steps": "1. Login into the application.\n2. Select Custom date in Date filter.\n3. Click single date.",
+    "testData": "",
+    "expectedResult": "Single date files should be display."
+  },
+  "TC_Dashboard_038": {
+    "tcId": "TC_Dashboard_038",
+    "module": "dashboard",
+    "description": "Verify the custom date range selection.",
+    "steps": "1. Login into the application.\n2. Select Custom date in Date filter.\n3. Select From and to date.",
+    "testData": "",
+    "expectedResult": "All dashboard cards should display data only within the selected date range."
+  },
+  "TC_Dashboard_039": {
+    "tcId": "TC_Dashboard_039",
+    "module": "dashboard",
+    "description": "Verify the Cards filter.",
+    "steps": "1. Login into the application.\n2. Select any card (Total Documents, Pending Review, Processing, Reviewed)\n3. Observe the Result.",
+    "testData": "",
+    "expectedResult": "Based on card selection the result uploaded documents should display."
+  },
+  "TC_Dashboard_040": {
+    "tcId": "TC_Dashboard_040",
+    "module": "dashboard",
+    "description": "Verify Document Type Filter",
+    "steps": "1. Login into the Application.\n2. Click on Document type filter.\n3. Choose Purchase Order or Quotation.",
+    "testData": "",
+    "expectedResult": "User should able to do single selection. Based on Document type filter the result uploaded documents should display."
+  },
+  "TC_Dashboard_041": {
+    "tcId": "TC_Dashboard_041",
+    "module": "dashboard",
+    "description": "Verify File format Filter",
+    "steps": "1. Login into the Application.\n2. Click on Document type filter.\n3. Choose PDF or XLS or XLSX or EDI or SIF.",
+    "testData": "",
+    "expectedResult": "User should able to do Multi selection. Based on Document type filter the result uploaded documents should display."
+  },
+  "TC_Document_042": {
+    "tcId": "TC_Document_042",
+    "module": "documents",
+    "description": "Verify Document Library page is displayed",
+    "steps": "1. Navigate to the Document Library page.",
+    "testData": "",
+    "expectedResult": "Document Library page should load successfully with all UI elements displayed."
+  },
+  "TC_Document_043": {
+    "tcId": "TC_Document_043",
+    "module": "documents",
+    "description": "Verify Organization dropdown is displayed",
+    "steps": "1. Open the page.\n2. Observe the Organization dropdown.",
+    "testData": "",
+    "expectedResult": "Organization dropdown should be visible with a default value selected."
+  },
+  "TC_Document_044": {
+    "tcId": "TC_Document_044",
+    "module": "documents",
+    "description": "Verify Organization dropdown functionality",
+    "steps": "1. Select a different organization from the dropdown.",
+    "testData": "",
+    "expectedResult": "Document list should refresh based on the selected organization."
+  },
+  "TC_Document_045": {
+    "tcId": "TC_Document_045",
+    "module": "documents",
+    "description": "Verify search functionality with valid document name",
+    "steps": "1. Select document field.\n2. Enter a document name in the search field.",
+    "testData": "Existing document name \"purchase Order\"",
+    "expectedResult": "Matching document(s) should be displayed."
+  },
+  "TC_Document_046": {
+    "tcId": "TC_Document_046",
+    "module": "documents",
+    "description": "Verify search functionality with invalid document name",
+    "steps": "1. Select document field.\n2. Enter a non-existing document name in the search field.",
+    "testData": "Invalid document name \"AZZZZ\"",
+    "expectedResult": "\"No more documents to load\" should be displayed."
+  },
+  "TC_Document_047": {
+    "tcId": "TC_Document_047",
+    "module": "documents",
+    "description": "Verify that the Filters section is displayed on the Document Library page.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Observe the filter section.",
+    "testData": "",
+    "expectedResult": "The Filters section should be displayed with File Format, Document Type, and Upload Date filters."
+  },
+  "TC_Document_048": {
+    "tcId": "TC_Document_048",
+    "module": "documents",
+    "description": "Verify the available File Format options.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Observe the File Format section.",
+    "testData": "",
+    "expectedResult": "The options All formats, PDF, XLS, XLSX, EDI, and SIF should be displayed."
+  },
+  "TC_Document_049": {
+    "tcId": "TC_Document_049",
+    "module": "documents",
+    "description": "Verify filtering by file format.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Select any file format\n4. Click on Apply Active Filter.",
+    "testData": "Select \"PDF\"",
+    "expectedResult": "The table should display documents matching the selected file format after clicking Apply Active Filters."
+  },
+  "TC_Document_050": {
+    "tcId": "TC_Document_050",
+    "module": "documents",
+    "description": "Verify the available Document Type options.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Observe the Document Type section.",
+    "testData": "",
+    "expectedResult": "The options All document types, Purchase order, and Quote request should be displayed."
+  },
+  "TC_Document_051": {
+    "tcId": "TC_Document_051",
+    "module": "documents",
+    "description": "Verify filtering by document type.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Select any Document Type.\n4. Click on Apply Active Filter.",
+    "testData": "Select \"Purchase Order\"",
+    "expectedResult": "The table should display documents matching the selected document type after applying the filter."
+  },
+  "TC_Document_052": {
+    "tcId": "TC_Document_052",
+    "module": "documents",
+    "description": "Verify the Upload Date filter.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Observe the Upload Date Filter section.",
+    "testData": "",
+    "expectedResult": "The available date filter should be displayed, with Any time selected by default."
+  },
+  "TC_Document_053": {
+    "tcId": "TC_Document_053",
+    "module": "documents",
+    "description": "Verify filtering by upload date.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Select any Date.\n4. Click on Apply Active Filter.",
+    "testData": "Select \"Today's date\"",
+    "expectedResult": "The table should display documents matching the selected upload date range after applying the filter."
+  },
+  "TC_Document_054": {
+    "tcId": "TC_Document_054",
+    "module": "documents",
+    "description": "Verify applying multiple filters together.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Select any Date, Document Type, File Filter. \n4. Click on Apply Active Filter.",
+    "testData": "Select \"Today's date\", \"Purchase Order\", \"PDF\"",
+    "expectedResult": "The table should display documents matching all selected filter criteria."
+  },
+  "TC_Document_055": {
+    "tcId": "TC_Document_055",
+    "module": "documents",
+    "description": "Verify the Clear all filters button.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Click on Clear All button.",
+    "testData": "",
+    "expectedResult": "All selected filters should be cleared, and the default filter values should be restored."
+  },
+  "TC_Document_056": {
+    "tcId": "TC_Document_056",
+    "module": "documents",
+    "description": "Verify the Apply Active Filters button.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Select any Date, Document Type, File Filter.\n4. Click on Apply Active Filter.",
+    "testData": "Select \"Today's date\"",
+    "expectedResult": "The selected filter criteria should be applied, and the table results should update accordingly."
+  },
+  "TC_Document_057": {
+    "tcId": "TC_Document_057",
+    "module": "documents",
+    "description": "Verify the filter summary displayed at the top.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Select any Date, Document Type, File Filter.\n4. Click on Apply Active Filter.\n5. Observe the Filter Summary.",
+    "testData": "",
+    "expectedResult": "The selected filter values should be reflected correctly in the filter summary."
+  },
+  "TC_Document_058": {
+    "tcId": "TC_Document_058",
+    "module": "documents",
+    "description": "Verify collapsing the Filters section.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Click on Click to Collapse Icon.",
+    "testData": "",
+    "expectedResult": "The filter options should be hidden when collapsed."
+  },
+  "TC_Document_059": {
+    "tcId": "TC_Document_059",
+    "module": "documents",
+    "description": "Verify expanding the Filters section.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Click on Click to Collapse Icon.\n4. Again click on Collapse Icon.",
+    "testData": "",
+    "expectedResult": "The filter options should be displayed again when expanded."
+  },
+  "TC_Document_060": {
+    "tcId": "TC_Document_060",
+    "module": "documents",
+    "description": "Verify the default filter selection.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Observe Default filter section.",
+    "testData": "",
+    "expectedResult": "All formats, All document types, and Any time should be selected by default."
+  },
+  "TC_Document_061": {
+    "tcId": "TC_Document_061",
+    "module": "documents",
+    "description": "Verify the table results when no documents match the selected filters.",
+    "steps": "1. Login the application.\n2. Click on Document field.\n3. Click on Click to Xollapse Icon.\n4. Click the XLSX file format.",
+    "testData": "",
+    "expectedResult": "The table should display an appropriate empty-state message when no documents match the selected criteria."
+  },
+  "TC_Document_062": {
+    "tcId": "TC_Document_062",
+    "module": "documents",
+    "description": "Verify document list columns",
+    "steps": "1. Open the page.\n2. Observe the document grid.",
+    "testData": "",
+    "expectedResult": "Column headers should display \"Document Name\", \"Customer\", \"Uploaded By\", \"Upload Date\", \"Status\", and \"Action\"."
+  },
+  "TC_Document_063": {
+    "tcId": "TC_Document_063",
+    "module": "documents",
+    "description": "Verify document names are displayed",
+    "steps": "1. Observe the Document Name column.",
+    "testData": "",
+    "expectedResult": "Each uploaded document should display its name correctly."
+  },
+  "TC_Document_064": {
+    "tcId": "TC_Document_064",
+    "module": "documents",
+    "description": "Verify customer details are displayed",
+    "steps": "1. Observe the Customer column.",
+    "testData": "Customer-associated documents",
+    "expectedResult": "Customer information should be displayed for applicable documents."
+  },
+  "TC_Document_065": {
+    "tcId": "TC_Document_065",
+    "module": "documents",
+    "description": "Verify upload date is displayed",
+    "steps": "1. Observe the Upload Date column.",
+    "testData": "Uploaded documents",
+    "expectedResult": "Correct upload date should be displayed for each document."
+  },
+  "TC_Document_066": {
+    "tcId": "TC_Document_066",
+    "module": "documents",
+    "description": "Verify Extracted status display",
+    "steps": "1. Locate a successfully processed document.",
+    "testData": "Extracted document",
+    "expectedResult": "Status should be displayed as \"Extracted\" with proper styling."
+  },
+  "TC_Document_067": {
+    "tcId": "TC_Document_067",
+    "module": "documents",
+    "description": "Verify Processing, Reviewed, Sucess, Partial sucess, Failed insertion status display",
+    "steps": "1. Navigate to the Dashboard or Document page.\n2. Observe the Status.",
+    "testData": "",
+    "expectedResult": "The document status should display as Processing during processing, change to Extracted after extraction, and update to Success or Partial Success after review based on the ERP match results."
+  },
+  "TC_Document_068": {
+    "tcId": "TC_Document_068",
+    "module": "documents",
+    "description": "Verify the Failed status files document",
+    "steps": "1. Locate a failed document.",
+    "testData": "Failed document",
+    "expectedResult": "For documents with a \"Failed\" status, a \"Re-Extract\" button should be displayed and enabled. Clicking the button should initiate the extraction process for the selected document."
+  },
+  "TC_Document_069": {
+    "tcId": "TC_Document_069",
+    "module": "documents",
+    "description": "Verify Uploaded By column on Documents page",
+    "steps": "1. Navigate to the Documents page. \n2. Check the documents list.",
+    "testData": "",
+    "expectedResult": "The Uploaded By column should be displayed with the correct uploader name."
+  },
+  "TC_Document_070": {
+    "tcId": "TC_Document_070",
+    "module": "documents",
+    "description": "Verify Review button visibility",
+    "steps": "1. Observe the Action column.",
+    "testData": "",
+    "expectedResult": "A Review button should be available for each document."
+  },
+  "TC_Document_071": {
+    "tcId": "TC_Document_071",
+    "module": "documents",
+    "description": "Verify Review button functionality",
+    "steps": "1. Click the Review button for a document.",
+    "testData": "Existing document",
+    "expectedResult": "User should be navigated to the \"Review Document\" page."
+  },
+  "TC_Document_072": {
+    "tcId": "TC_Document_072",
+    "module": "documents",
+    "description": "Verify vertical scrolling functionality",
+    "steps": "1. Try to scroll down and scroll up the document list.",
+    "testData": "Multiple documents",
+    "expectedResult": "1. User should be able to scroll up and scroll down.\n2. Scroll bar action also should be captured."
+  },
+  "TC_Document_073": {
+    "tcId": "TC_Document_073",
+    "module": "documents",
+    "description": "Verify page loads without errors",
+    "steps": "1. Open the document page.\n2. Check for UI and console errors.",
+    "testData": "",
+    "expectedResult": "No UI errors or console errors should be displayed."
+  },
+  "TC_File upload_001": {
+    "tcId": "TC_File upload_001",
+    "module": "upload",
+    "description": "Verify user can upload a valid PDF file using Choose File",
+    "steps": "1. Navigate to Upload Document or Dashboard page\n2. Click Choose File\n3. Select a valid PDF file",
+    "testData": "invoice.pdf",
+    "expectedResult": "The system should accept the PDF file and upload it successfully"
+  },
+  "TC_File Upload_002": {
+    "tcId": "TC_File Upload_002",
+    "module": "upload",
+    "description": "Verify the Purchase order dropdown selection",
+    "steps": "1. Navigate to Upload Document page.\n2. Choose Purchase Order Drop Down.\n3. Click Choose File button.\n4. Select a valid PDF file",
+    "testData": "",
+    "expectedResult": "The uploaded file should be uploaded successfully."
+  },
+  "TC_File upload_002": {
+    "tcId": "TC_File upload_002",
+    "module": "upload",
+    "description": "Verify the Quote Request dropdown selection",
+    "steps": "1. Navigate to Upload Document page.\n2. Choose Quote Resquest Drop Down.\n3. Coose Riverstone Client.\n5. Click Choose File button.\n6. Select a valid PDF file",
+    "testData": "",
+    "expectedResult": "The uploaded file should be uploaded successfully."
+  },
+  "TC_File Upload_003": {
+    "tcId": "TC_File Upload_003",
+    "module": "upload",
+    "description": "Verify user can upload a valid PDF file using drag and drop",
+    "steps": "1. Navigate to Upload Document or Dashboard page\n2. Drag and drop a valid PDF into upload area\n3. click on Process button",
+    "testData": "invoice.pdf",
+    "expectedResult": "The system should upload the PDF file successfully"
+  },
+  "TC_File upload_003": {
+    "tcId": "TC_File upload_003",
+    "module": "upload",
+    "description": "Verify user can upload a valid EDI file",
+    "steps": "1. Click Choose File\n2. Select a valid EDI file",
+    "testData": "order.edi",
+    "expectedResult": "The system should accept and process the EDI file"
+  },
+  "TC_File Upload_004": {
+    "tcId": "TC_File Upload_004",
+    "module": "upload",
+    "description": "Verify user can upload a valid XLSX file",
+    "steps": "1. Click Choose File\n2. Select a valid XLSX file",
+    "testData": "data.xlsx",
+    "expectedResult": "The system should upload the XLSX file successfully"
+  },
+  "TC_File upload_004": {
+    "tcId": "TC_File upload_004",
+    "module": "upload",
+    "description": "Verify user can upload a valid XLS file",
+    "steps": "1. Click Choose File\n2. Select a valid XLS file",
+    "testData": "report.xls",
+    "expectedResult": "The system should upload the XLS file successfully"
+  },
+  "TC_File Upload_005": {
+    "tcId": "TC_File Upload_005",
+    "module": "upload",
+    "description": "Verify user can upload a valid SIF file",
+    "steps": "1. Click Choose File\n2. Select a valid SIF file",
+    "testData": "claims.sif",
+    "expectedResult": "The system should upload the SIF file successfully"
+  },
+  "TC_File upload_005": {
+    "tcId": "TC_File upload_005",
+    "module": "upload",
+    "description": "Verify clicking drag-and-drop area opens file browser",
+    "steps": "1. Navigate to the Dashboard page.\n2. Click on Upload new file button.\n3. Click on Choose file button.\n4. Dra ang Drop the file.",
+    "testData": "N/A",
+    "expectedResult": "The system should open the file selection dialog"
+  },
+  "TC_File Upload_006": {
+    "tcId": "TC_File Upload_006",
+    "module": "upload",
+    "description": "Verify Back to Dashboard link navigation",
+    "steps": "1. Click Back to Dashboard",
+    "testData": "N/A",
+    "expectedResult": "The system should navigate the user back to the Dashboard page"
+  },
+  "TC_File upload_006": {
+    "tcId": "TC_File upload_006",
+    "module": "upload",
+    "description": "Verify error message for unsupported file format",
+    "steps": "1. Click Choose File\n2. Select an unsupported file",
+    "testData": "image.jpg",
+    "expectedResult": "The system should reject the file and display an unsupported format error message"
+  },
+  "TC_File Upload_007": {
+    "tcId": "TC_File Upload_007",
+    "module": "upload",
+    "description": "Verify error when uploading executable file",
+    "steps": "1. Click Choose File\n2. Select executable file",
+    "testData": "setup.exe",
+    "expectedResult": "The system should block the upload and show a validation error"
+  },
+  "TC_File upload_007": {
+    "tcId": "TC_File upload_007",
+    "module": "upload",
+    "description": "Verify error when uploading text file",
+    "steps": "1. Click Choose File\n2. Select text file",
+    "testData": "notes.txt",
+    "expectedResult": "The system should reject the file and display a file type error message"
+  },
+  "TC_File Upload_008": {
+    "tcId": "TC_File Upload_008",
+    "module": "upload",
+    "description": "Verify error when uploading file without extension",
+    "steps": "1. Click Choose File\n2. Select file without extension",
+    "testData": "invoice",
+    "expectedResult": "The system should not allow the upload and should show an error message"
+  },
+  "TC_File upload_008": {
+    "tcId": "TC_File upload_008",
+    "module": "upload",
+    "description": "Verify error when uploading corrupted PDF",
+    "steps": "1. Click Choose File\n2. Select corrupted PDF file",
+    "testData": "corrupted.pdf",
+    "expectedResult": "The system should fail the upload and show a file processing error"
+  },
+  "TC_File Upload_009": {
+    "tcId": "TC_File Upload_009",
+    "module": "upload",
+    "description": "Verify behavior when no file is selected",
+    "steps": "1. Click Choose File\n2. Cancel file selection",
+    "testData": "N/A",
+    "expectedResult": "The system should not proceed with upload and should remain on the same page"
+  },
+  "TC_File upload_009": {
+    "tcId": "TC_File upload_009",
+    "module": "upload",
+    "description": "Verify drag-and-drop of unsupported file",
+    "steps": "1. Drag unsupported file into upload area",
+    "testData": "image.png",
+    "expectedResult": "The system should not accept the file and should display an error message"
+  },
+  "TC_File Upload_010": {
+    "tcId": "TC_File Upload_010",
+    "module": "upload",
+    "description": "Verify multiple file selection when only single file is allowed",
+    "steps": "1. Select multiple files at once",
+    "testData": "file1.pdf, file2.pdf",
+    "expectedResult": "The system should allow only one file or should show a validation error"
+  },
+  "TC_File upload_010": {
+    "tcId": "TC_File upload_010",
+    "module": "upload",
+    "description": "Verify upload of file exceeding maximum size limit",
+    "steps": "1. Upload a file larger than allowed size",
+    "testData": "large_file.pdf",
+    "expectedResult": "The system should reject the upload and should display a file size limit error"
+  },
+  "TC_File Upload_011": {
+    "tcId": "TC_File Upload_011",
+    "module": "upload",
+    "description": "Verify upload is blocked for unsupported file formats (e.g., JPG, PNG)",
+    "steps": "1. Attempt to upload a file with unsupported format like JPG or PNG\n2. Observe system behavior",
+    "testData": "Image file (e.g., test_image.jpg, test_image.png)",
+    "expectedResult": "The system should block the upload of unsupported file format like image"
+  },
+  "TC_Review page_001": {
+    "tcId": "TC_Review page_001",
+    "module": "review",
+    "description": "Verify Document Review page loads successfully with the page count.",
+    "steps": "1. Open a processed document from the dashboard.",
+    "testData": "Extracted document",
+    "expectedResult": "Document Review page should load with PDF preview, page count and extracted data."
+  },
+  "TC_Review page_002": {
+    "tcId": "TC_Review page_002",
+    "module": "review",
+    "description": "Verify PDF document preview display",
+    "steps": "1. Navigate to Dashboard page.\n2. Click on Review button of the uploaded document in the Dasboard page.",
+    "testData": "Valid PDF document",
+    "expectedResult": "Uploaded PDF should be displayed correctly in the preview panel."
+  },
+  "TC_Review page_003": {
+    "tcId": "TC_Review page_003",
+    "module": "review",
+    "description": "Verify page navigation and ciatation controls by clicking the Source number and the order line items value",
+    "steps": "1. Use the Previous/Next page controls.",
+    "testData": "Multi-page PDF",
+    "expectedResult": "User should be able to navigation and citation between document pages."
+  },
+  "TC_Review page_004": {
+    "tcId": "TC_Review page_004",
+    "module": "review",
+    "description": "Verify zoom in and zoom out functionality",
+    "steps": "1. Click Zoom In and Zoom Out icons.",
+    "testData": "PDF document",
+    "expectedResult": "PDF preview should zoom in and out accordingly with the percentage"
+  },
+  "TC_Review page_005": {
+    "tcId": "TC_Review page_005",
+    "module": "review",
+    "description": "Verify download button functionality.",
+    "steps": "1. Click download button.",
+    "testData": "",
+    "expectedResult": "The PDF should download successfully."
+  },
+  "TC_Review page_006": {
+    "tcId": "TC_Review page_006",
+    "module": "review",
+    "description": "Verify Complete button functionality",
+    "steps": "1. Click the Complete button.",
+    "testData": "Reviewed document",
+    "expectedResult": "Document status should be updated to Complete."
+  },
+  "TC_Review page_007": {
+    "tcId": "TC_Review page_007",
+    "module": "review",
+    "description": "Verify the search functionality",
+    "steps": "1. Click the search icon.\n2. Enter any text.\n3 Click on enter.",
+    "testData": "Search: Sales",
+    "expectedResult": "The found result should highlight in the PDF with the count."
+  },
+  "TC_Review page_008": {
+    "tcId": "TC_Review page_008",
+    "module": "review",
+    "description": "Verify Vertical Scroll Functionality",
+    "steps": "1. Navigate to the Review page.\n2. Scroll vertically from top to bottom.\n3. Scroll back to the top.",
+    "testData": "",
+    "expectedResult": "The page should scroll vertically without any UI issues, and all content should be accessible"
+  },
+  "TC_Review page_009": {
+    "tcId": "TC_Review page_009",
+    "module": "review",
+    "description": "Verify Submit to ERP button functionality",
+    "steps": "1. Click Submit to ERP.",
+    "testData": "Completed document",
+    "expectedResult": "Document data should be submitted successfully to ERP."
+  },
+  "TC_Review page_010": {
+    "tcId": "TC_Review page_010",
+    "module": "review",
+    "description": "Verify Back to Dashboard navigation",
+    "steps": "1. Click Back to Dashboard.",
+    "testData": "",
+    "expectedResult": "User should be redirected to the Dashboard page."
+  },
+  "TC_Review page_011": {
+    "tcId": "TC_Review page_011",
+    "module": "review",
+    "description": "Verify JSON View tab display",
+    "steps": "1. Click the JSON View tab.",
+    "testData": "Extracted document",
+    "expectedResult": "Extracted document data should be displayed in JSON format."
+  },
+  "TC_Review page_012": {
+    "tcId": "TC_Review page_012",
+    "module": "review",
+    "description": "Verify extracted field values",
+    "steps": "1. Compare extracted values with the PDF document.",
+    "testData": "Customer Name, PO Number, Amount, Date, Address",
+    "expectedResult": "Extracted values should match the source document."
+  },
+  "TC_Review page_013": {
+    "tcId": "TC_Review page_013",
+    "module": "review",
+    "description": "Verify field edit functionality",
+    "steps": "1. Click the Edit icon for an extracted field.\n2. Update the value and save.",
+    "testData": "Updated field value",
+    "expectedResult": "Field value should be updated successfully."
+  },
+  "TC_Review page_014": {
+    "tcId": "TC_Review page_014",
+    "module": "review",
+    "description": "Verify field copy functionality",
+    "steps": "1. Click the Copy icon for a field.",
+    "testData": "Extracted field",
+    "expectedResult": "Field value should be copied to the clipboard."
+  },
+  "TC_Review page_015": {
+    "tcId": "TC_Review page_015",
+    "module": "review",
+    "description": "Verify the selection functionality",
+    "steps": "1. Click the selection icon.\n2. Select the text from pdf and drap.\n3. Observe that appropiate field.",
+    "testData": "",
+    "expectedResult": "Newly seleted data should be replaces with the extracted data."
+  },
+  "TC_Review page_016": {
+    "tcId": "TC_Review page_016",
+    "module": "review",
+    "description": "Verify confidence score display",
+    "steps": "1. Review extracted fields.",
+    "testData": "Extracted document",
+    "expectedResult": "Confidence percentage should be displayed for each field."
+  },
+  "TC_Review page_017": {
+    "tcId": "TC_Review page_017",
+    "module": "review",
+    "description": "Verify address swap functionality",
+    "steps": "1. Click the Swap icon between Billing and Shipping Address sections.",
+    "testData": "Extracted addresses",
+    "expectedResult": "Billing and Shipping Address values should be swapped successfully."
+  },
+  "TC_Review page_018": {
+    "tcId": "TC_Review page_018",
+    "module": "review",
+    "description": "Verify document review page without errors",
+    "steps": "1. Open and review a document.",
+    "testData": "Valid document",
+    "expectedResult": "No UI errors, data loading issues, or console errors should occur."
+  },
+  "TC_Review page_019": {
+    "tcId": "TC_Review page_019",
+    "module": "review",
+    "description": "Verify Client and Billing Address auto-replacement when Customer Name partially matches client JSON",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Customer Name partially matches a Client Name available in the client JSON configuration.\n3. Process the document.",
+    "testData": "Customer Name: \"Office Interiors Inc\"Client JSON Name: \"Office Interiors\"",
+    "expectedResult": "System should identify the partial match and automatically replace the Client and Billing Address details with the values from the client JSON configuration."
+  },
+  "TC_Review page_021": {
+    "tcId": "TC_Review page_021",
+    "module": "review",
+    "description": "Verify Shipping Address auto-replacement when match is greater than 75%",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Shipping Address matches more than 75% of a Shipping Address in the client JSON configuration.\n3. Process the document.",
+    "testData": "Extracted Address: 80% match with JSON address",
+    "expectedResult": "Shipping Address should be automatically replaced with the address from the client JSON configuration."
+  },
+  "TC_Review page_022": {
+    "tcId": "TC_Review page_022",
+    "module": "review",
+    "description": "Verify no Shipping Address replacement when match is less than 75%",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Shipping Address matches less than 75% of a Shipping Address in the client JSON configuration.\n3. Process the document.",
+    "testData": "Extracted Address: 70% match with JSON address",
+    "expectedResult": "Shipping Address should remain unchanged."
+  },
+  "TC_Review page_023": {
+    "tcId": "TC_Review page_023",
+    "module": "review",
+    "description": "Verify correct JSON values are applied after replacement",
+    "steps": "1. Upload and process a document that meets the matching criteria.\n2. Review the extracted data.",
+    "testData": "Valid matching Customer Name and Address",
+    "expectedResult": "The displayed Client, Billing Address, and Shipping Address should exactly match the values stored in the JSON configuration."
+  },
+  "TC_Review page_024": {
+    "tcId": "TC_Review page_024",
+    "module": "review",
+    "description": "Verify expand icon in the order line item",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Observe the system behaviour.",
+    "testData": "",
+    "expectedResult": "The order line item table should be display in the middle of the page."
+  },
+  "TC_Review page_025": {
+    "tcId": "TC_Review page_025",
+    "module": "review",
+    "description": "Verify Edit all button functionality",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Click on Edit all button \n4. Click on save all button",
+    "testData": "",
+    "expectedResult": "The system should allow to edit all the rows."
+  },
+  "TC_Review page_026": {
+    "tcId": "TC_Review page_026",
+    "module": "review",
+    "description": "Verify the editing status.",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Click on Edit all button",
+    "testData": "",
+    "expectedResult": "After click on edit all button the button status should change to editing"
+  },
+  "TC_Review page_027": {
+    "tcId": "TC_Review page_027",
+    "module": "review",
+    "description": "Verify the cancel button",
+    "steps": "1. Navigate to the Dashboard page.\n2. Click on Review button of any document. \n3. Click on Expand icon.\n4. Click on Edit all button \n5. Edit any column.\n6. Click on Cancel button",
+    "testData": "",
+    "expectedResult": "Edited value should not be saved get reflected."
+  },
+  "TC_Review page_028": {
+    "tcId": "TC_Review page_028",
+    "module": "review",
+    "description": "Verify the Add row Button.",
+    "steps": "1. Navigate to the review page.\n2. Click on Add row button.",
+    "testData": "",
+    "expectedResult": "New row should be added with the new row button and should allow user to edit the cells. While editing the add row button should be enable."
+  },
+  "TC_Review page_029": {
+    "tcId": "TC_Review page_029",
+    "module": "review",
+    "description": "Verify the drag row functionality",
+    "steps": "1. Navigate to the review page.\n2. Click on Expand icon.\n3. Try to drag the rows",
+    "testData": "",
+    "expectedResult": "The drag functionality should work"
+  },
+  "TC_Review page_030": {
+    "tcId": "TC_Review page_030",
+    "module": "review",
+    "description": "Verify the Actions functionality in the Order line items.",
+    "steps": "1. Navigate to the review page.\n2. Click on edit, delete icon.",
+    "testData": "",
+    "expectedResult": "When user click on edit icon, entire row should editable. When the user click on delete icon, the entire row should delete."
+  },
+  "TC_Review page_031": {
+    "tcId": "TC_Review page_031",
+    "module": "review",
+    "description": "Verify that deleting the only existing row removes the data but retains an empty row.",
+    "steps": "1. Navigate to the review page.\n2. Click on delete icon.",
+    "testData": "",
+    "expectedResult": "The data in the row is removed successfully, but the row itself remains visible as an empty row, allowing the user to enter new data."
+  },
+  "TC_Review page_032": {
+    "tcId": "TC_Review page_032",
+    "module": "review",
+    "description": "Verify the swap row functionality.",
+    "steps": "1. Navigate to the review page.\n2. Click on expand icon.\n3. Try to Drag the row.",
+    "testData": "",
+    "expectedResult": "The row should swap."
+  },
+  "TC_Review page_033": {
+    "tcId": "TC_Review page_033",
+    "module": "review",
+    "description": "Verify the Citation functionality",
+    "steps": "1. Navigate to the Review page.\n2. Click on any source page number link.\n3. Observe the PDF.",
+    "testData": "",
+    "expectedResult": "The citation should work for the matching PDf data."
   }
 }
