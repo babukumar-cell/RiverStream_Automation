@@ -113,73 +113,72 @@ export class ReviewPage extends BasePage {
   }
 
   /**
-   * Wait for review page loading spinner to finish
+   * Wait for review page loading spinner to finish and core UI elements to be visible
    */
   async waitForReviewLoaded(): Promise<void> {
+    // Explicitly wait for any document loading spinner/overlay to disappear
     const loading = this.page.locator(':text("Loading document..."), :text("Loading...")').first();
-    await loading.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
-    await this.completeButton.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+    await loading.waitFor({ state: 'hidden', timeout: 35000 }).catch(() => {});
 
-    // Dismiss any error or notification modal (e.g. ERP Insertion Failed dialog)
+    // Explicitly wait until the core review interface element is visible
+    const reviewReady = this.completeButton
+      .or(this.extractedDataTab)
+      .or(this.pageNumberIndicator)
+      .or(this.documentTitle)
+      .first();
+    await reviewReady.waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
+
+    // Dismiss any popup error dialog (such as "ERP Insertion Failed") if one appeared
     const errorDialogClose = this.page.locator('button:has-text("Close"), div[role="dialog"] button:has-text("Close")').first();
-    if (await errorDialogClose.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await errorDialogClose.click();
-      await this.page.waitForTimeout(500);
+    if (await errorDialogClose.isVisible().catch(() => false)) {
+      await errorDialogClose.click({ force: true }).catch(() => {});
     }
-    await this.page.waitForTimeout(500);
   }
 
   /**
    * Navigate to Documents library or Dashboard and open a reviewable document
    */
   async openFirstPdfDocument(): Promise<void> {
-    // If already on a review page, simply verify and return
+    // If already on a review page, explicitly verify and return
     if (this.page.url().includes('/review/')) {
       await this.waitForReviewLoaded();
       return;
     }
 
     await this.navigateTo('/documents');
-    await this.waitForLoaded(20000);
 
-    // Filter to PDF format button if available
-    const filtersBtn = this.page.getByRole('button', { name: /^Filters/i });
-    if (await filtersBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await filtersBtn.click().catch(() => {});
-      const pdfBtn = this.page.getByRole('button', { name: 'PDF', exact: true });
-      if (await pdfBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await pdfBtn.click().catch(() => {});
+    // Explicitly wait for the documents table to render rows
+    const tableRow = this.page.locator('table tbody tr').first();
+    const hasTable = await tableRow.waitFor({ state: 'visible', timeout: 25000 }).then(() => true).catch(() => false);
+
+    if (hasTable) {
+      // Find the first review button (preferring .pdf documents if present)
+      const pdfReviewBtn = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).locator('button:has-text("Review")').first();
+      const anyReviewBtn = this.page.locator('table tbody tr button:has-text("Review"), button:has-text("Review")').first();
+
+      const hasPdfBtn = await pdfReviewBtn.isVisible().catch(() => false);
+      const targetBtn = hasPdfBtn ? pdfReviewBtn : anyReviewBtn;
+
+      if (await targetBtn.isVisible().catch(() => false)) {
+        await targetBtn.scrollIntoViewIfNeeded().catch(() => {});
+        await Promise.all([
+          this.page.waitForURL('**/review/**', { timeout: 35000 }),
+          targetBtn.click({ force: true }),
+        ]);
+        await this.waitForReviewLoaded();
+        return;
       }
-    }
-
-    // Look for first available PDF Review button in the documents table
-    const pdfRow = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).filter({ has: this.page.locator('button:has-text("Review")') }).first();
-    const hasPdfRow = await pdfRow.waitFor({ state: 'visible', timeout: 15000 }).then(() => true).catch(() => false);
-
-    if (hasPdfRow) {
-      const reviewBtn = pdfRow.locator('button:has-text("Review")').first();
-      await reviewBtn.click();
-      await this.page.waitForURL('**/review/**', { timeout: 30000 });
-      await this.waitForReviewLoaded();
-      return;
-    }
-
-    // Fallback: any review button in documents table
-    const anyReviewBtn = this.page.locator('table tbody tr button:has-text("Review")').first();
-    if (await anyReviewBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await anyReviewBtn.click();
-      await this.page.waitForURL('**/review/**', { timeout: 30000 });
-      await this.waitForReviewLoaded();
-      return;
     }
 
     // Fallback: Open from Dashboard pending review table
     await this.navigateTo('/dashboard');
-    await this.waitForLoaded(20000);
     const dashReviewBtn = this.page.locator('table tbody tr button:has-text("Review")').first();
-    await dashReviewBtn.waitFor({ state: 'visible', timeout: 20000 });
-    await dashReviewBtn.click();
-    await this.page.waitForURL('**/review/**', { timeout: 30000 });
+    await dashReviewBtn.waitFor({ state: 'visible', timeout: 25000 });
+    await dashReviewBtn.scrollIntoViewIfNeeded().catch(() => {});
+    await Promise.all([
+      this.page.waitForURL('**/review/**', { timeout: 35000 }),
+      dashReviewBtn.click({ force: true }),
+    ]);
     await this.waitForReviewLoaded();
   }
 

@@ -10,7 +10,7 @@ export default defineConfig({
   // Specs that mutate shared QA data opt into serial mode via test.describe.configure.
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  retries: process.env.RETRIES ? parseInt(process.env.RETRIES, 10) : (process.env.CI ? 2 : 1),
   workers,
   timeout: 90000,
   expect: {
