@@ -52,7 +52,7 @@ export class DashboardPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    this.orgCombobox = page.getByRole('combobox');
+    this.orgCombobox = page.getByRole('combobox').first();
     this.orgListbox = page.getByRole('listbox', { name: 'Suggestions' });
     this.orgOptions = this.orgListbox.getByRole('option');
     this.dateRangeButton = page.getByRole('button', { name: /^Date range:/ });

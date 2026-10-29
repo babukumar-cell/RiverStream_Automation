@@ -38,11 +38,11 @@ test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)
     await expect(dashboardPage.orgCombobox).toBeVisible();
   });
 
-  test('TC_Dashboard_005: Verify Organization dropdown options', async ({ dashboardPage }) => {
+  test('TC_Dashboard_005: Verify Organization dropdown options', async ({ dashboardPage, page }) => {
     await dashboardPage.openOrgDropdown();
     const count = await dashboardPage.orgOptions.count();
     expect(count).toBeGreaterThan(0);
-    await dashboardPage.orgCombobox.press('Escape');
+    await page.keyboard.press('Escape');
   });
 
   test('TC_Dashboard_006: Verify Organization selection functionality', async ({ dashboardPage }) => {
@@ -84,7 +84,7 @@ test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)
   test('TC_Dashboard_012: Verify dashboard responsiveness', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await expect(page.locator('aside')).toBeVisible();
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('main').first()).toBeVisible();
   });
 
   // =========================================================================
@@ -190,7 +190,7 @@ test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)
   });
 
   test('TC_Dashboard_032: Verify the default date filter option.', async ({ dashboardPage }) => {
-    await expect(dashboardPage.dateRangeButton).toHaveText(/Date range:/i);
+    await expect(dashboardPage.dateRangeButton).toHaveAttribute('aria-label', /Date range:/i);
   });
 
   test('TC_Dashboard_033: Verify the This week filter.', async ({ dashboardPage }) => {

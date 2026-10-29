@@ -74,4 +74,14 @@ export abstract class BasePage {
   getCurrentUrl(): string {
     return this.page.url();
   }
+
+  /**
+   * Highlights target element(s) with a clean green bounding rectangle box
+   * for visual verification evidence in report screenshots.
+   */
+  async highlight(locator: Locator): Promise<void> {
+    const { highlightLocator } = await import('../utils/ui-highlighter');
+    await highlightLocator(locator);
+  }
 }
+

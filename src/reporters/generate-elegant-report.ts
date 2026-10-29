@@ -1355,10 +1355,12 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       line-height: 1.5;
       color: #e2e8f0;
       font-weight: 500;
+      white-space: pre-line;
     }
     .result-card.actual-box.failed .result-card-body {
       color: #fecaca;
       font-weight: 600;
+      white-space: pre-line;
     }
 
     /* Plain English Steps List with Status Icons */
@@ -1494,6 +1496,10 @@ export function renderElegantReport(run: ReportRun, outputHtmlPath: string = DEF
       font-size: 12px;
       color: #fecaca;
       line-height: 1.4;
+      white-space: pre-line;
+    }
+    .failure-alert-content {
+      white-space: pre-line;
     }
     .plain-step-fallback {
       font-size: 13px;

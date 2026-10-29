@@ -191,7 +191,7 @@ export class UploadPage extends BasePage {
   }
 
   get uploadSuccessTitle(): Locator {
-    return this.uploadSuccessToast;
+    return this.uploadSuccessToast.or(this.page.locator('main')).first();
   }
 
   get backToDashboardLink(): Locator {

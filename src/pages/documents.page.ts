@@ -122,8 +122,8 @@ export class DocumentsPage extends BasePage {
     this.applyFiltersBtn = page.getByRole('button', { name: 'Apply Active Filters' });
     this.clearFiltersBtn = page.getByRole('button', { name: 'Clear all filters' });
 
-    this.table = page.getByRole('table');
-    this.tableHeaders = this.table.getByRole('columnheader');
+    this.table = page.locator('table');
+    this.tableHeaders = page.locator('table thead th, table thead [role="columnheader"], table thead td');
     // Data rows have all six cells; status rows ("Loading documents...", "No more documents to load") have one.
     this.dataRows = this.table.locator('tbody tr').filter({ has: page.locator('td:nth-child(6)') });
     this.loadingRow = this.table.getByText('Loading documents...');
@@ -382,6 +382,18 @@ export class DocumentsPage extends BasePage {
   // Convenience aliases and helpers for test suites
   get docTypeHeading(): Locator {
     return this.page.getByRole('heading', { name: 'Document type' });
+  }
+
+  get docTypeSection(): Locator {
+    return this.docTypeHeading.locator('xpath=ancestor::div[1]');
+  }
+
+  get fileFormatSection(): Locator {
+    return this.fileFormatHeading.locator('xpath=ancestor::div[1]');
+  }
+
+  get uploadDateSection(): Locator {
+    return this.page.getByRole('heading', { name: 'Upload date' }).locator('xpath=ancestor::div[1]');
   }
 
   get clearAllFiltersButton(): Locator {

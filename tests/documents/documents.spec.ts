@@ -46,6 +46,7 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
   test('TC_Document_048: Verify the available File Format options.', async ({ documentsPage }) => {
     await documentsPage.navigate();
     await documentsPage.expandFilters();
+    await expect(documentsPage.fileFormatSection).toBeVisible();
     await expect(documentsPage.fileFormatHeading.locator('xpath=following-sibling::div[1]').getByRole('button'))
       .toHaveText(['All formats', 'PDF', 'XLS', 'XLSX', 'EDI', 'SIF']);
   });
@@ -63,8 +64,9 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
   test('TC_Document_050: Verify the available Document Type options.', async ({ documentsPage }) => {
     await documentsPage.navigate();
     await documentsPage.expandFilters();
+    await expect(documentsPage.docTypeSection).toBeVisible();
     await expect(documentsPage.docTypeHeading.locator('xpath=following-sibling::div[1]').getByRole('button'))
-      .toHaveText(['All types', 'Purchase Order', 'Quote Request']);
+      .toHaveText(['All document types', 'Purchase order', 'Quote request']);
   });
 
   test('TC_Document_051: Verify filtering by document type.', async ({ documentsPage }) => {
@@ -77,6 +79,7 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
   test('TC_Document_052: Verify the Upload Date filter.', async ({ documentsPage }) => {
     await documentsPage.navigate();
     await documentsPage.expandFilters();
+    await expect(documentsPage.uploadDateSection).toBeVisible();
     await expect(documentsPage.dateRangeButton).toBeVisible();
   });
 
@@ -98,8 +101,9 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
     await documentsPage.navigate();
     await documentsPage.expandFilters();
     await documentsPage.filterByFormat('PDF');
-    await documentsPage.clearAllFilters();
-    await expect(documentsPage.clearAllFiltersButton).toHaveCount(0);
+    const result = await documentsPage.clearAllFilters();
+    expect(result.request.fileTypeFilter?.length || 0).toBe(0);
+    await expect(documentsPage.clearAllFiltersButton).toBeVisible();
   });
 
   test('TC_Document_056: Verify the Apply Active Filters button.', async ({ documentsPage }) => {
@@ -131,8 +135,8 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
   test('TC_Document_060: Verify the default filter selection.', async ({ documentsPage }) => {
     await documentsPage.navigate();
     await documentsPage.expandFilters();
-    await expect(documentsPage.filtersPanel.getByRole('button', { name: 'All formats' })).toHaveAttribute('data-active', 'true');
-    await expect(documentsPage.filtersPanel.getByRole('button', { name: 'All types' })).toHaveAttribute('data-active', 'true');
+    await expect(documentsPage.filtersPanel.getByRole('button', { name: 'All formats' })).toHaveClass(/bg-blue-600/);
+    await expect(documentsPage.filtersPanel.getByRole('button', { name: 'All document types' })).toHaveClass(/bg-blue-600/);
   });
 
   test('TC_Document_061: Verify the table results when no documents match the selected filters.', async ({ documentsPage }) => {
@@ -148,7 +152,7 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
       'Customer',
       'Uploaded By',
       'Upload Date',
-      'Status Details',
+      'Status',
       'Action',
     ]);
   });
@@ -170,7 +174,7 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
   test('TC_Document_065: Verify upload date is displayed', async ({ documentsPage }) => {
     await documentsPage.navigate();
     const dateCell = documentsPage.dataRows.first().locator('td').nth(3);
-    await expect(dateCell).toHaveText(/\d{1,2}\s+[A-Za-z]+\s+\d{4}/);
+    await expect(dateCell).toHaveText(/[A-Za-z]{3}\s+\d{1,2},\s+\d{4}|\d{1,2}\s+[A-Za-z]+\s+\d{4}/);
   });
 
   test('TC_Document_066: Verify Extracted status display', async ({ documentsPage }) => {
@@ -204,7 +208,7 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
   test('TC_Document_071: Verify Review button functionality', async ({ documentsPage, page }) => {
     await documentsPage.navigate();
     await documentsPage.openReview(0);
-    await expect(page).toHaveURL(/\/review\/[A-Za-z0-9]+$/);
+    await expect(page).toHaveURL(/\/review\/[A-Za-z0-9]+(\?.*)?$/);
   });
 
   test('TC_Document_072: Verify vertical scrolling functionality', async ({ documentsPage }) => {

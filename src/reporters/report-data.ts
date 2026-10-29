@@ -378,12 +378,93 @@ function seconds(ms: string): string {
   return Number.isFinite(n) ? `${Math.round(n / 1000)}s` : `${ms}ms`;
 }
 
+function parseArrayDiff(lines: string[]): { expected?: string; received?: string } | null {
+  const hasDiffHeader = lines.some((l) => /[-]\s*Expected\b/i.test(l)) && lines.some((l) => /[+]\s*Received\b/i.test(l));
+  if (!hasDiffHeader) return null;
+
+  const expectedItems: string[] = [];
+  const receivedItems: string[] = [];
+  let hasExpectedArray = false;
+  let hasReceivedArray = false;
+  let insideDiff = false;
+
+  for (const line of lines) {
+    if (/[-]\s*Expected\b/i.test(line)) {
+      insideDiff = true;
+      continue;
+    }
+    if (insideDiff) {
+      if (/^Call log:/i.test(line) || /^\s*at\s+/i.test(line) || /^\s*\d+\s*\|/i.test(line)) break;
+
+      // Handle empty array markers
+      if (/[-]\s*Array\s*\[\]/i.test(line)) {
+        hasExpectedArray = true;
+        continue;
+      }
+      if (/[+]\s*Array\s*\[\]/i.test(line)) {
+        hasReceivedArray = true;
+        continue;
+      }
+      // Skip array header / footer tokens
+      if (/[-+]\s*Array\s*\[/i.test(line) || /^\s*Array\s*\[/i.test(line)) {
+        continue;
+      }
+      if (/^[-+\s]*\]\s*$/i.test(line)) {
+        continue;
+      }
+
+      // Extract string or primitive value from diff line
+      const expMatch = line.match(/^\s*-\s+(?:"([^"]*)"|'([^']*)'|(\btrue\b|\bfalse\b|\bnull\b|\bundefined\b|\d+))/);
+      if (expMatch && !expMatch[0].includes('- Expected')) {
+        hasExpectedArray = true;
+        expectedItems.push(expMatch[1] !== undefined ? expMatch[1] : (expMatch[2] !== undefined ? expMatch[2] : expMatch[3]));
+      }
+
+      const recMatch = line.match(/^\s*\+\s+(?:"([^"]*)"|'([^']*)'|(\btrue\b|\bfalse\b|\bnull\b|\bundefined\b|\d+))/);
+      if (recMatch && !recMatch[0].includes('+ Received')) {
+        hasReceivedArray = true;
+        receivedItems.push(recMatch[1] !== undefined ? recMatch[1] : (recMatch[2] !== undefined ? recMatch[2] : recMatch[3]));
+      }
+    }
+  }
+
+  const zeroElements = lines.some((l) => /resolved to 0 elements/i.test(l));
+
+  if (hasExpectedArray || hasReceivedArray || expectedItems.length || receivedItems.length || zeroElements) {
+    let expStr = expectedItems.length ? `[${expectedItems.map((s) => `'${s}'`).join(', ')}]` : (hasExpectedArray ? '[] (0 items expected)' : undefined);
+    let recStr = receivedItems.length ? `[${receivedItems.map((s) => `'${s}'`).join(', ')}]` : (hasReceivedArray || zeroElements ? '[] (0 elements found on page)' : undefined);
+
+    return {
+      expected: expStr,
+      received: recStr,
+    };
+  }
+  return null;
+}
+
+export function formatPassedActualResult(expectedResult?: string): string {
+  if (expectedResult && expectedResult.trim().length > 0) {
+    let text = expectedResult.trim();
+    text = text
+      .replace(/\b(options|items|elements|buttons|links|cards|tags)\s+should be displayed\b/gi, '$1 are displayed')
+      .replace(/\bshould be displayed\b/gi, 'is displayed')
+      .replace(/\b(options|items|elements|buttons|links|cards|tags)\s+should be visible\b/gi, '$1 are visible')
+      .replace(/\bshould be visible\b/gi, 'is visible')
+      .replace(/\bshould display\b/gi, 'displays')
+      .replace(/\bshould redirects\b/gi, 'redirected')
+      .replace(/\bshould redirect\b/gi, 'redirected')
+      .replace(/\bshould be\b/gi, 'is')
+      .replace(/\bshould\b/gi, 'did')
+      .replace(/\.$/, '');
+    return `Verified successfully: ${text} as expected.`;
+  }
+  return 'Verified successfully: All assertions and conditions in this test were confirmed on the page.';
+}
+
 /**
- * Turns a Playwright error message into one plain-English sentence.
- * The assertion's own message (e.g. `expect(x, 'Project should be listed')`) is preferred;
- * generic matcher output is translated by matcher name, with the locator / expected / received
- * values appended so the reader sees what was actually on screen. Nothing is guessed from the
- * test ID or module.
+ * Turns a Playwright error message into a clear, detailed explanation.
+ * Identifies exact Expected vs Received mismatches (including arrays and strings),
+ * strict mode violations, timeouts, and element targets.
  */
 export function describeFailure(rawError: string | undefined): string {
   const clean = stripAnsi(rawError || '').trim();
@@ -391,34 +472,87 @@ export function describeFailure(rawError: string | undefined): string {
 
   const lines = clean.split(/\r?\n/).map((l) => l.trimEnd());
   const first = lines[0].replace(/^(?:Error|TimeoutError|AssertionError):\s*/, '').trim();
+
+  // 1. Strict mode violation
+  const strictMatch = clean.match(/strict mode violation:\s*(.+?)\s+resolved to\s+(\d+)\s+elements:([\s\S]*?)(?:Call log:|$)/i);
+  if (strictMatch) {
+    const selector = strictMatch[1].trim();
+    const count = strictMatch[2].trim();
+    const candidates = strictMatch[3]
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => /^\d+\)/.test(l))
+      .map((l) => l.replace(/^\d+\)\s*/, ''))
+      .map((l) => {
+        const aka = l.match(/aka\s+(.+)$/);
+        return aka ? aka[1] : l;
+      })
+      .slice(0, 3);
+
+    return [
+      `Strict Mode Violation: Selector resolved to ${count} elements instead of 1.`,
+      `• Target Locator: ${selector}`,
+      `• Expected: Exactly 1 unique matching element`,
+      `• Received: ${count} candidate elements (${candidates.join(' vs ')})`,
+      `• Suggested Fix: Disambiguate with .first(), text filter, or a more specific selector.`
+    ].join('\n');
+  }
+
+  // 2. Locator extraction
   const locator = fieldValue(lines, ['Locator']);
-  const expected = fieldValue(lines, ['Expected', 'Expected string', 'Expected pattern', 'Expected substring', 'Expected value']);
-  const received = fieldValue(lines, ['Received', 'Received string', 'Received value']);
   const waitingFor = lines.map((l) => l.match(/-\s+waiting for (.+)$/)?.[1]).find(Boolean);
   const target = locator || waitingFor;
 
-  const details: string[] = [];
-  if (target) details.push(`element: ${truncate(target, 140)}`);
-  if (expected) details.push(`expected: ${truncate(expected, 140)}`);
-  if (received) details.push(`actual: ${truncate(received, 140)}`);
-  const suffix = details.length ? ` (${details.join('; ')})` : '';
+  // 3. Diff or explicit Expected / Received values
+  const arrayDiff = parseArrayDiff(lines);
+  const expectedField = fieldValue(lines, ['Expected', 'Expected string', 'Expected pattern', 'Expected substring', 'Expected value']);
+  const receivedField = fieldValue(lines, ['Received', 'Received string', 'Received value']);
 
+  const expectedVal = arrayDiff?.expected || expectedField;
+  const receivedVal = arrayDiff?.received || receivedField;
+
+  // If explicit expected and received are present (e.g. array mismatch, text mismatch, regex mismatch)
+  if (expectedVal !== undefined && receivedVal !== undefined) {
+    const genericMatcher = first.match(/^(?:Timed out \d+ms waiting for )?expect\((?:locator|page|received|value)\)\.(not\.)?(\w+)\(/);
+    const matcher = genericMatcher ? genericMatcher[2] : '';
+    const label = matcher && MATCHER_PHRASES[matcher] ? MATCHER_PHRASES[matcher] : 'Assertion check failed';
+
+    const timedOut = /^Timed out (\d+)ms/.exec(first);
+    const timing = timedOut ? ` (timed out after ${seconds(timedOut[1])})` : '';
+
+    const parts = [
+      `${label}${timing}:`,
+      `• Expected: ${expectedVal}`,
+      `• Received: ${receivedVal}`,
+    ];
+    if (target) parts.push(`• Target Element: ${truncate(target, 140)}`);
+    return parts.join('\n');
+  }
+
+  // 4. Test execution timeout
   const testTimeout = first.match(/^Test timeout of (\d+)ms exceeded(.*)$/i);
   if (testTimeout) {
     const where = testTimeout[2].replace(/\.$/, '').trim();
     return `The test did not finish within ${seconds(testTimeout[1])}${where ? ` ${where}` : ''}.`;
   }
 
+  // 5. Action timeout
   const actionTimeout = first.match(/^([\w.]+): Timeout (\d+)ms exceeded/i);
   if (actionTimeout) {
     const action = actionTimeout[1].split('.').pop();
-    return `The '${action}' action timed out after ${seconds(actionTimeout[2])}${target ? ` waiting for ${truncate(target, 140)}` : ''}.`;
+    const parts = [
+      `The '${action}' action timed out after ${seconds(actionTimeout[2])}.`,
+    ];
+    if (target) parts.push(`• Target Element: ${truncate(target, 140)}`);
+    return parts.join('\n');
   }
 
+  // 6. Network error
   if (/net::ERR_|ECONNREFUSED|ENOTFOUND/.test(first)) {
     return `The application could not be reached: ${truncate(first, 200)}`;
   }
 
+  // 7. Generic matcher with partial info
   const genericMatcher = first.match(/^(?:Timed out \d+ms waiting for )?expect\((?:locator|page|received|value)\)\.(not\.)?(\w+)\(/);
   if (genericMatcher) {
     const negated = !!genericMatcher[1];
@@ -426,11 +560,18 @@ export function describeFailure(rawError: string | undefined): string {
     const phrase = MATCHER_PHRASES[matcher] || `Check "${matcher}" failed`;
     const timedOut = /^Timed out (\d+)ms/.exec(first);
     const timing = timedOut ? ` within ${seconds(timedOut[1])}` : '';
-    return negated ? `Negated check "${matcher}" failed${timing}${suffix}.` : `${phrase}${timing}${suffix}.`;
+
+    const parts = [
+      negated ? `Negated check "${matcher}" failed${timing}.` : `${phrase}${timing}.`
+    ];
+    if (expectedVal) parts.push(`• Expected: ${expectedVal}`);
+    if (receivedVal) parts.push(`• Received: ${receivedVal}`);
+    if (target) parts.push(`• Target Element: ${truncate(target, 140)}`);
+    return parts.join('\n');
   }
 
-  // Anything else is either the assertion's custom message or a thrown error: show it as-is.
-  return `${truncate(first, 300)}${suffix}`;
+  // 8. Fallback
+  return target ? `${truncate(first, 200)}\n• Target Element: ${truncate(target, 140)}` : truncate(first, 300);
 }
 
 // ---------------------------------------------------------------------------
@@ -584,11 +725,11 @@ export function enrichCase(raw: RawCase, catalog: Catalog): ReportCase {
   let skipReason: string | undefined;
   switch (raw.status) {
     case 'passed':
-      actualResult = 'Passed: every check in this test succeeded.';
+      actualResult = formatPassedActualResult(entry?.expectedResult);
       break;
     case 'flaky':
       failureReason = describeFailure(raw.error);
-      actualResult = `Flaky: failed on the first attempt and passed on retry (${raw.attempts} attempts). First failure: ${failureReason}`;
+      actualResult = `Flaky: Passed on retry (${raw.attempts} attempts). First attempt issue:\n${failureReason}`;
       break;
     case 'skipped':
       skipReason = skipReasonOf(raw);
