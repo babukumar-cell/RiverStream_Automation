@@ -3,11 +3,8 @@ import { Config } from '../../src/config/environment';
 
 test.describe('River Stream - Document Review Suite (32 Test Cases - Riverstone Org)', () => {
 
-  test.beforeEach(async ({ loginPage, dashboardPage, reviewPage }) => {
+  test.beforeEach(async ({ reviewPage }) => {
     test.setTimeout(120000);
-    await loginPage.navigate();
-    await loginPage.login(Config.adminEmail, Config.adminPassword);
-    await dashboardPage.isDashboardLoaded();
     await reviewPage.openFirstPdfDocument();
   });
 

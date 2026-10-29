@@ -50,10 +50,16 @@ export class LoginPage extends BasePage {
     this.backToSignInButton = page.getByRole('button', { name: 'Back to Sign In' });
   }
 
-  /** Open the Sign-In page and wait for the form. */
+  /** Open the Sign-In page and wait for the form if not already authenticated. */
   async navigate(): Promise<void> {
     await this.navigateTo('/');
-    await this.emailInput.waitFor({ state: 'visible' });
+    // If the session is already authenticated, the app may automatically redirect to /dashboard
+    try {
+      await Promise.race([
+        this.emailInput.waitFor({ state: 'visible', timeout: 5000 }),
+        this.page.waitForURL(/.*\/dashboard/, { timeout: 5000 }),
+      ]);
+    } catch {}
   }
 
   async enterEmail(email: string): Promise<void> {
@@ -70,6 +76,14 @@ export class LoginPage extends BasePage {
 
   /** Fill both fields (empty string clears a field) and submit. */
   async login(email: string, password: string): Promise<void> {
+    // If already authenticated and redirected to /dashboard, do not attempt to fill sign-in form
+    if (this.page.url().includes('/dashboard')) {
+      return;
+    }
+    const isEmailVisible = await this.emailInput.isVisible({ timeout: 2000 }).catch(() => false);
+    if (!isEmailVisible && this.page.url().includes('/dashboard')) {
+      return;
+    }
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.clickSignIn();

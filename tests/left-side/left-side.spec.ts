@@ -3,9 +3,9 @@ import { Config } from '../../src/config/environment';
 
 test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)', () => {
 
-  test.beforeEach(async ({ loginPage, dashboardPage }) => {
-    await loginPage.navigate();
-    await loginPage.login(Config.adminEmail, Config.adminPassword);
+  test.beforeEach(async ({ dashboardPage }) => {
+    test.setTimeout(90000);
+    await dashboardPage.navigate();
     const isLoaded = await dashboardPage.isDashboardLoaded();
     expect(isLoaded).toBeTruthy();
   });

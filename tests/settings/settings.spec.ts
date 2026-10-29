@@ -3,11 +3,9 @@ import { Config } from '../../src/config/environment';
 
 test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test Cases)', () => {
 
-  test.beforeEach(async ({ loginPage, dashboardPage }) => {
+  test.beforeEach(async ({ dashboardPage }) => {
     test.setTimeout(120000);
-    await loginPage.navigate();
-    await loginPage.login(Config.adminEmail, Config.adminPassword);
-    await dashboardPage.isDashboardLoaded();
+    await dashboardPage.navigate();
   });
 
   // =========================================================================

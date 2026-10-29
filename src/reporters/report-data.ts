@@ -533,17 +533,51 @@ export function describeFailure(rawError: string | undefined): string {
   const testTimeout = first.match(/^Test timeout of (\d+)ms exceeded(.*)$/i);
   if (testTimeout) {
     const where = testTimeout[2].replace(/\.$/, '').trim();
-    return `The test did not finish within ${seconds(testTimeout[1])}${where ? ` ${where}` : ''}.`;
+    const waitingFor = lines.map((l) => l.match(/-\s+waiting for (.+)$/)?.[1]).find(Boolean);
+    const locator = fieldValue(lines, ['Locator']);
+    const target = locator || waitingFor;
+
+    const stackLine = lines.find((l) => /at\s+.*(tests|src)[\\/].*\.ts:\d+:\d+/.test(l));
+    const location = stackLine ? stackLine.replace(/^\s*at\s+/, '').trim() : '';
+
+    const parts = [
+      `⏱️ Test Timeout Exceeded: Operation did not complete within ${seconds(testTimeout[1])}${where ? ` (${where})` : ''}.`,
+    ];
+    if (target) {
+      parts.push(`• Waiting On: ${truncate(target, 140)}`);
+      parts.push(`• Root Cause: Target UI element did not become visible or interactive before the ${seconds(testTimeout[1])} timeout expired.`);
+    } else {
+      parts.push(`• Root Cause: The test step took longer than the allotted ${seconds(testTimeout[1])} timeout limit.`);
+    }
+    if (location) {
+      parts.push(`• Code Location: ${location}`);
+    }
+    parts.push(`• Guidance: Check server response times, verify prerequisites/data availability, or increase timeout thresholds.`);
+    return parts.join('\n');
   }
 
   // 5. Action timeout
   const actionTimeout = first.match(/^([\w.]+): Timeout (\d+)ms exceeded/i);
   if (actionTimeout) {
     const action = actionTimeout[1].split('.').pop();
+    const waitingFor = lines.map((l) => l.match(/-\s+waiting for (.+)$/)?.[1]).find(Boolean);
+    const locator = fieldValue(lines, ['Locator']);
+    const target = locator || waitingFor;
+
+    const stackLine = lines.find((l) => /at\s+.*(tests|src)[\\/].*\.ts:\d+:\d+/.test(l));
+    const location = stackLine ? stackLine.replace(/^\s*at\s+/, '').trim() : '';
+
     const parts = [
-      `The '${action}' action timed out after ${seconds(actionTimeout[2])}.`,
+      `⏱️ Action Timeout Exceeded: The '${action}' action timed out after ${seconds(actionTimeout[2])}.`,
     ];
-    if (target) parts.push(`• Target Element: ${truncate(target, 140)}`);
+    if (target) {
+      parts.push(`• Target Element: ${truncate(target, 140)}`);
+      parts.push(`• Root Cause: Playwright waited ${seconds(actionTimeout[2])} for the element to become visible, enabled, and stable, but it was not found or was obscured.`);
+    }
+    if (location) {
+      parts.push(`• Code Location: ${location}`);
+    }
+    parts.push(`• Guidance: Check if the element selector needs updating or if the page was delayed loading test data.`);
     return parts.join('\n');
   }
 

@@ -130,45 +130,56 @@ export class ReviewPage extends BasePage {
   }
 
   /**
-   * Navigate to Documents library, filter to PDF in Riverstone, and open first reviewable PDF
+   * Navigate to Documents library or Dashboard and open a reviewable document
    */
   async openFirstPdfDocument(): Promise<void> {
-    await this.navigateTo('/documents');
-    await this.page.waitForTimeout(2000);
-
-    // Apply PDF format filter
-    const filterBtn = this.page.locator('button:has-text("Filters")').first();
-    if (await filterBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await filterBtn.click();
-      await this.page.waitForTimeout(400);
+    // If already on a review page, simply verify and return
+    if (this.page.url().includes('/review/')) {
+      await this.waitForReviewLoaded();
+      return;
     }
-    const pdfFormatBtn = this.page.locator('button:has-text("PDF")').first();
-    if (await pdfFormatBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await pdfFormatBtn.click();
-      await this.page.waitForTimeout(400);
-      const applyBtn = this.page.locator('button:has-text("Apply")').first();
-      if (await applyBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await applyBtn.click();
-        await this.page.waitForTimeout(1500);
+
+    await this.navigateTo('/documents');
+    await this.waitForLoaded(20000);
+
+    // Filter to PDF format button if available
+    const filtersBtn = this.page.getByRole('button', { name: /^Filters/i });
+    if (await filtersBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await filtersBtn.click().catch(() => {});
+      const pdfBtn = this.page.getByRole('button', { name: 'PDF', exact: true });
+      if (await pdfBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await pdfBtn.click().catch(() => {});
       }
     }
 
-    // Search for a real Purchase Order document to ensure rich extracted line items are loaded
-    const searchInput = this.page.locator('input[placeholder*="Search" i], input[type="search"]').first();
-    if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await searchInput.fill('PURCHASE ORDER');
-      await searchInput.press('Enter');
-      await this.page.waitForTimeout(1500);
+    // Look for first available PDF Review button in the documents table
+    const pdfRow = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).filter({ has: this.page.locator('button:has-text("Review")') }).first();
+    const hasPdfRow = await pdfRow.waitFor({ state: 'visible', timeout: 15000 }).then(() => true).catch(() => false);
+
+    if (hasPdfRow) {
+      const reviewBtn = pdfRow.locator('button:has-text("Review")').first();
+      await reviewBtn.click();
+      await this.page.waitForURL('**/review/**', { timeout: 30000 });
+      await this.waitForReviewLoaded();
+      return;
     }
 
-    // Click Review on the matched Purchase Order row or first available PDF row
-    const poReviewBtn = this.page.locator('table tbody tr:has-text("BH12415") button:has-text("Review"), table tbody tr:has-text("PURCHASE ORDER") button:has-text("Review"), table tbody tr:has-text("Purchase Order") button:has-text("Review")').first();
-    const fallbackReviewBtn = this.page.locator('table tbody tr:has-text(".pdf") button:has-text("Review"), table tbody tr button:has-text("Review")').first();
+    // Fallback: any review button in documents table
+    const anyReviewBtn = this.page.locator('table tbody tr button:has-text("Review")').first();
+    if (await anyReviewBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await anyReviewBtn.click();
+      await this.page.waitForURL('**/review/**', { timeout: 30000 });
+      await this.waitForReviewLoaded();
+      return;
+    }
 
-    const reviewBtn = (await poReviewBtn.isVisible({ timeout: 3000 }).catch(() => false)) ? poReviewBtn : fallbackReviewBtn;
-    await reviewBtn.waitFor({ state: 'visible', timeout: 10000 });
-    await reviewBtn.click();
-    await this.page.waitForURL('**/review/**', { timeout: 15000 }).catch(() => {});
+    // Fallback: Open from Dashboard pending review table
+    await this.navigateTo('/dashboard');
+    await this.waitForLoaded(20000);
+    const dashReviewBtn = this.page.locator('table tbody tr button:has-text("Review")').first();
+    await dashReviewBtn.waitFor({ state: 'visible', timeout: 20000 });
+    await dashReviewBtn.click();
+    await this.page.waitForURL('**/review/**', { timeout: 30000 });
     await this.waitForReviewLoaded();
   }
 

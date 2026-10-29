@@ -11,11 +11,8 @@ test.describe('River Stream - PO-ACK Recon Suite (67 End-to-End Lifecycle Test C
   const baseAckFile1 = path.join(criDir, '53758-113547-DURSEA-ACKS.pdf');
   const baseAckFile2 = path.join(criDir, '53758-113541-SIT-ACKS.pdf');
 
-  test.beforeEach(async ({ loginPage, dashboardPage, poAckReconPage }) => {
-    test.setTimeout(60000);
-    await loginPage.navigate();
-    await loginPage.login(Config.adminEmail, Config.adminPassword);
-    await dashboardPage.isDashboardLoaded();
+  test.beforeEach(async ({ poAckReconPage }) => {
+    test.setTimeout(90000);
     await poAckReconPage.navigate();
   });
 

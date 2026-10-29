@@ -60,6 +60,55 @@ export const test = base.extend<Fixtures>({
   mailService: async ({}, use) => {
     await use(new MailService());
   },
+  page: async ({ page }, use, testInfo) => {
+    await use(page);
+
+    // If the test failed, render a clear diagnostic failure banner before Playwright captures the screenshot
+    if (testInfo.status !== 'passed' && testInfo.status !== 'skipped') {
+      try {
+        const rawErr = testInfo.errors?.[0]?.message || 'Assertion or action failed';
+        const cleanErr = rawErr.split('\n')[0].replace(/[^\x20-\x7E]/g, '').slice(0, 140);
+        const url = page.url();
+
+        await page.evaluate(
+          ({ title, err, pageUrl }) => {
+            if (document.querySelector('.rs-failure-evidence-banner')) return;
+            const banner = document.createElement('div');
+            banner.className = 'rs-failure-evidence-banner';
+            banner.style.position = 'fixed';
+            banner.style.top = '0';
+            banner.style.left = '0';
+            banner.style.width = '100%';
+            banner.style.backgroundColor = '#dc2626';
+            banner.style.color = '#ffffff';
+            banner.style.padding = '12px 18px';
+            banner.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+            banner.style.fontSize = '13px';
+            banner.style.fontWeight = '600';
+            banner.style.lineHeight = '1.4';
+            banner.style.zIndex = '99999999';
+            banner.style.boxShadow = '0 4px 16px rgba(220, 38, 38, 0.5)';
+            banner.style.borderBottom = '3px solid #991b1b';
+            banner.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">❌</span>
+                <span>TEST FAILED: ${title}</span>
+              </div>
+              <div style="margin-top: 4px; font-size: 12px; font-weight: normal; opacity: 0.95;">
+                <strong>Reason:</strong> ${err}
+              </div>
+              <div style="font-size: 11px; font-weight: normal; opacity: 0.85;">
+                <strong>Page URL at Failure:</strong> ${pageUrl}
+              </div>
+            `;
+            document.body.prepend(banner);
+          },
+          { title: testInfo.title, err: cleanErr, pageUrl: url },
+        );
+        await page.waitForTimeout(100);
+      } catch {}
+    }
+  },
 });
 
 function isLocator(val: any): val is Locator {

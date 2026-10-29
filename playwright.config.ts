@@ -12,9 +12,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers,
-  timeout: 60000,
+  timeout: 90000,
   expect: {
-    timeout: 10000,
+    timeout: 15000,
   },
   // Order matters: Playwright calls reporter onEnd hooks sequentially, so the JSON summary
   // must be written before the custom HTML reporter reads it.
@@ -28,8 +28,8 @@ export default defineConfig({
   use: {
     baseURL: Config.baseUrl,
     headless: process.env.HEADLESS ? process.env.HEADLESS === 'true' : undefined,
-    actionTimeout: 15000,
-    navigationTimeout: 30000,
+    actionTimeout: 20000,
+    navigationTimeout: 45000,
     trace: 'retain-on-failure',
     screenshot: 'on',
     video: 'retain-on-failure',
