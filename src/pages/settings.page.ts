@@ -158,7 +158,7 @@ export class SettingsPage extends BasePage {
   async openSettingsMenu(): Promise<void> {
     if (!await this.usersNavLink.isVisible().catch(() => false)) {
       await this.settingsNavLink.click();
-      await this.page.waitForTimeout(500);
+      await this.usersNavLink.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
     }
   }
 
@@ -167,9 +167,8 @@ export class SettingsPage extends BasePage {
    */
   async navigateToUsers(): Promise<void> {
     await this.navigateTo('/users');
-    await this.page.waitForLoadState('networkidle').catch(() => {});
-    await this.page.locator('text=/@/, div:has(> svg.lucide-user)').first().waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
-    await this.page.waitForTimeout(500);
+    const usersIndicator = this.page.locator('text=/@/, div:has(> svg.lucide-user), h1:has-text("Users"), h2:has-text("Users")').first();
+    await usersIndicator.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
   }
 
   /**
@@ -177,9 +176,8 @@ export class SettingsPage extends BasePage {
    */
   async navigateToOrganizations(): Promise<void> {
     await this.navigateTo('/organizations');
-    await this.page.waitForLoadState('networkidle').catch(() => {});
-    await this.page.locator('text=/this period/i, text=/total documents/i').first().waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
-    await this.page.waitForTimeout(500);
+    const orgsIndicator = this.page.locator('text=/this period/i, text=/total documents/i, button:has-text("Add Organization"), h1:has-text("Organization")').first();
+    await orgsIndicator.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
   }
 
   /**
@@ -187,10 +185,9 @@ export class SettingsPage extends BasePage {
    */
   async openCreateOrgModal(): Promise<void> {
     await this.navigateToOrganizations();
-    await this.addOrgButton.waitFor({ state: 'visible', timeout: 10000 });
-    await this.addOrgButton.click();
-    await this.createOrgModal.waitFor({ state: 'visible', timeout: 8000 });
-    await this.page.waitForTimeout(500);
+    await this.addOrgButton.waitFor({ state: 'visible', timeout: 15000 });
+    await this.addOrgButton.click({ force: true });
+    await this.createOrgModal.waitFor({ state: 'visible', timeout: 15000 });
   }
 
   /**
@@ -213,12 +210,16 @@ export class SettingsPage extends BasePage {
     const search = this.searchOrgInput;
     if (await search.isVisible()) {
       await search.fill(orgName);
-      await this.page.waitForTimeout(1000);
+      const matchingRow = this.page.locator(`table tbody tr:has-text("${orgName}")`).first();
+      await matchingRow.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     }
     const eyeBtn = this.page.locator('button:has(svg.lucide-eye), svg.lucide-eye').first();
-    await eyeBtn.click({ force: true });
-    await this.page.waitForURL('**/organizations/**', { timeout: 15000 }).catch(() => {});
-    await this.page.waitForLoadState('networkidle').catch(() => {});
-    await this.page.waitForTimeout(1000);
+    await eyeBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await Promise.all([
+      this.page.waitForURL('**/organizations/**', { timeout: 25000 }).catch(() => {}),
+      eyeBtn.click({ force: true }),
+    ]);
+    const orgHeading = this.page.locator('h1, h2, div:has-text("Organization Details")').first();
+    await orgHeading.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
   }
 }

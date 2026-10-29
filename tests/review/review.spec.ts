@@ -27,7 +27,7 @@ test.describe('River Stream - Document Review Suite (32 Test Cases - Riverstone 
     const citation = reviewPage.sourceCitationLinks.first();
     if (await citation.isVisible({ timeout: 5000 }).catch(() => false)) {
       await citation.click();
-      await page.waitForTimeout(500);
+      await reviewPage.pageNumberIndicator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
     }
     await expect(reviewPage.pageNumberIndicator).toBeVisible();
   });
@@ -38,13 +38,13 @@ test.describe('River Stream - Document Review Suite (32 Test Cases - Riverstone 
 
     if (await reviewPage.zoomInButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await reviewPage.zoomInButton.click();
-      await page.waitForTimeout(400);
+      await zoomTextEl.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       const zoomedIn = await zoomTextEl.innerText();
       expect(zoomedIn).not.toBeNull();
 
       if (await reviewPage.zoomOutButton.isVisible().catch(() => false)) {
         await reviewPage.zoomOutButton.click();
-        await page.waitForTimeout(400);
+        await zoomTextEl.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       }
     }
   });
@@ -161,7 +161,7 @@ test.describe('River Stream - Document Review Suite (32 Test Cases - Riverstone 
     if (await swapBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       const initialBilling = await reviewPage.billingAddressField.innerText().catch(() => '');
       await swapBtn.click();
-      await page.waitForTimeout(500);
+      await expect(reviewPage.billingAddressField).toBeVisible();
       const swappedBilling = await reviewPage.billingAddressField.innerText().catch(() => '');
       expect(swappedBilling !== undefined).toBeTruthy();
     } else {
@@ -282,7 +282,7 @@ test.describe('River Stream - Document Review Suite (32 Test Cases - Riverstone 
     const citation = reviewPage.sourceCitationLinks.first();
     if (await citation.isVisible({ timeout: 5000 }).catch(() => false)) {
       await citation.click();
-      await page.waitForTimeout(500);
+      await reviewPage.pageNumberIndicator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await expect(reviewPage.pageNumberIndicator).toBeVisible();
     } else {
       expect(await reviewPage.isDocumentLoaded()).toBeTruthy();

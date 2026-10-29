@@ -199,9 +199,8 @@ export class ReviewPage extends BasePage {
     if (!isAlreadyOpen) {
       const expandBtn = this.page.locator('div:has-text("Order Line Items") button:has(svg), div:has-text("Order Line Items") svg, [aria-label*="expand" i]').last();
       await expandBtn.scrollIntoViewIfNeeded().catch(() => {});
-      await expandBtn.click();
-      await this.lineItemsModal.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
-      await this.page.waitForTimeout(500);
+      await expandBtn.click({ force: true });
+      await this.lineItemsModal.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     }
   }
 

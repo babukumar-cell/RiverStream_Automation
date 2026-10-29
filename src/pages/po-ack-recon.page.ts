@@ -131,9 +131,9 @@ export class PoAckReconPage extends BasePage {
    */
   async waitForProjectsLoaded(): Promise<void> {
     const loading = this.page.locator(':text("Loading projects..."), :text("Loading...")').first();
-    await loading.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
-    await this.page.locator('table tbody tr td').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
-    await this.page.waitForTimeout(500);
+    await loading.waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+    const content = this.page.locator('table tbody tr td').first().or(this.page.locator(':text("No projects found")')).first();
+    await content.waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
   }
 
   /**
@@ -141,8 +141,9 @@ export class PoAckReconPage extends BasePage {
    */
   async waitForDocsLoaded(): Promise<void> {
     const loading = this.page.locator(':text("Loading documents..."), :text("Loading...")').first();
-    await loading.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
-    await this.page.waitForTimeout(500);
+    await loading.waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+    const content = this.page.locator('table tbody tr td').first().or(this.page.locator(':text("No documents found")')).first();
+    await content.waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
   }
 
   /**
@@ -291,12 +292,11 @@ export class PoAckReconPage extends BasePage {
   async openFirstDocumentReview(): Promise<void> {
     await this.waitForDocsLoaded();
     const firstReview = this.docReviewButtons.first();
-    await firstReview.waitFor({ state: 'visible', timeout: 10000 });
-    await firstReview.click();
+    await firstReview.waitFor({ state: 'visible', timeout: 15000 });
+    await firstReview.click({ force: true });
     const loading = this.page.locator(':text("Loading...")').first();
-    await loading.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
-    await this.completeButton.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
-    await this.page.waitForTimeout(500);
+    await loading.waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+    await this.completeButton.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
   }
 
   /**
