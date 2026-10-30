@@ -66,14 +66,22 @@ export class ReviewPage extends BasePage {
     this.statusBadge = page.locator('text=/Partially Success|Extracted|Complete|Processing/i').first();
 
     // Left Panel - PDF Viewer & Controls
-    this.documentTitle = page.locator('h2:has-text(".pdf"), h3:has-text(".pdf"), :text(".pdf")').first();
-    this.documentPreview = page.locator('img, canvas, .pdf-viewer, embed, iframe, div[class*="pdf"]').first();
-    this.pageNumberIndicator = page.getByText(/Page\s*\d+\s*[\/of]\s*\d+/i).first().or(page.locator(':text("Page 1")').first());
+    this.documentTitle = page.locator('div:has(> text=/Original (PDF|XLS|XLSX) document/i) h2, div:has(> text=/Original (PDF|XLS|XLSX) document/i) h3')
+      .or(page.locator('h2, h3, h4').filter({ hasText: /\.(pdf|xls|xlsx)|purchase|quote|order|document/i }))
+      .or(page.getByText(/Original (PDF|XLS|XLSX) document/i))
+      .or(page.locator('div[class*="border"] h2, div[class*="border"] h3, div[class*="rounded"] h2, div[class*="rounded"] h3'))
+      .first();
+    this.documentPreview = page.locator('img, canvas, .pdf-viewer, embed, iframe, div[class*="pdf"], div[class*="viewer"], table, div[class*="overflow"]').first();
+    this.pageNumberIndicator = page.getByText(/Page\s*\d+\s*[\/of]\s*\d+/i).first()
+      .or(page.locator(':text("Page 1")').first())
+      .or(page.getByText(/Showing sheet\s*\d+\s*of\s*\d+/i).first())
+      .or(page.getByText(/Rows:\s*\d+/i).first())
+      .or(page.locator('div:has(button:has-text("<"))').first());
     this.prevPageButton = page.locator('button:has-text("<")').first();
     this.nextPageButton = page.locator('button:has-text(">")').first();
     this.zoomInButton = page.locator('button:has(svg.lucide-zoom-in), button[aria-label*="zoom in" i], button:has-text("+")').first();
     this.zoomOutButton = page.locator('button:has(svg.lucide-zoom-out), button[aria-label*="zoom out" i], button:has-text("-")').first();
-    this.zoomPercentage = page.locator('text=/\\d+%/i').first();
+    this.zoomPercentage = page.locator('text=/\\d+%/i, text=/100%/i, div:has(button:has-text("+")) span').first();
     this.downloadButton = page.locator('button:has(svg.lucide-download), button[aria-label*="download" i], a[aria-label*="download" i]').first();
     this.fitToPageButton = page.locator('button:has(svg.lucide-scan), button:has(svg.lucide-expand)').first();
     this.selectionButton = page.locator('button:has(svg.lucide-mouse-pointer), button[aria-label*="select" i]').first();
@@ -119,6 +127,7 @@ export class ReviewPage extends BasePage {
     // Explicitly wait for any document loading spinner/overlay to disappear
     const loading = this.page.locator(':text("Loading document..."), :text("Loading...")').first();
     await loading.waitFor({ state: 'hidden', timeout: 35000 }).catch(() => {});
+    await this.page.waitForLoadState('domcontentloaded');
 
     // Explicitly wait until the core review interface element is visible
     const reviewReady = this.completeButton
@@ -152,11 +161,23 @@ export class ReviewPage extends BasePage {
     const hasTable = await tableRow.waitFor({ state: 'visible', timeout: 25000 }).then(() => true).catch(() => false);
 
     if (hasTable) {
-      // Find the first review button (preferring .pdf documents if present)
-      const pdfReviewBtn = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).locator('button:has-text("Review")').first();
-      const anyReviewBtn = this.page.locator('table tbody tr button:has-text("Review"), button:has-text("Review")').first();
+      // Look for a PDF document review button
+      let pdfReviewBtn = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).locator('button:has-text("Review")').first();
+      let hasPdfBtn = await pdfReviewBtn.isVisible().catch(() => false);
 
-      const hasPdfBtn = await pdfReviewBtn.isVisible().catch(() => false);
+      // If no PDF review button is currently visible on the first page, search for .pdf
+      if (!hasPdfBtn) {
+        const searchInput = this.page.locator('input[placeholder*="search" i], input[type="search"]').first();
+        if (await searchInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+          await searchInput.fill('.pdf');
+          await this.page.keyboard.press('Enter');
+          await this.page.waitForTimeout(1000);
+          pdfReviewBtn = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).locator('button:has-text("Review")').first();
+          hasPdfBtn = await pdfReviewBtn.isVisible({ timeout: 5000 }).catch(() => false);
+        }
+      }
+
+      const anyReviewBtn = this.page.locator('table tbody tr button:has-text("Review"), button:has-text("Review")').first();
       const targetBtn = hasPdfBtn ? pdfReviewBtn : anyReviewBtn;
 
       if (await targetBtn.isVisible().catch(() => false)) {

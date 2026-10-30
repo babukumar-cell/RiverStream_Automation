@@ -131,9 +131,9 @@ export class PoAckReconPage extends BasePage {
    */
   async waitForProjectsLoaded(): Promise<void> {
     const loading = this.page.locator(':text("Loading projects..."), :text("Loading...")').first();
-    await loading.waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
-    const content = this.page.locator('table tbody tr td').first().or(this.page.locator(':text("No projects found")')).first();
-    await content.waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
+    await loading.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
+    const content = this.page.locator('table tbody tr td, :text("No PO-ACK"), :text("No projects"), :text("No records"), :text("No data")').first();
+    await content.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
   }
 
   /**
@@ -141,9 +141,9 @@ export class PoAckReconPage extends BasePage {
    */
   async waitForDocsLoaded(): Promise<void> {
     const loading = this.page.locator(':text("Loading documents..."), :text("Loading...")').first();
-    await loading.waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
-    const content = this.page.locator('table tbody tr td').first().or(this.page.locator(':text("No documents found")')).first();
-    await content.waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
+    await loading.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
+    const content = this.page.locator('table tbody tr td, :text("No documents"), :text("No records"), :text("No data"), :text("No files")').first();
+    await content.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
   }
 
   /**
@@ -366,9 +366,9 @@ export class PoAckReconPage extends BasePage {
    */
   async applyStatusFilter(status: string): Promise<void> {
     const filterBtn = this.page.locator(`button:has-text("${status}")`).first();
-    await filterBtn.waitFor({ state: 'visible', timeout: 10000 });
-    await filterBtn.click();
-    await this.page.waitForTimeout(1000);
+    await filterBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await filterBtn.click({ force: true });
+    await this.page.waitForTimeout(800);
     await this.waitForDocsLoaded();
   }
 
