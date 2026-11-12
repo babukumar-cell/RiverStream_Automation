@@ -58,6 +58,8 @@ export interface ReplyQuery {
   since: Date;
   /** Sender of the reply. Defaults to the ingestion address. */
   from?: string;
+  /** Only messages sent to this address (e.g. the user a suite created) */
+  to?: string;
   /** Message-IDs to ignore, e.g. replies already consumed earlier in the same scenario */
   excludeMessageIds?: string[];
   /** Optional extra filter on the reply body (plain text), e.g. a file name */
@@ -604,6 +606,7 @@ export class MailService {
     // IMAP SINCE has day granularity; the exact cut-off is applied on INTERNALDATE below.
     const sinceDay = new Date(query.since.getTime() - 24 * 60 * 60 * 1000);
     const criteria = [['SINCE', sinceDay], ['HEADER', 'SUBJECT', query.token], ['FROM', from]];
+    if (query.to) criteria.push(['TO', query.to]);
 
     // 1) headers only, to apply the exact filters cheaply
     const headerHits: Message[] = await conn.search(criteria, { bodies: [HEADER_FIELDS], markSeen: false });

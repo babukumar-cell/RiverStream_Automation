@@ -176,7 +176,8 @@ export class OrganizationDetailsPage extends BasePage {
 
   /** User row in the Users section (matched by name or email) */
   userRow(nameOrEmail: string): Locator {
-    return this.usersSection.locator('div.px-6').filter({ hasText: nameOrEmail }).filter({ has: this.page.getByRole('button') });
+    // div:not([data-slot]): the card body (data-slot="card-content") also has px-6 and contains every row
+    return this.usersSection.locator('div.px-6:not([data-slot])').filter({ hasText: nameOrEmail }).filter({ has: this.page.getByRole('button') });
   }
 
   userRowRole(row: Locator): Locator {

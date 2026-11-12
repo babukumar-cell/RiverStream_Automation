@@ -59,6 +59,19 @@ export default defineConfig({
       },
     },
     {
+      // Billing / Stripe auto-renewal lifecycle (creates and deletes its own organization)
+      name: 'autorenewal',
+      dependencies: ['setup'],
+      testMatch: [/autorenewal[/\\][^/\\]+\.spec\.ts/],
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.env.BROWSER_CHANNEL || undefined,
+        storageState: Config.adminStorageState,
+        // Wider window: the Billing History table and the plan cards fit without horizontal scrolling
+        viewport: { width: 1600, height: 900 },
+      },
+    },
+    {
       name: 'po-ack',
       dependencies: ['setup'],
       testMatch: [
