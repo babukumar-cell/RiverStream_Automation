@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import { Config } from './src/config/environment';
 
+// One id per test run, inherited by the workers (the email suite shares one submission per run).
+process.env.RS_RUN_ID ??= String(Date.now());
+
 const workers = process.env.WORKERS ? parseInt(process.env.WORKERS, 10) : 1;
 const isSettingsRun = process.argv.some((arg) => arg.includes('settings')) || process.env.RUN_SETTINGS === 'true';
 

@@ -191,9 +191,9 @@ test.describe('Upload Document Suite (20 Test Cases)', () => {
     await uploadPage.attachFile(corruptFile);
     await uploadPage.clickProcess();
 
-    // System should either display error toast or rejection
-    const isErrorOrToast = await uploadPage.errorMessage.isVisible({ timeout: 5000 }).catch(() => false);
-    expect(isErrorOrToast !== undefined).toBeTruthy();
+    // System should display a rejection error. Wait for it so the evidence screenshot captures it
+    // (isVisible() never waits, and the previous `!== undefined` check could never fail).
+    await expect(uploadPage.errorMessage).toBeVisible({ timeout: 15000 });
   });
 
   test('TC_File Upload_009: Verify behavior when no file is selected', async ({ uploadPage }) => {

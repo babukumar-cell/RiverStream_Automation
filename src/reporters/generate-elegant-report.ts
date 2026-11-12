@@ -116,10 +116,11 @@ function collectMedia(tc: ReportCase, index: number, reportDir: string, assetsDi
         fs.copyFileSync(att.path, path.join(assetsDir, fileName));
         const type: 'image' | 'video' | 'trace' = isImage ? 'image' : isVideo ? 'video' : 'trace';
         let defaultName = 'Screenshot Evidence';
-        if (isVideo) defaultName = 'Failure Execution Video';
+        if (isVideo) defaultName = tc.status === 'passed' ? 'Execution Video' : 'Failure Execution Video';
         else if (isTrace) defaultName = 'Playwright Trace';
         media.push({
-          name: att.name || defaultName,
+          // Playwright names every recording just "video"
+          name: isVideo && (!att.name || att.name === 'video') ? defaultName : att.name || defaultName,
           type,
           src: `assets/${fileName}`,
         });
@@ -314,7 +315,7 @@ function renderMedia(m: MediaItem): string {
       <div class="video-container-card">
         <div class="video-card-header">
           <span class="video-icon">🎬</span>
-          <span class="video-title">${escapeHtml(m.name || 'Failure Execution Recording')}</span>
+          <span class="video-title">${escapeHtml(m.name || 'Execution Recording')}</span>
         </div>
         <video controls preload="metadata" class="video-player" title="${escapeHtml(m.name)}">
           <source src="${escapeHtml(m.src)}" type="video/webm">
@@ -381,7 +382,7 @@ function renderCard(tc: CardView): string {
               <div class="test-card-right">
                 ${tc.knownDefects.length > 0 ? '<span class="defect-chip" title="Annotated as a known application defect">🐞 known defect</span>' : ''}
                 ${tc.attempts > 1 ? `<span class="retry-chip" title="Number of attempts including retries">${tc.attempts} attempts</span>` : ''}
-                ${tc.media.filter((m) => m.type === 'video').length > 0 ? `<span class="media-indicator video" title="Failure video recording available">🎬 Video</span>` : ''}
+                ${tc.media.filter((m) => m.type === 'video').length > 0 ? `<span class="media-indicator video" title="Video recording available">🎬 Video</span>` : ''}
                 ${tc.media.filter((m) => m.type === 'image').length > 0 ? `<span class="media-indicator" title="${tc.media.filter((m) => m.type === 'image').length} screenshot(s) attached">📸 ${tc.media.filter((m) => m.type === 'image').length}</span>` : ''}
                 <span class="mod-tag">${escapeHtml(tc.moduleShort)}</span>
                 <span class="duration-tag">${formatDuration(tc.durationMs)}</span>

@@ -1,5 +1,6 @@
 import { test, expect } from '../../src/fixtures/test.fixture';
 import { Config } from '../../src/config/environment';
+import { isVisibleWithin } from '../../src/utils/wait-utils';
 
 test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test Cases)', () => {
 
@@ -71,7 +72,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
     await settingsPage.userLastNameInput.fill('User');
     await settingsPage.userEmailInput.fill(uniqueEmail);
 
-    if (await settingsPage.userPasswordInput.isVisible()) {
+    if (await isVisibleWithin(settingsPage.userPasswordInput)) {
       await settingsPage.userPasswordInput.fill('Auto@Pass2026!');
     }
 
@@ -134,7 +135,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
     await settingsPage.navigateToUsers();
     await settingsPage.addUserButton.click();
     await expect(settingsPage.createUserModal).toBeVisible();
-    if (await settingsPage.userRoleDropdown.isVisible()) {
+    if (await isVisibleWithin(settingsPage.userRoleDropdown)) {
       await settingsPage.userRoleDropdown.click();
       await page.waitForTimeout(400);
       const roleOption = page.locator('[role="option"], [role="menuitem"], :text("Admin"), :text("Reviewer")').first();
@@ -347,7 +348,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
   test('TC_SETT_107: Verify Address File upload accepts supported formats', async ({ settingsPage }) => {
     await settingsPage.openCreateOrgModal();
     const fileInput = settingsPage.addressFileUploadInput;
-    if (await fileInput.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(fileInput)) {
       const accept = await fileInput.getAttribute('accept');
       expect(accept).toBeDefined();
     } else {
@@ -436,7 +437,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
     await expect(settingsPage.inactiveTab).toBeVisible();
     await settingsPage.inactiveTab.click();
     await page.waitForTimeout(500);
-    expect(await settingsPage.allTab.isVisible()).toBeTruthy();
+    await expect(settingsPage.allTab).toBeVisible();
   });
 
   test('TC_SETT_119: Verify View Organization details', async ({ settingsPage, page }) => {
@@ -469,7 +470,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
     await deleteBtn.click();
     await page.waitForTimeout(500);
     const cancelBtn = page.locator('[role="dialog"] button:has-text("Cancel"), button:has-text("Cancel")').first();
-    if (await cancelBtn.isVisible()) {
+    if (await isVisibleWithin(cancelBtn)) {
       await cancelBtn.click();
       await page.waitForTimeout(500);
     } else {
@@ -525,7 +526,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
     await settingsPage.openOrganizationDetails('MJ');
     await settingsPage.editOrgButton.click();
     await page.waitForTimeout(500);
-    if (await settingsPage.saveOrgButton.isVisible()) {
+    if (await isVisibleWithin(settingsPage.saveOrgButton)) {
       await settingsPage.saveOrgButton.click();
       await page.waitForTimeout(600);
     }
@@ -534,11 +535,11 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
 
   test('TC_SETT_130: Verify Delete button functionality', async ({ settingsPage, page }) => {
     await settingsPage.openOrganizationDetails('MJ');
-    if (await settingsPage.deleteOrgButton.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(settingsPage.deleteOrgButton)) {
       await settingsPage.deleteOrgButton.click();
       await page.waitForTimeout(600);
       const cancelBtn = page.locator('button:has-text("Cancel")').first();
-      if (await cancelBtn.isVisible().catch(() => false)) {
+      if (await isVisibleWithin(cancelBtn)) {
         await cancelBtn.click();
       } else {
         await page.keyboard.press('Escape');
@@ -549,7 +550,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
 
   test('TC_SETT_131: Verify Pay Now button functionality', async ({ settingsPage, page }) => {
     await settingsPage.openOrganizationDetails('MJ');
-    if (await settingsPage.payNowButton.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(settingsPage.payNowButton)) {
       await settingsPage.payNowButton.click();
       await page.waitForTimeout(800);
       await page.keyboard.press('Escape');
@@ -559,12 +560,12 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
 
   test('TC_SETT_132: Validate Payment confirmed popup', async ({ settingsPage }) => {
     await settingsPage.openOrganizationDetails('MJ');
-    expect(await settingsPage.orgDetailsHeader.isVisible()).toBeTruthy();
+    await expect(settingsPage.orgDetailsHeader).toBeVisible();
   });
 
   test('TC_SETT_133: Verify Bill History button', async ({ settingsPage, page }) => {
     await settingsPage.openOrganizationDetails('MJ');
-    if (await settingsPage.billHistoryButton.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(settingsPage.billHistoryButton)) {
       await settingsPage.billHistoryButton.click();
       await page.waitForTimeout(800);
       await page.keyboard.press('Escape');
@@ -575,7 +576,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
   test('TC_SETT_134: Verify Upload Custom Documents', async ({ settingsPage }) => {
     await settingsPage.openOrganizationDetails('MJ');
     const uploadBtn = settingsPage.uploadCustomDocsButton;
-    const hasUpload = await uploadBtn.isVisible({ timeout: 3000 }).catch(() => false);
+    const hasUpload = await isVisibleWithin(uploadBtn, 3000);
     expect(hasUpload || true).toBeTruthy();
   });
 
@@ -592,7 +593,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
   test('TC_SETT_137: Verify upload without Edit mode', async ({ settingsPage }) => {
     await settingsPage.openOrganizationDetails('MJ');
     const uploadBtn = settingsPage.uploadCustomDocsButton;
-    if (await uploadBtn.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(uploadBtn)) {
       const isDisabled = await uploadBtn.isDisabled().catch(() => false);
       expect(isDisabled !== undefined).toBeTruthy();
     } else {
@@ -620,7 +621,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
   test('TC_SETT_141: Verify Add User functionality', async ({ settingsPage, page }) => {
     await settingsPage.openOrganizationDetails('MJ');
     const addUserBtn = page.locator('button:has-text("Add User")').first();
-    if (await addUserBtn.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(addUserBtn)) {
       await addUserBtn.click();
       await page.waitForTimeout(500);
       await expect(page.locator('[role="dialog"]').first()).toBeVisible();
@@ -633,7 +634,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
   test('TC_SETT_142: Verify Search User functionality', async ({ settingsPage, page }) => {
     await settingsPage.openOrganizationDetails('MJ');
     const search = page.locator('input[placeholder*="search user" i]').first();
-    if (await search.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(search)) {
       await search.fill('MJ');
       await page.waitForTimeout(500);
     }
@@ -664,7 +665,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
   test('TC_SETT_146: Verify Direct Estimate Creation toggle', async ({ settingsPage, page }) => {
     await settingsPage.openOrganizationDetails('MJ');
     const toggle = settingsPage.directEstimateOrgDetailsToggle;
-    if (await toggle.isVisible().catch(() => false)) {
+    if (await isVisibleWithin(toggle)) {
       const isDisabled = await toggle.isDisabled().catch(() => false);
       if (!isDisabled) {
         await toggle.click();
@@ -678,7 +679,7 @@ test.describe('River Stream - Settings & Riverstone Organization Suite (82 Test 
   test('TC_SETT_147: Verify Document Quota display', async ({ settingsPage }) => {
     await settingsPage.openOrganizationDetails('MJ');
     const quota = settingsPage.quotaLimitDisplay;
-    const hasQuota = await quota.isVisible({ timeout: 4000 }).catch(() => false);
+    const hasQuota = await isVisibleWithin(quota, 4000);
     expect(hasQuota || await settingsPage.orgDetailsHeader.isVisible()).toBeTruthy();
   });
 

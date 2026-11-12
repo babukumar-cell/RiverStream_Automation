@@ -37,7 +37,9 @@ export const AuthTestData = {
     testCaseId: 'TC_Login_004',
     description: 'Verify password masking and toggle visibility',
     password: 'TestSecretPassword@123',
-    expectedOutcome: 'success' as const,
+    expectedOutcome: 'error' as const,
+    // Email is left empty, so submitting shows the required-field validation
+    expectedErrorMessage: /required|valid email/i,
   },
   unregisteredUser: {
     testCaseId: 'TC_Login_005',

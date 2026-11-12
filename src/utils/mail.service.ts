@@ -185,6 +185,56 @@ function wrapMailError(err: unknown, protocol: 'IMAP' | 'SMTP', host: string): E
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+/** Upper bound for one IMAP command round-trip (open mailbox + search + fetch). */
+const IMAP_COMMAND_TIMEOUT_MS = 45_000;
+/** Reconnects allowed during one reply wait. */
+const MAX_IMAP_RECONNECTS = 5;
+
+/** Rejects with MailConnectionError if `promise` does not settle within `ms`. */
+function withTimeout<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new MailConnectionError(`[MailService] ${what} did not respond within ${ms / 1000}s`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+/*
+ * node-imap never fails a command whose connection was lost (e.g. Gmail resets the socket: ECONNRESET);
+ * the command just waits forever. Each connection therefore gets a "lost" promise that rejects on the
+ * first error / close / end, and every command is raced against it (and against a timeout).
+ */
+const connectionLost = new WeakMap<ImapSimple, Promise<never>>();
+const deadConnections = new WeakSet<ImapSimple>();
+
+function watchConnection(conn: ImapSimple): void {
+  const imap = (conn as unknown as { imap: NodeJS.EventEmitter }).imap;
+  const lost = new Promise<never>((_, reject) => {
+    const fail = (why: string) => {
+      deadConnections.add(conn);
+      reject(new MailConnectionError(`[MailService] IMAP connection lost (${why})`));
+    };
+    conn.on('error', (e: Error) => {
+      console.warn(`[MailService] IMAP connection error: ${e.message}`);
+      fail(e.message);
+    });
+    imap.once('close', () => fail('closed'));
+    imap.once('end', () => fail('ended by server'));
+  });
+  lost.catch(() => undefined); // observed via isImapClosed / raced in imapCommand
+  connectionLost.set(conn, lost);
+}
+
+function isImapClosed(conn: ImapSimple): boolean {
+  return deadConnections.has(conn) || (conn as unknown as { imap?: { state?: string } }).imap?.state === 'disconnected';
+}
+
+/** Runs an IMAP operation, failing fast if the connection drops and after IMAP_COMMAND_TIMEOUT_MS if it hangs. */
+function imapCommand<T>(conn: ImapSimple, op: Promise<T>, what: string): Promise<T> {
+  const lost = connectionLost.get(conn);
+  return withTimeout(lost ? Promise.race([op, lost]) : op, IMAP_COMMAND_TIMEOUT_MS, what);
+}
+
 function addressList(value: AddressObject | AddressObject[] | undefined): string[] {
   if (!value) return [];
   const objs = Array.isArray(value) ? value : [value];
@@ -430,20 +480,38 @@ export class MailService {
     const timeoutMs = query.timeoutMs ?? Config.email.pollTimeoutMs;
     const intervalMs = query.intervalMs ?? Config.email.pollIntervalMs;
     const deadline = Date.now() + timeoutMs;
-    let conn = await this.connectImap();
+    let conn: ImapSimple | undefined = await this.connectImap();
+    let spamBox: string | undefined;
+    let spamBoxKnown = false;
     let reconnects = 0;
+    let found: RetrievedEmail[] = [];
     try {
-      const spamBox = await this.findSpamBox(conn);
       for (;;) {
-        let found: RetrievedEmail[];
         try {
-          found = await this.searchReplies(conn, query, spamBox);
+          // Gmail can reset an idle IMAP socket (ECONNRESET). node-imap then never answers queued commands,
+          // so a dead connection is detected up front and every search is bounded by a timeout.
+          if (!conn || isImapClosed(conn)) throw new MailConnectionError('[MailService] IMAP connection was closed by the server');
+          if (!spamBoxKnown) {
+            spamBox = await imapCommand(conn, this.findSpamBox(conn), 'IMAP mailbox list');
+            spamBoxKnown = true;
+          }
+          found = await imapCommand(conn, this.searchReplies(conn, query, spamBox), 'IMAP search');
         } catch (err) {
-          // A dropped socket mid-wait gets one reconnect; auth/TLS problems are thrown straight away.
-          if (isAuthError(err) || isTlsError(err) || reconnects >= 1) throw wrapMailError(err, 'IMAP', Config.email.imapHost);
+          // Auth/TLS problems are thrown straight away; a dropped or hung connection is replaced
+          // (also after the deadline, so the final search still runs on a working connection).
+          if (isAuthError(err) || isTlsError(err)) throw wrapMailError(err, 'IMAP', Config.email.imapHost);
+          if (reconnects >= MAX_IMAP_RECONNECTS) {
+            throw err instanceof MailConnectionError ? err : wrapMailError(err, 'IMAP', Config.email.imapHost);
+          }
           reconnects++;
-          this.safeEnd(conn);
-          conn = await this.connectImap();
+          console.warn(`[MailService] IMAP problem while waiting for "${query.token}" (${(err as Error).message}); reconnecting (${reconnects}/${MAX_IMAP_RECONNECTS}).`);
+          if (conn) this.safeEnd(conn);
+          conn = undefined;
+          await sleep(2000);
+          conn = await this.connectImap().catch((e) => {
+            if (isAuthError(e) || isTlsError(e)) throw e;
+            return undefined; // network still down: counted as another reconnect on the next pass
+          });
           continue;
         }
         if (found.length >= count) return found;
@@ -456,7 +524,7 @@ export class MailService {
         await sleep(intervalMs);
       }
     } finally {
-      this.safeEnd(conn);
+      if (conn) this.safeEnd(conn);
     }
   }
 
@@ -491,8 +559,8 @@ export class MailService {
     const options: ImapSimpleOptions = { imap: imapConfig };
     try {
       const conn = await imaps.connect(options);
-      // Without a listener a socket error after connect would crash the worker; the next command rejects instead.
-      conn.on('error', (e: Error) => console.warn(`[MailService] IMAP connection error: ${e.message}`));
+      // Also needed so a socket error after connect does not crash the worker.
+      watchConnection(conn);
       return conn;
     } catch (err) {
       throw wrapMailError(err, 'IMAP', Config.email.imapHost);

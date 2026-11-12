@@ -1,5 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './base.page';
+import { isVisibleWithin } from '../utils/wait-utils';
 
 export class SettingsPage extends BasePage {
   // Sidebar Navigation
@@ -194,7 +195,7 @@ export class SettingsPage extends BasePage {
    * Close Create Organization modal
    */
   async closeCreateOrgModal(): Promise<void> {
-    if (await this.closeCreateOrgModalButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await isVisibleWithin(this.closeCreateOrgModalButton, 2000)) {
       await this.closeCreateOrgModalButton.click();
     } else {
       await this.page.keyboard.press('Escape');

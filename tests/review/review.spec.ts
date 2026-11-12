@@ -1,295 +1,208 @@
+import fs from 'fs';
 import { test, expect } from '../../src/fixtures/test.fixture';
-import { Config } from '../../src/config/environment';
+import { FIELD_LABELS, ReviewFieldKey } from '../../src/pages/review.page';
+import { addressRe, docId, ensureUploaded, escapeRe, LINES, openDoc, reviewPo } from './support/review-data';
 
-test.describe('River Stream - Document Review Suite (32 Test Cases - Riverstone Org)', () => {
+/*
+ * Source: Test Cases/River Stream Test cases.xlsx, sheet "Review page" (TC_Review page_001 - 033).
+ * The suite is split in two files: review.spec.ts (screenshot evidence) and review-recorded.spec.ts (screenshot + video of every test).
+ * Every test reviews a document uploaded by this suite (see support/review-data.ts): a generated 2-page
+ * purchase order with known values. Field and line-item edits stay in the browser (they are saved only by
+ * "Complete"), so they never change the shared documents; Complete / Submit to ERP use the "erp" document.
+ */
 
-  test.beforeEach(async ({ reviewPage }) => {
-    test.setTimeout(120000);
-    await reviewPage.openFirstPdfDocument();
+test.describe('River Stream - Document Review Suite: screenshot evidence', () => {
+  test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    // The first test of the run uploads the suite's documents (about a minute); extraction is awaited on open
+    test.setTimeout(300000);
+    await ensureUploaded(page, testInfo);
   });
 
-  test('TC_Review page_001: Verify Document Review page loads successfully with the page count.', async ({ reviewPage, page }) => {
-    expect(page.url()).toContain('/review/');
-    expect(await reviewPage.isDocumentLoaded()).toBeTruthy();
-    await expect(reviewPage.completeButton).toBeVisible({ timeout: 25000 });
-    await expect(reviewPage.extractedDataTab).toBeVisible({ timeout: 25000 });
-    await expect(reviewPage.pageNumberIndicator).toBeVisible({ timeout: 25000 });
+  // =========================================================================
+  // Page, preview and PDF controls
+  // =========================================================================
+
+  test('TC_Review page_001: Verify Document Review page loads successfully with the page count.', async ({ reviewPage, documentsPage, page }) => {
+    const po = reviewPo('main');
+    const id = docId('main');
+    await reviewPage.open(id); // waits until extraction has finished
+    // Open the processed document from the Documents list, as the user does
+    await documentsPage.navigate();
+    await documentsPage.searchDocument(po.fileName);
+    await documentsPage.openReview(documentsPage.rowByName(po.fileName));
+    await expect(page).toHaveURL(new RegExp(`/review/${id}(\\?|$)`));
+    await reviewPage.waitForReviewLoaded();
+    await expect(reviewPage.pageHeading).toBeVisible();
+    await expect(reviewPage.fileHeading(po.fileName)).toBeVisible();
+    await expect(reviewPage.fileTypeLabel).toHaveText('Original PDF document');
+    await expect(reviewPage.pageIndicator, 'page count').toHaveText('Page 1 / 2');
+    await expect(reviewPage.pdfPage(1)).toBeVisible();
+    await expect(reviewPage.analysisHeading).toBeVisible();
+    await expect(reviewPage.extractedDataTab).toHaveAttribute('aria-selected', 'true');
+    await expect(reviewPage.fieldValue(FIELD_LABELS.purchase_order)).toHaveText(po.poNumber);
+    await expect(reviewPage.completeButton).toBeVisible();
   });
 
   test('TC_Review page_002: Verify PDF document preview display', async ({ reviewPage }) => {
-    await expect(reviewPage.documentTitle).toBeVisible({ timeout: 25000 });
-    const hasPreview = await reviewPage.documentPreview.isVisible({ timeout: 10000 }).catch(() => false);
-    const hasPageInd = await reviewPage.pageNumberIndicator.isVisible({ timeout: 10000 }).catch(() => false);
-    expect(hasPreview || hasPageInd).toBeTruthy();
+    const po = reviewPo('main');
+    await openDoc(reviewPage, 'main');
+    await expect(reviewPage.fileHeading(po.fileName)).toBeVisible();
+    // The uploaded PDF is rendered (canvas) with its text, at a real zoom level
+    await expect(reviewPage.pdfCanvas.first()).toBeVisible();
+    await expect(reviewPage.zoomLevel).toHaveText(/^[1-9]\d*%$/);
+    await expect(reviewPage.pdfPage(1), 'page 1 of the uploaded PO').toContainText('PURCHASE ORDER');
+    await expect(reviewPage.pdfPage(1)).toContainText(`PO Number: ${po.poNumber}`);
+    await expect(reviewPage.pdfPage(1)).toBeInViewport();
   });
 
-  test('TC_Review page_003: Verify page navigation and ciatation controls by clicking the Source number and the order line items value', async ({ reviewPage, page }) => {
-    const citation = reviewPage.sourceCitationLinks.first();
-    if (await citation.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await citation.click();
-      await reviewPage.pageNumberIndicator.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
-    }
-    await expect(reviewPage.pageNumberIndicator).toBeVisible({ timeout: 25000 });
-  });
-
-  test('TC_Review page_004: Verify zoom in and zoom out functionality', async ({ reviewPage, page }) => {
-    const zoomTextEl = reviewPage.zoomPercentage;
-    if (await zoomTextEl.isVisible({ timeout: 8000 }).catch(() => false)) {
-      await expect(zoomTextEl).toBeVisible({ timeout: 20000 });
-
-      if (await reviewPage.zoomInButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await reviewPage.zoomInButton.click();
-        await zoomTextEl.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-        const zoomedIn = await zoomTextEl.innerText();
-        expect(zoomedIn).not.toBeNull();
-
-        if (await reviewPage.zoomOutButton.isVisible().catch(() => false)) {
-          await reviewPage.zoomOutButton.click();
-          await zoomTextEl.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-        }
-      }
-    } else {
-      expect(await reviewPage.isDocumentLoaded()).toBeTruthy();
-    }
+  test('TC_Review page_004: Verify zoom in and zoom out functionality', async ({ reviewPage }) => {
+    await openDoc(reviewPage, 'main');
+    const start = await reviewPage.zoomPercent();
+    expect(start, 'initial zoom').toBeGreaterThan(0);
+    const width = async () => (await reviewPage.pdfCanvas.first().boundingBox())!.width;
+    const startWidth = await width();
+    await reviewPage.zoomInButton.click();
+    await expect(reviewPage.zoomLevel).toHaveText(`${start + 10}%`);
+    await expect.poll(width, { message: 'page is drawn larger' }).toBeGreaterThan(startWidth);
+    await reviewPage.zoomOutButton.click();
+    await reviewPage.zoomOutButton.click();
+    await expect(reviewPage.zoomLevel).toHaveText(`${start - 10}%`);
+    await expect.poll(width, { message: 'page is drawn smaller' }).toBeLessThan(startWidth);
+    await reviewPage.zoomInButton.click();
+    await expect(reviewPage.zoomLevel, 'back to the initial zoom').toHaveText(`${start}%`);
+    await expect(reviewPage.zoomInButton).toBeVisible();
+    await expect(reviewPage.zoomOutButton).toBeVisible();
   });
 
   test('TC_Review page_005: Verify download button functionality.', async ({ reviewPage, page }) => {
-    await expect(reviewPage.downloadButton.or(reviewPage.completeButton)).toBeVisible({ timeout: 25000 });
-    const isEnabled = await reviewPage.downloadButton.isEnabled().catch(() => true);
-    expect(isEnabled).toBeTruthy();
+    const po = reviewPo('main');
+    await openDoc(reviewPage, 'main');
+    await expect(reviewPage.downloadLink, 'download link to the original PDF').toHaveAttribute('href', /\.pdf\?/);
+    const [download] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), reviewPage.downloadButton.click()]);
+    expect(download.suggestedFilename(), 'downloaded file name').toMatch(new RegExp(`^${escapeRe(po.fileName.replace(/\.pdf$/, ''))}.*\\.pdf$`));
+    const file = fs.readFileSync(await download.path());
+    expect(file.subarray(0, 5).toString(), 'a PDF file').toBe('%PDF-');
+    expect(file.length, 'file size').toBeGreaterThan(1000);
+    test.info().annotations.push({ type: 'note', description: `Downloaded ${download.suggestedFilename()} (${file.length} bytes)` });
+    await expect(reviewPage.downloadButton).toBeVisible();
   });
 
-  test('TC_Review page_006: Verify Complete button functionality', async ({ reviewPage }) => {
-    await expect(reviewPage.completeButton).toBeVisible({ timeout: 25000 });
-    const isEnabled = await reviewPage.completeButton.isEnabled();
-    expect(isEnabled !== undefined).toBeTruthy();
+  test('TC_Review page_007: Verify the search functionality', async ({ reviewPage }) => {
+    await openDoc(reviewPage, 'main');
+    await reviewPage.searchButton.click();
+    await expect(reviewPage.searchInput).toBeVisible();
+    await reviewPage.searchInput.fill('Pedestal');
+    await reviewPage.searchSubmitButton.click();
+    // "Pedestal" is printed twice in the PO (line items 1 and 2): match 1 of 2 (the viewer paints it orange)
+    await expect(reviewPage.searchResultCount, 'match count').toHaveText('1 / 2');
+    await expect(reviewPage.pdfPage(1).getByText(LINES[0].description, { exact: true }), 'first match').toBeVisible();
+    await expect(reviewPage.pdfPage(1).getByText(LINES[1].description, { exact: true }), 'second match').toBeVisible();
+    await expect(reviewPage.searchInput).toHaveValue('Pedestal');
   });
 
-  test('TC_Review page_007: Verify the search functionality', async ({ reviewPage, page }) => {
-    const searchInput = page.locator('input[placeholder*="search" i], input[type="search"]').first();
-    if (await searchInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await searchInput.fill('test');
-      expect(await searchInput.inputValue()).toBe('test');
-    } else {
-      // Review page search or field filter check
-      expect(await reviewPage.isDocumentLoaded()).toBeTruthy();
-    }
-  });
-
-  test('TC_Review page_008: Verify Vertical Scroll Functionality', async ({ reviewPage, page }) => {
-    const scrollContainer = page.locator('.pdf-viewer, div[class*="overflow"], div[class*="scroll"], table').first();
-    await expect(scrollContainer).toBeVisible({ timeout: 25000 });
-    const canScroll = await scrollContainer.evaluate((el: HTMLElement) => {
-      const initial = el.scrollTop;
-      el.scrollTop += 50;
-      return el.scrollTop >= initial;
-    });
-    expect(canScroll).toBeTruthy();
-  });
-
-  test('TC_Review page_009: Verify Submit to ERP button functionality', async ({ reviewPage }) => {
-    await expect(reviewPage.submitToErpButton.or(reviewPage.completeButton)).toBeVisible({ timeout: 25000 });
-  });
-
-  test('TC_Review page_010: Verify Back to Dashboard navigation', async ({ reviewPage, page }) => {
-    await expect(reviewPage.backButton).toBeVisible({ timeout: 25000 });
-    await reviewPage.backButton.click();
-    await page.waitForURL((url) => !url.pathname.includes('/review/'), { timeout: 25000 }).catch(() => {});
-    expect(page.url()).toMatch(/dashboard|documents/i);
-  });
+  // =========================================================================
+  // Extracted data
+  // =========================================================================
 
   test('TC_Review page_011: Verify JSON View tab display', async ({ reviewPage }) => {
-    await expect(reviewPage.jsonViewTab).toBeVisible({ timeout: 25000 });
-    await reviewPage.openJsonView();
-    await expect(reviewPage.jsonContainer).toBeVisible({ timeout: 25000 });
-    const jsonContent = await reviewPage.getJsonContent();
-    expect(jsonContent).toBeTruthy();
-    expect(jsonContent.length).toBeGreaterThan(10);
-    await reviewPage.openExtractedData();
+    const po = reviewPo('main');
+    await openDoc(reviewPage, 'main');
+    await reviewPage.jsonViewTab.click();
+    await expect(reviewPage.jsonViewTab).toHaveAttribute('aria-selected', 'true');
+    await expect(reviewPage.jsonBlock).toBeVisible();
+    const data = JSON.parse(await reviewPage.jsonBlock.innerText());
+    expect(data.purchase_order?.value, 'purchase_order in the JSON').toBe(po.poNumber);
+    expect(data.customer_name?.value, 'customer_name in the JSON').toBe(po.customer);
+    expect(data.order_line_items, 'order_line_items in the JSON').toHaveLength(po.lines.length);
+    await expect(reviewPage.jsonBlock).toContainText(`"purchase_order"`);
   });
 
   test('TC_Review page_012: Verify extracted field values', async ({ reviewPage }) => {
-    await expect(reviewPage.customerNameField).toBeVisible({ timeout: 25000 });
-    await expect(reviewPage.poNumberField).toBeVisible({ timeout: 25000 });
-    await expect(reviewPage.dateField).toBeVisible({ timeout: 25000 });
-    await expect(reviewPage.totalAmountField).toBeVisible({ timeout: 25000 });
+    const po = reviewPo('main');
+    await openDoc(reviewPage, 'main');
+    const expected: Array<[ReviewFieldKey, RegExp, number]> = [
+      ['customer_name', new RegExp(`^${escapeRe(po.customer)}$`), 1],
+      ['purchase_order', new RegExp(`^${po.poNumber}$`), 1],
+      ['invoice_date', new RegExp(`^${escapeRe(po.date)}$`), 1],
+      ['total_amount', new RegExp(`^${escapeRe(po.total)}$`), 2],
+      ['billing_addressee_name', new RegExp(`^${escapeRe(po.billingName)}$`), 1],
+      ['shipping_addressee_name', new RegExp(`^${escapeRe(po.shippingName)}$`), 1],
+      ['billing_address', addressRe(po.billingAddress), 1],
+      ['shipping_address', addressRe(po.shippingAddress), 1],
+    ];
+    for (const [key, value, pageNo] of expected) {
+      const label = FIELD_LABELS[key];
+      await reviewPage.fieldValue(label).scrollIntoViewIfNeeded();
+      // Same value as printed in the PDF (page `pageNo`)
+      await expect(reviewPage.fieldValue(label), label).toHaveText(value);
+      await expect(reviewPage.fieldSource(label), `${label} source`).toHaveText(`Source: Page ${pageNo}`);
+    }
+    await expect(reviewPage.pdfPage(1)).toContainText(po.poNumber);
+    await expect(reviewPage.pdfPage(2)).toContainText(po.total);
+    await reviewPage.analysisHeading.scrollIntoViewIfNeeded();
   });
 
-  test('TC_Review page_013: Verify field edit functionality', async ({ reviewPage }) => {
-    const editBtn = reviewPage.editButtons.first();
-    if (await editBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await editBtn.click();
-      const editableInput = reviewPage.page.locator('input:focus, input[class*="editable"], input:not([readonly])').first();
-      if (await editableInput.isVisible().catch(() => false)) {
-        await editableInput.fill('MODIFIED_TEST');
-        expect(await editableInput.inputValue()).toBe('MODIFIED_TEST');
-      }
-    } else {
-      expect(await reviewPage.customerNameField.isVisible()).toBeTruthy();
-    }
-  });
-
-  test('TC_Review page_014: Verify field copy functionality', async ({ reviewPage }) => {
-    const copyBtn = reviewPage.copyButtons.first();
-    if (await copyBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await copyBtn.click();
-      const copiedText = await reviewPage.page.evaluate(() => navigator.clipboard?.readText?.().catch(() => ''));
-      expect(copiedText !== undefined).toBeTruthy();
-    } else {
-      expect(await reviewPage.customerNameField.isVisible()).toBeTruthy();
-    }
-  });
-
-  test('TC_Review page_015: Verify the selection functionality', async ({ reviewPage }) => {
-    if (await reviewPage.selectionButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await reviewPage.selectionButton.click();
-      await expect(reviewPage.selectionButton).toBeVisible();
-    } else {
-      expect(await reviewPage.documentPreview.isVisible()).toBeTruthy();
-    }
+  test('TC_Review page_014: Verify field copy functionality', async ({ reviewPage, page }) => {
+    const po = reviewPo('main');
+    await openDoc(reviewPage, 'main');
+    const label = FIELD_LABELS.purchase_order;
+    await page.evaluate(() => navigator.clipboard.writeText(''));
+    await reviewPage.fieldCopyButton(label).click();
+    await expect(reviewPage.toast, 'confirmation').toContainText('Copied to clipboard!');
+    expect(await page.evaluate(() => navigator.clipboard.readText()), 'clipboard').toBe(po.poNumber);
+    await expect(reviewPage.fieldValue(label)).toHaveText(po.poNumber);
+    await expect(reviewPage.fieldCopyButton(label)).toBeVisible();
   });
 
   test('TC_Review page_016: Verify confidence score display', async ({ reviewPage }) => {
-    const count = await reviewPage.confidenceScores.count();
-    if (count > 0) {
-      const scoreText = await reviewPage.confidenceScores.first().innerText();
-      expect(scoreText).toMatch(/(\d+%)|(high|medium|low)/i);
-    } else {
-      expect(await reviewPage.isDocumentLoaded()).toBeTruthy();
+    const doc = await openDoc(reviewPage, 'main');
+    for (const [key, label] of Object.entries(FIELD_LABELS) as Array<[ReviewFieldKey, string]>) {
+      await reviewPage.fieldCard(label).scrollIntoViewIfNeeded();
+      const score = doc.extractedData[key].confidence_score;
+      expect(score, `${label} confidence in the API`).toEqual(expect.any(Number));
+      await expect(reviewPage.fieldConfidence(label), `${label} confidence`).toHaveText(`${score}%`);
     }
-  });
-
-  test('TC_Review page_017: Verify address swap functionality', async ({ reviewPage, page }) => {
-    const swapBtn = reviewPage.addressSwapButtons.first();
-    if (await swapBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const initialBilling = await reviewPage.billingAddressField.innerText().catch(() => '');
-      await swapBtn.click();
-      await expect(reviewPage.billingAddressField).toBeVisible();
-      const swappedBilling = await reviewPage.billingAddressField.innerText().catch(() => '');
-      expect(swappedBilling !== undefined).toBeTruthy();
-    } else {
-      await expect(reviewPage.billingAddressField).toBeVisible();
-      await expect(reviewPage.shippingAddressField).toBeVisible();
-    }
+    await reviewPage.analysisHeading.scrollIntoViewIfNeeded();
   });
 
   test('TC_Review page_018: Verify document review page without errors', async ({ reviewPage, page }) => {
-    const pageErrors: string[] = [];
-    page.on('pageerror', (err) => pageErrors.push(err.message));
-    expect(await reviewPage.isDocumentLoaded()).toBeTruthy();
-    expect(pageErrors).toHaveLength(0);
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(`Page error: ${e.message}`));
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(`Console error: ${m.text()}`);
+    });
+    page.on('response', (r) => {
+      if (r.url().includes('/api/') && r.status() >= 400) errors.push(`HTTP ${r.status()}: ${r.request().method()} ${r.url()}`);
+    });
+    const doc = await openDoc(reviewPage, 'main');
+    await reviewPage.jsonViewTab.click();
+    await expect(reviewPage.jsonBlock).toBeVisible();
+    await reviewPage.extractedDataTab.click();
+    await expect(reviewPage.fieldValue(FIELD_LABELS.purchase_order)).toHaveText(reviewPo('main').poNumber);
+    expect(doc.status).toBe('extracted');
+    expect(errors, 'no page, console or API errors').toEqual([]);
+    await expect(reviewPage.pdfPage(1)).toBeVisible();
+    await expect(reviewPage.analysisHeading).toBeVisible();
   });
 
-  test('TC_Review page_019: Verify Client and Billing Address auto-replacement when Customer Name partially matches client JSON', async ({ reviewPage }) => {
-    await expect(reviewPage.customerNameField).toBeVisible({ timeout: 25000 });
-    await expect(reviewPage.billingAddressField).toBeVisible({ timeout: 25000 });
-  });
+  // =========================================================================
+  // Order Line Items
+  // =========================================================================
 
-  test('TC_Review page_021: Verify Shipping Address auto-replacement when match is greater than 75%', async ({ reviewPage }) => {
-    await expect(reviewPage.shippingAddressField).toBeVisible({ timeout: 25000 });
+  test('TC_Review page_030: Verify the Delete action in the Order line items.', async ({ reviewPage }) => {
+    const po = reviewPo('main');
+    await openDoc(reviewPage, 'main');
+    await reviewPage.openLineItems();
+    // The Actions column offers a Delete icon on every row
+    await expect(reviewPage.lineItemHeaders.last()).toHaveText('Actions');
+    for (let i = 0; i < po.lines.length; i++) await expect(reviewPage.deleteRowButton(i), `row ${i + 1} delete icon`).toBeVisible();
+    // Clicking it removes the entire row
+    await reviewPage.deleteRowButton(1).click();
+    await expect(reviewPage.lineItemRows).toHaveCount(po.lines.length - 1);
+    await expect(reviewPage.lineItemsModal.getByText(po.lines[1].description, { exact: true }), 'deleted row is gone').toHaveCount(0);
+    await expect(reviewPage.lineItemsRowCount).toHaveText(`${po.lines.length - 1} rows`);
+    await expect(reviewPage.lineItemRows.locator('td:first-child'), 'remaining rows').toHaveText([po.lines[0].code, po.lines[2].code]);
   });
-
-  test('TC_Review page_022: Verify no Shipping Address replacement when match is less than 75%', async ({ reviewPage }) => {
-    await expect(reviewPage.shippingAddressField).toBeVisible({ timeout: 25000 });
-  });
-
-  test('TC_Review page_023: Verify correct JSON values are applied after replacement', async ({ reviewPage }) => {
-    await reviewPage.openJsonView();
-    const jsonStr = await reviewPage.getJsonContent();
-    expect(jsonStr).toContain('{');
-    await reviewPage.openExtractedData();
-  });
-
-  test('TC_Review page_024: Verify expand icon in the order line item', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    await expect(reviewPage.lineItemsModal).toBeVisible({ timeout: 25000 });
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_025: Verify Edit all button functionality', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    if (await reviewPage.editAllButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await reviewPage.editAllButton.click();
-      const inEditMode = await reviewPage.isInEditMode();
-      expect(inEditMode).toBeTruthy();
-      await reviewPage.cancelEditing();
-    }
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_026: Verify the editing status.', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    if (await reviewPage.editAllButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await reviewPage.editAllButton.click();
-      const hasStatus = await reviewPage.editingStatusIndicator.isVisible({ timeout: 5000 }).catch(() => false);
-      expect(hasStatus !== undefined).toBeTruthy();
-      await reviewPage.cancelEditing();
-    }
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_027: Verify the cancel button', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    if (await reviewPage.editAllButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await reviewPage.editAllButton.click();
-      await reviewPage.cancelEditing();
-      const inEditMode = await reviewPage.isInEditMode();
-      expect(inEditMode).toBeFalsy();
-    }
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_028: Verify the Add row Button.', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    if (await reviewPage.editAllButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await reviewPage.editAllButton.click();
-      if (await reviewPage.addRowButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-        const initialCount = await reviewPage.lineItemRows.count();
-        await reviewPage.addRowButton.click();
-        const newCount = await reviewPage.lineItemRows.count();
-        expect(newCount).toBeGreaterThanOrEqual(initialCount);
-      }
-      await reviewPage.cancelEditing();
-    }
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_029: Verify the drag row functionality', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    await expect(reviewPage.lineItemsModal).toBeVisible({ timeout: 25000 });
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_030: Verify the Actions functionality in the Order line items.', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    const rows = await reviewPage.lineItemRows.count();
-    expect(rows).toBeGreaterThanOrEqual(0);
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_031: Verify that deleting the only existing row removes the data but retains an empty row.', async ({ reviewPage }) => {
-    await reviewPage.openLineItemsModal();
-    await expect(reviewPage.lineItemsModal).toBeVisible({ timeout: 25000 });
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_032: Verify the swap row functionality.', async ({ reviewPage, page }) => {
-    await reviewPage.openLineItemsModal();
-    const swapRowBtn = page.locator('button[aria-label*="swap" i], button:has(svg.lucide-arrow-up-down), button:has(svg.lucide-arrow-down-up)').first();
-    const hasSwap = await swapRowBtn.isVisible({ timeout: 5000 }).catch(() => false);
-    expect(hasSwap !== undefined).toBeTruthy();
-    await reviewPage.closeLineItemsModal();
-  });
-
-  test('TC_Review page_033: Verify the Citation functionality', async ({ reviewPage, page }) => {
-    const citation = reviewPage.sourceCitationLinks.first();
-    if (await citation.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await citation.click();
-      await reviewPage.pageNumberIndicator.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
-      await expect(reviewPage.pageNumberIndicator).toBeVisible({ timeout: 25000 });
-    } else {
-      expect(await reviewPage.isDocumentLoaded()).toBeTruthy();
-    }
-  });
-
 });

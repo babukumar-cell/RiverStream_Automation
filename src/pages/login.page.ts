@@ -1,5 +1,6 @@
 import { Page, Locator, Request, expect } from '@playwright/test';
 import { BasePage } from './base.page';
+import { isVisibleWithin } from '../utils/wait-utils';
 
 /**
  * Sign-in page ("/") including the Forgot Password view, which is rendered on the same route.
@@ -80,7 +81,7 @@ export class LoginPage extends BasePage {
     if (this.page.url().includes('/dashboard')) {
       return;
     }
-    const isEmailVisible = await this.emailInput.isVisible({ timeout: 2000 }).catch(() => false);
+    const isEmailVisible = await isVisibleWithin(this.emailInput, 2000);
     if (!isEmailVisible && this.page.url().includes('/dashboard')) {
       return;
     }
@@ -121,16 +122,16 @@ export class LoginPage extends BasePage {
     }));
   }
 
-  /** Returns the text of whichever inline validation or alert error is currently visible. */
+  /** Returns the text of whichever inline validation or alert error is currently visible. Does not wait. */
   async getDisplayedErrorMessage(): Promise<string> {
     const locators = [
       this.invalidCredentialsError,
       this.emailRequiredError,
       this.passwordRequiredError,
       this.emailFormatError,
-      this.page.locator('[role="alert"]'),
-      this.page.locator('.toast'),
-      this.page.locator('.error, .error-message, .text-danger'),
+      this.page.locator('[role="alert"]').filter({ hasText: /\S/ }).first(),
+      this.page.locator('.toast').first(),
+      this.page.locator('.error, .error-message, .text-danger').first(),
     ];
     for (const loc of locators) {
       if (await loc.isVisible().catch(() => false)) {
@@ -139,6 +140,27 @@ export class LoginPage extends BasePage {
       }
     }
     return '';
+  }
+
+  /**
+   * Waits for a sign-in error to actually render (the server round-trip for bad credentials
+   * takes a moment while the button shows "Signing In...") and returns its text.
+   * Returns '' if no error appears within the timeout. Call this before any evidence
+   * screenshot so the captured page shows the error, not the in-flight request.
+   */
+  async waitForErrorMessage(timeout = 15000): Promise<string> {
+    const errorText = /invalid|incorrect|required|valid email|not found|does not exist|failed/i;
+    const anyError = this.invalidCredentialsError
+      .or(this.emailRequiredError)
+      .or(this.passwordRequiredError)
+      .or(this.emailFormatError)
+      .or(this.page.locator('[role="alert"], .toast, .error, .error-message, .text-danger').filter({ hasText: errorText }))
+      .first();
+    const appeared = await anyError.waitFor({ state: 'visible', timeout }).then(() => true, () => false);
+    if (!appeared) return '';
+    // Let the button settle back from "Signing In..." so the screenshot reflects the final state.
+    await expect(this.signInButton).not.toHaveText(/Signing In/i, { timeout: 5000 }).catch(() => {});
+    return (await anyError.textContent())?.trim() || (await this.getDisplayedErrorMessage());
   }
 }
 

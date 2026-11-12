@@ -1,7 +1,9 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { chromium, Browser, TestInfo } from '@playwright/test';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import { Page, TestInfo } from '@playwright/test';
 import { Config } from '../../../src/config/environment';
 import { MailService, RetrievedEmail, SentEmail, EmailAttachment } from '../../../src/utils/mail.service';
 
@@ -13,7 +15,7 @@ import { MailService, RetrievedEmail, SentEmail, EmailAttachment } from '../../.
 
 /** Reply must arrive within this time (EMAIL_POLL_TIMEOUT_MS, default 180 s). */
 export const REPLY_SLA_MS = Config.email.pollTimeoutMs;
-/** We keep waiting a little past the SLA so a slow reply is reported as "late" by TC_RS_EM_021, not as missing everywhere. */
+/** We keep waiting a little past the SLA so one slow reply does not fail the test outright. */
 export const REPLY_WAIT_MS = REPLY_SLA_MS + 120_000;
 /** One RiverStream mailbox polling cycle (observed 50-165 s); used to detect duplicate replies. */
 export const DUPLICATE_GRACE_MS = 150_000;
@@ -40,7 +42,8 @@ export const PO_LINE_ITEMS: LineItem[] = [
 
 export const HEADERS = {
   salesOrderSummary: /ERP Sales Order Processing Summary/i,
-  quoteSummary: /Quote Request Processing Summary/i,
+  // A created quotation replies "ERP Quotation Processing Summary"; one that failed ERP insertion replies "Quote Request ...".
+  quoteSummary: /(ERP Quotation|Quote Request) Processing Summary/i,
   anyProcessingSummary: /Processing Summary/i,
   noAttachment: /No Attachment Found/i,
   tooManyAttachments: /Too Many Attachments/i,
@@ -75,26 +78,30 @@ const money = (n: number) => n.toFixed(2);
 // Document builders (HTML rendered to PDF by a private headless Chromium)
 // ---------------------------------------------------------------------------------------------
 
-let pdfBrowser: Browser | undefined;
-async function renderer(): Promise<Browser> {
-  // page.pdf() only works headless, so this is independent of the HEADLESS setting used for UI tests.
-  pdfBrowser ??= await chromium.launch({ headless: true });
-  return pdfBrowser;
-}
-export async function closeRenderer(): Promise<void> {
-  await pdfBrowser?.close();
-  pdfBrowser = undefined;
-}
+const RENDER_WORKER = path.join(__dirname, 'render-worker.cjs');
+const execFileAsync = promisify(execFile);
 
-async function renderPdf(html: string, outFile: string): Promise<void> {
-  const page = await (await renderer()).newPage();
+/**
+ * Renders HTML to a PDF/PNG file in a separate Node process (see render-worker.cjs). A browser opened in the
+ * test worker itself would be tracked by Playwright and add a screenshot of the document page to the report.
+ */
+async function render(job: { html: string; out: string; kind: 'pdf' | 'png'; viewport?: { width: number; height: number } }): Promise<void> {
+  const jobFile = `${job.out}.job.json`;
+  fs.writeFileSync(jobFile, JSON.stringify(job));
   try {
-    await page.setContent(html);
-    await page.pdf({ path: outFile, format: 'A4', margin: { top: '20px', bottom: '20px' } });
+    await execFileAsync(process.execPath, [RENDER_WORKER, jobFile], { timeout: 90_000 });
+  } catch (err) {
+    const e = err as { stderr?: string; message: string };
+    throw new Error(`Rendering ${path.basename(job.out)} failed: ${e.stderr?.trim() || e.message}`);
   } finally {
-    await page.close();
+    fs.rmSync(jobFile, { force: true });
   }
 }
+
+const renderPdf = (html: string, outFile: string) => render({ html, out: outFile, kind: 'pdf' });
+
+/** Kept for existing callers: rendering now runs in a short-lived child process, so there is nothing to close. */
+export async function closeRenderer(): Promise<void> {}
 
 const DOC_STYLE = `body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:30px}
 .title{font-size:24px;font-weight:bold}.box{border:1px solid #ccc;padding:12px;margin:12px 0}
@@ -192,18 +199,16 @@ export async function buildNonBusinessPdf(testInfo: TestInfo, token: string): Pr
 
 /** A PNG image saved with a .pdf extension (unreadable as a PDF). */
 export async function buildImageDisguisedAsPdf(testInfo: TestInfo, token: string): Promise<BuiltFile> {
-  const page = await (await renderer()).newPage({ viewport: { width: 600, height: 400 } });
-  let png: Buffer;
-  try {
-    await page.setContent(`<div style="font:28px Arial;padding:40px">PURCHASE ORDER ${token} (image)</div>`);
-    png = await page.screenshot();
-  } finally {
-    await page.close();
-  }
   const dateStamp = fileDateSuffix();
   const fileName = `AUTO_Scan_${token}_${dateStamp}.pdf`;
   const out = testInfo.outputPath(fileName);
-  fs.writeFileSync(out, png);
+  // PNG bytes written straight to a .pdf file name
+  await render({
+    html: `<div style="font:28px Arial;padding:40px">PURCHASE ORDER ${token} (image)</div>`,
+    out,
+    kind: 'png',
+    viewport: { width: 600, height: 400 },
+  });
   return { path: out, fileName, number: token, date: usDate() };
 }
 
@@ -239,6 +244,54 @@ export async function attachReply(testInfo: TestInfo, label: string, reply: Retr
   if (reply.html) await testInfo.attach(`${label}.html`, { body: reply.html, contentType: 'text/html' });
 }
 
+const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+/**
+ * Shows the email(s) just sent and a running "waiting for reply" timer in the browser page, so the video and a
+ * failure screenshot show what the test is waiting for instead of a blank page.
+ */
+export async function showWaitingForReply(page: Page, sent: SentEmail[], note = 'Waiting for the RiverStream reply'): Promise<void> {
+  const cards = sent
+    .map(
+      (m) =>
+        `<div style="border:1px solid #d1d5db;border-radius:8px;padding:12px 16px;margin:0 0 12px 0;background:#fff">` +
+        `<div><b>To:</b> ${escapeHtml(m.to)}</div><div><b>From:</b> ${escapeHtml(m.from)}</div>` +
+        `<div><b>Subject:</b> ${escapeHtml(m.subject)}</div>` +
+        `<div><b>Attachments:</b> ${m.attachmentNames.length ? m.attachmentNames.map(escapeHtml).join(', ') : '(none)'}</div>` +
+        `<div><b>Sent at:</b> ${m.sentAt.toISOString()}</div></div>`,
+    )
+    .join('');
+  const startedAt = Math.min(...sent.map((m) => m.sentAt.getTime()));
+  await page.setContent(
+    `<body style="font:14px Arial,sans-serif;background:#f3f4f6;margin:0;padding:24px;color:#111">` +
+      `<h2 style="margin:0 0 4px 0">Email sent to RiverStream</h2>` +
+      `<p style="margin:0 0 16px 0;color:#b45309"><b>&#9203; ${escapeHtml(note)}&hellip; <span id="rs-elapsed">0:00</span></b></p>` +
+      `${cards}<script>setInterval(function(){var s=Math.floor((Date.now()-${startedAt})/1000);` +
+      `document.getElementById('rs-elapsed').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')},1000)</script></body>`,
+  );
+}
+
+/**
+ * Shows a reply email in the browser page, with a From / To / Subject strip on top, so the report
+ * screenshot shows the reply and assertions on its contents are highlighted.
+ */
+export async function showReply(page: Page, reply: RetrievedEmail): Promise<void> {
+  const body = reply.html || `<pre style="white-space:pre-wrap;font:13px Arial">${escapeHtml(reply.text)}</pre>`;
+  await page.setContent(body, { waitUntil: 'domcontentloaded' });
+  const meta =
+    `<div id="rs-mail-meta" style="font:13px Arial,sans-serif;background:#f3f4f6;border-bottom:1px solid #d1d5db;padding:10px 16px;line-height:1.6">` +
+    `<div><b>From:</b> ${escapeHtml(reply.from)} &nbsp; <b>To:</b> ${escapeHtml(reply.to.join(', '))} &nbsp; <b>Received:</b> ${reply.receivedAt.toISOString()}</div>` +
+    `<div id="rs-mail-subject"><b>Subject:</b> ${escapeHtml(reply.subject)}</div></div>`;
+  await page.evaluate((html) => document.body.insertAdjacentHTML('afterbegin', html), meta);
+}
+
+/** Full-page screenshot of the current page (with highlights), attached to the report under `name`. */
+export async function attachPageEvidence(page: Page, testInfo: TestInfo, name: string): Promise<void> {
+  const file = testInfo.outputPath(`${name.replace(/[^\w-]+/g, '_')}.png`);
+  await page.screenshot({ path: file, fullPage: true });
+  await testInfo.attach(name, { path: file, contentType: 'image/png' });
+}
+
 // ---------------------------------------------------------------------------------------------
 // Shared "valid purchase order" submission
 // ---------------------------------------------------------------------------------------------
@@ -264,11 +317,18 @@ interface BaselineRecord {
   value?: BaselineSubmission;
 }
 
-const baselineFile = () => path.join(os.tmpdir(), `riverstream-email-baseline-${process.ppid}.json`);
+// RS_RUN_ID is set once per `npx playwright test` in playwright.config.ts (workers inherit it). Keying on the
+// process id alone could pick up a stale file from an old run, because Windows reuses process ids.
+const baselineFile = () =>
+  path.join(os.tmpdir(), `riverstream-email-baseline-${process.env.RS_RUN_ID ?? process.ppid}.json`);
 const reviveDates = (_k: string, v: unknown) =>
   typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(v) ? new Date(v) : v;
 
-export async function getBaselineSubmission(mail: MailService, testInfo: TestInfo): Promise<BaselineSubmission> {
+export async function getBaselineSubmission(
+  mail: MailService,
+  testInfo: TestInfo,
+  onSent?: (sent: SentEmail) => Promise<void>,
+): Promise<BaselineSubmission> {
   const file = baselineFile();
   let fd: number | undefined;
   try {
@@ -286,6 +346,7 @@ export async function getBaselineSubmission(mail: MailService, testInfo: TestInf
       const subject = `AUTO email ingestion ${token}`;
       const po = await buildPurchaseOrderPdf(testInfo, token);
       const sent = await mail.sendEmail({ subject, attachments: [asAttachment(po, 'application/pdf')] });
+      await onSent?.(sent);
       const reply = await mail.waitForReply({ token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
       const value: BaselineSubmission = { token, subject, po, sent, reply };
       fs.writeFileSync(file, JSON.stringify({ state: 'done', startedAt: Date.now(), value } satisfies BaselineRecord));

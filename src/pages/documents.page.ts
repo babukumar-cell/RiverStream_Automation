@@ -25,7 +25,10 @@ export interface LibraryDocument {
   userName: string;
   userEmail: string;
   organizationName: string;
-  extractedData?: { customer_name?: { value: string | null } };
+  /** How the document arrived: "email", or the website upload */
+  fileProcessedFrom?: string;
+  /** `user_value` is the reviewer's correction; the table shows it in place of the extracted `value`. */
+  extractedData?: { customer_name?: { value?: string | null; user_value?: string | null } };
 }
 
 /** A captured listDocumentsLibrary call: what the page asked for and what it got back */
@@ -114,7 +117,8 @@ export class DocumentsPage extends BasePage {
     this.fileFormatHeading = page.getByRole('heading', { name: 'File format' });
     this.allFormatsFilterBtn = this.formatButton('All formats');
     this.allDocumentTypesBtn = this.documentTypeButton('All document types');
-    this.dateRangeButton = page.getByRole('heading', { name: 'Upload date' }).locator('xpath=following-sibling::*[1]').getByRole('button');
+    this.dateRangeButton = page.getByRole('heading', { name: 'Upload date' }).locator('xpath=following-sibling::*[1]').getByRole('button')
+      .first(); // once a range is chosen a clear (x) button appears after it
     this.calendar = page.getByRole('dialog').getByRole('grid');
     this.calendarCaption = page.getByRole('dialog').getByRole('status');
     this.previousMonthButton = page.getByRole('button', { name: 'Go to the Previous Month' });
@@ -217,7 +221,9 @@ export class DocumentsPage extends BasePage {
 
   async waitForTableLoaded(): Promise<void> {
     await expect(this.loadingRow).toHaveCount(0, { timeout: 20000 });
-    await expect(this.dataRows.first().or(this.noMoreDocumentsText).or(this.emptyStateMessage)).toBeVisible();
+    // .first(): with a short result list a data row AND "No more documents to load" are both visible,
+    // which would otherwise be a strict-mode violation.
+    await expect(this.dataRows.first().or(this.noMoreDocumentsText).or(this.emptyStateMessage).first()).toBeVisible();
   }
 
   async expandFilters(): Promise<void> {
@@ -412,9 +418,44 @@ export class DocumentsPage extends BasePage {
     return this.tableHeaders;
   }
 
+  /** Collapses the open filter panel. Fails if the panel is not open (no silent no-op). */
   async collapseFilters(): Promise<void> {
-    if (await this.collapseFiltersButton.isVisible()) {
-      await this.collapseFiltersButton.click();
+    await expect(this.collapseFiltersButton).toBeVisible();
+    await this.collapseFiltersButton.click();
+    await expect(this.fileFormatHeading).toBeHidden();
+    await expect(this.expandFiltersButton).toBeVisible();
+  }
+
+  /**
+   * Scrolls the table so `row` sits in the middle of the scroll area (not hidden under the sticky
+   * header) and waits for any "load more" request to finish, so a screenshot taken next shows it.
+   */
+  async scrollRowToCenter(row: Locator): Promise<void> {
+    await expect(this.loadingRow).toHaveCount(0, { timeout: 20000 });
+    await row.evaluate(el => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
+    // Wait until the container has stopped scrolling (two equal readings in a row)
+    let last = -1;
+    await expect(async () => {
+      const top = await this.scrollContainer.evaluate(el => el.scrollTop);
+      const stable = top === last;
+      last = top;
+      expect(stable).toBe(true);
+    }).toPass({ timeout: 5000, intervals: [150] });
+  }
+
+  /**
+   * Scrolls (up to `maxRows` rendered rows) until a row whose status matches `status` appears.
+   * Returns that row, or null if none was found within the limit. The library has hundreds of
+   * documents and no status filter, so the search is bounded to keep the test fast.
+   */
+  async findRowByStatus(status: RegExp, maxRows: number = 60): Promise<Locator | null> {
+    const row = this.dataRows.filter({ has: this.page.locator('td:nth-child(5)', { hasText: status }) }).first();
+    while (true) {
+      if ((await row.count()) > 0) return row;
+      const rendered = await this.dataRows.count();
+      if (rendered >= maxRows || (await this.noMoreDocumentsText.isVisible())) return null;
+      await this.loadRows(rendered + 1, 30000);
+      if ((await this.dataRows.count()) === rendered) return null;
     }
   }
 

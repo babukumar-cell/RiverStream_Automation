@@ -937,6 +937,150 @@
   },
   "TC_RECON_001": {
     "tcId": "TC_RECON_001",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the dealer is redirected to the Dashboard page after successful login.",
+    "steps": "1. Open the application.\n2. Enter valid dealer login credentials.\n3. Click Login.",
+    "testData": "Valid dealer credentials",
+    "expectedResult": "The dealer should be successfully logged in and redirected to the Dashboard page.",
+    "actualResult": ""
+  },
+  "TC_RECON_002": {
+    "tcId": "TC_RECON_002",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Total Projects card is displayed on the Dashboard.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon in the left menu.\n3. Observe the dashboard cards.",
+    "testData": "Existing recon projects",
+    "expectedResult": "The Total Projects card with the count should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_003": {
+    "tcId": "TC_RECON_003",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Total Projects card functionality.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Click on the Total Projects card.",
+    "testData": "Existing recon projects",
+    "expectedResult": "The project list should display.",
+    "actualResult": ""
+  },
+  "TC_RECON_004": {
+    "tcId": "TC_RECON_004",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Total Projects card displays the total number of POs and ACKs.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Check the Total Projects card.\n4. Compare the PO and ACK counts with the available project documents.",
+    "testData": "Projects with PO and ACK documents",
+    "expectedResult": "The correct total number of POs and ACKs should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_005": {
+    "tcId": "TC_RECON_005",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Discrepancy Critical card is displayed.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Check the dashboard metrics.",
+    "testData": "Reconciliations with critical discrepancies",
+    "expectedResult": "The Discrepancy Critical card with the count should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_006": {
+    "tcId": "TC_RECON_006",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Discrepancy Critical card functionality.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Click the Discrepancy Critical card.",
+    "testData": "Reconciliations with critical discrepancies",
+    "expectedResult": "The Critical Discrepancy list should display.",
+    "actualResult": ""
+  },
+  "TC_RECON_007": {
+    "tcId": "TC_RECON_007",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Reviewed card is displayed.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Check the dashboard metrics.",
+    "testData": "Reviewed reconciliations",
+    "expectedResult": "The Reviewed card with the count should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_008": {
+    "tcId": "TC_RECON_008",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Reviewed card functionality.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Click the Reviewed card.",
+    "testData": "Reviewed reconciliations",
+    "expectedResult": "The Reviewed file list should display.",
+    "actualResult": ""
+  },
+  "TC_RECON_009": {
+    "tcId": "TC_RECON_009",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Processing card is displayed.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Check the dashboard metrics.",
+    "testData": "Documents being processed (if any)",
+    "expectedResult": "The Processing card with the count should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_010": {
+    "tcId": "TC_RECON_010",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Processing card functionality.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Click the Processing card.",
+    "testData": "Documents being processed (if any)",
+    "expectedResult": "The Processing file list should display.",
+    "actualResult": ""
+  },
+  "TC_RECON_011": {
+    "tcId": "TC_RECON_011",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Pending Review card is displayed.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Check the dashboard metrics.",
+    "testData": "Reconciliations pending review",
+    "expectedResult": "The Pending Review card should be displayed.",
+    "actualResult": ""
+  },
+  "TC_RECON_012": {
+    "tcId": "TC_RECON_012",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the Pending Review card displays the correct documents.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Click the Pending Review card.",
+    "testData": "Reconciliations pending review",
+    "expectedResult": "The Pending Review file list should display.",
+    "actualResult": ""
+  },
+  "TC_RECON_013": {
+    "tcId": "TC_RECON_013",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the dashboard metrics are updated after a reconciliation is marked as Reviewed.",
+    "steps": "1. Open a pending review reconciliation.\n2. Mark it as Reviewed (Complete).\n3. Navigate back to the Dashboard.",
+    "testData": "Pending Review reconciliation (PO + ACK uploaded by the suite)",
+    "expectedResult": "The Reviewed count should increase, and the Pending Review count should decrease accordingly.",
+    "actualResult": ""
+  },
+  "TC_RECON_014": {
+    "tcId": "TC_RECON_014",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the dashboard metrics are updated when a new PO or ACK is uploaded.",
+    "steps": "1. Navigate to a project.\n2. Upload a new PO or ACK.\n3. Navigate back to the Dashboard.",
+    "testData": "New PO + ACK PDF files",
+    "expectedResult": "The Total Projects card should reflect the updated PO and ACK counts.",
+    "actualResult": ""
+  },
+  "TC_RECON_015": {
+    "tcId": "TC_RECON_015",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that the dashboard metrics remain accurate after refreshing the page.",
+    "steps": "1. Navigate to the Dashboard.\n2. Note all displayed metric counts.\n3. Refresh the page.",
+    "testData": "Dashboard metric counts",
+    "expectedResult": "The dashboard should load successfully and display accurate metric counts.",
+    "actualResult": ""
+  },
+  "TC_RECON_016": {
+    "tcId": "TC_RECON_016",
+    "module": "PO-ACK Recon Dashboard",
+    "description": "Verify that dashboard card counts are updated based on the selected organization in the Organization filter.",
+    "steps": "1. Log in to the application.\n2. Click on PO-ACK Recon.\n3. Click on the Organization filter.\n4. Choose \"Riverstonetech\".\n5. Observe the UI.",
+    "testData": "Organization: Riverstonetech",
+    "expectedResult": "When the user selects a different organization from the Organization dropdown, all dashboard card counts should update according to the selected organization's data.",
+    "actualResult": ""
+  },
+  "TC_RECON_017": {
+    "tcId": "TC_RECON_017",
     "module": "PO-ACK Recon",
     "description": "Verify PO-ACK Recon Projects page loads successfully",
     "steps": "1. Login with valid credentials.\n2. Click 'PO-ACK Recon' in left navigation menu.\n3. Observe page header and layout.",
@@ -944,8 +1088,8 @@
     "expectedResult": "PO-ACK Recon page loads successfully at /po-ack-recon. Page header 'PO-ACK Recon', 'Projects' subheader, 'New Project' button, search textbox, and projects table are displayed.",
     "actualResult": ""
   },
-  "TC_RECON_002": {
-    "tcId": "TC_RECON_002",
+  "TC_RECON_018": {
+    "tcId": "TC_RECON_018",
     "module": "PO-ACK Recon",
     "description": "Verify project list table displays configured columns",
     "steps": "1. Navigate to PO-ACK Recon Projects page.\n2. Check table headers.",
@@ -953,8 +1097,8 @@
     "expectedResult": "Projects table displays columns: 'Project Name', 'Org Name', and 'Created Date'.",
     "actualResult": ""
   },
-  "TC_RECON_003": {
-    "tcId": "TC_RECON_003",
+  "TC_RECON_019": {
+    "tcId": "TC_RECON_019",
     "module": "PO-ACK Recon",
     "description": "Verify project details are populated in project table rows",
     "steps": "1. Observe rows in projects table.\n2. Verify project name, organization, and creation timestamp.",
@@ -962,8 +1106,8 @@
     "expectedResult": "Project records display non-empty project names, organization names, and formatted creation dates.",
     "actualResult": ""
   },
-  "TC_RECON_004": {
-    "tcId": "TC_RECON_004",
+  "TC_RECON_020": {
+    "tcId": "TC_RECON_020",
     "module": "PO-ACK Recon",
     "description": "Verify vertical scrolling functionality in project list",
     "steps": "1. Scroll down the project list table.\n2. Scroll back up to the top.",
@@ -971,8 +1115,8 @@
     "expectedResult": "Table scrolls smoothly, allowing view of all project rows without UI truncation.",
     "actualResult": ""
   },
-  "TC_RECON_005": {
-    "tcId": "TC_RECON_005",
+  "TC_RECON_021": {
+    "tcId": "TC_RECON_021",
     "module": "PO-ACK Recon",
     "description": "Verify search box is visible and enabled",
     "steps": "1. Locate search textbox above projects table.\n2. Verify placeholder text.",
@@ -980,8 +1124,8 @@
     "expectedResult": "Search textbox is visible, enabled, and displays placeholder 'Search projects...'.",
     "actualResult": ""
   },
-  "TC_RECON_006": {
-    "tcId": "TC_RECON_006",
+  "TC_RECON_022": {
+    "tcId": "TC_RECON_022",
     "module": "PO-ACK Recon",
     "description": "Verify search functionality with valid full project name",
     "steps": "1. Enter an existing project name (e.g. 'Tech_Soluton') in search box.\n2. Observe filtered results.",
@@ -989,8 +1133,8 @@
     "expectedResult": "Only matching project 'Tech_Soluton' is displayed in the table. Unrelated projects are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_007": {
-    "tcId": "TC_RECON_007",
+  "TC_RECON_023": {
+    "tcId": "TC_RECON_023",
     "module": "PO-ACK Recon",
     "description": "Verify search functionality with partial project name",
     "steps": "1. Enter partial text (e.g. 'Tech') in search box.\n2. Observe filtered results.",
@@ -998,8 +1142,8 @@
     "expectedResult": "All projects containing 'Tech' in their name are displayed in the table.",
     "actualResult": ""
   },
-  "TC_RECON_008": {
-    "tcId": "TC_RECON_008",
+  "TC_RECON_024": {
+    "tcId": "TC_RECON_024",
     "module": "PO-ACK Recon",
     "description": "Verify search functionality with non-existent project name",
     "steps": "1. Enter non-existent project name (e.g. 'XYZ_NonExistent_999') in search box.\n2. Observe table state.",
@@ -1007,8 +1151,8 @@
     "expectedResult": "Table displays zero matching project records with empty/no results message.",
     "actualResult": ""
   },
-  "TC_RECON_009": {
-    "tcId": "TC_RECON_009",
+  "TC_RECON_025": {
+    "tcId": "TC_RECON_025",
     "module": "PO-ACK Recon",
     "description": "Verify search field clear functionality resets project list",
     "steps": "1. Filter by search query.\n2. Clear text in search box.\n3. Observe table.",
@@ -1016,8 +1160,8 @@
     "expectedResult": "Search input is cleared; table resets and displays all available projects.",
     "actualResult": ""
   },
-  "TC_RECON_010": {
-    "tcId": "TC_RECON_010",
+  "TC_RECON_026": {
+    "tcId": "TC_RECON_026",
     "module": "PO-ACK Recon",
     "description": "Verify New Project button visibility and styling",
     "steps": "1. Locate 'New Project' button in top right.\n2. Check button text and clickable state.",
@@ -1025,8 +1169,8 @@
     "expectedResult": "'New Project' button is clearly visible, styled with primary brand color, and enabled.",
     "actualResult": ""
   },
-  "TC_RECON_011": {
-    "tcId": "TC_RECON_011",
+  "TC_RECON_027": {
+    "tcId": "TC_RECON_027",
     "module": "PO-ACK Recon",
     "description": "Verify New Project modal opens successfully upon button click",
     "steps": "1. Click 'New Project' button.\n2. Observe modal dialog.",
@@ -1034,8 +1178,8 @@
     "expectedResult": "Modal dialog opens with title 'Create New Project'.",
     "actualResult": ""
   },
-  "TC_RECON_012": {
-    "tcId": "TC_RECON_012",
+  "TC_RECON_028": {
+    "tcId": "TC_RECON_028",
     "module": "PO-ACK Recon",
     "description": "Verify New Project modal UI fields and controls",
     "steps": "1. Inspect input fields and buttons inside modal dialog.",
@@ -1043,8 +1187,8 @@
     "expectedResult": "Modal contains 'Project Name' (required), 'Location' input, 'Description' textarea, 'Cancel' button, 'Create' button, and 'Close' (X) button.",
     "actualResult": ""
   },
-  "TC_RECON_013": {
-    "tcId": "TC_RECON_013",
+  "TC_RECON_029": {
+    "tcId": "TC_RECON_029",
     "module": "PO-ACK Recon",
     "description": "Verify Project Name textbox accepts valid alphanumeric input",
     "steps": "1. Click Project Name field.\n2. Type alphanumeric project name (e.g. 'Alpha_Corp_2026').\n3. Verify input value.",
@@ -1052,8 +1196,8 @@
     "expectedResult": "Project Name field accepts and displays the entered alphanumeric text.",
     "actualResult": ""
   },
-  "TC_RECON_014": {
-    "tcId": "TC_RECON_014",
+  "TC_RECON_030": {
+    "tcId": "TC_RECON_030",
     "module": "PO-ACK Recon",
     "description": "Verify Create button creates new project with valid details",
     "steps": "1. Enter unique project name.\n2. Enter location and description.\n3. Click 'Create' button.\n4. Observe project list.",
@@ -1061,26 +1205,26 @@
     "expectedResult": "Modal closes, success confirmation displays, and newly created project appears in the project list.",
     "actualResult": ""
   },
-  "TC_RECON_015": {
-    "tcId": "TC_RECON_015",
+  "TC_RECON_031": {
+    "tcId": "TC_RECON_031",
     "module": "PO-ACK Recon",
     "description": "Verify Create button behavior when Project Name is empty",
-    "steps": "1. Leave Project Name field blank.\n2. Click 'Create' button.\n3. Check for validation error.",
+    "steps": "1. Click on 'New Project' button.\n2. Do not enter a Project Name in the popup.\n3. Click 'Create' button.\n4. Check the validation message in the popup.",
     "testData": "Empty Project Name",
-    "expectedResult": "System prevents project creation and displays required validation message (e.g. 'Project name is required').",
+    "expectedResult": "System prevents project creation: the New Project popup stays open and shows the required validation message 'Please enter a project name.' No new project is added to the list.",
     "actualResult": ""
   },
-  "TC_RECON_016": {
-    "tcId": "TC_RECON_016",
+  "TC_RECON_032": {
+    "tcId": "TC_RECON_032",
     "module": "PO-ACK Recon",
     "description": "Verify duplicate project name creation handling",
-    "steps": "1. Enter name of an already existing project (e.g. 'Tech_Soluton').\n2. Click 'Create' button.",
+    "steps": "1. Click on 'New Project' button.\n2. Enter the already existing project name 'Tech_Soluton' in the popup.\n3. Click 'Create' button.\n4. Check the error message in the popup.",
     "testData": "Duplicate Project Name: 'Tech_Soluton'",
-    "expectedResult": "System detects duplicate name and displays error message preventing duplicate project.",
+    "expectedResult": "System detects the duplicate name: the popup stays open and shows \"A project named 'Tech_Soluton' already exists\". No duplicate project is created.",
     "actualResult": ""
   },
-  "TC_RECON_017": {
-    "tcId": "TC_RECON_017",
+  "TC_RECON_033": {
+    "tcId": "TC_RECON_033",
     "module": "PO-ACK Recon",
     "description": "Verify Cancel button closes modal without creating project",
     "steps": "1. Enter project details.\n2. Click 'Cancel' button.\n3. Observe page.",
@@ -1088,8 +1232,8 @@
     "expectedResult": "Modal closes immediately, entered details are discarded, and no new project is created.",
     "actualResult": ""
   },
-  "TC_RECON_018": {
-    "tcId": "TC_RECON_018",
+  "TC_RECON_034": {
+    "tcId": "TC_RECON_034",
     "module": "PO-ACK Recon",
     "description": "Verify Close (X) icon closes New Project modal",
     "steps": "1. Click 'X' icon at top right of modal.\n2. Observe page.",
@@ -1097,8 +1241,8 @@
     "expectedResult": "Modal closes cleanly, returning user to project list.",
     "actualResult": ""
   },
-  "TC_RECON_019": {
-    "tcId": "TC_RECON_019",
+  "TC_RECON_035": {
+    "tcId": "TC_RECON_035",
     "module": "PO-ACK Recon",
     "description": "Verify Escape key closes New Project modal",
     "steps": "1. Press keyboard 'Escape' key.\n2. Observe page.",
@@ -1106,8 +1250,8 @@
     "expectedResult": "Modal closes upon pressing Escape key.",
     "actualResult": ""
   },
-  "TC_RECON_020": {
-    "tcId": "TC_RECON_020",
+  "TC_RECON_036": {
+    "tcId": "TC_RECON_036",
     "module": "PO-ACK Recon",
     "description": "Verify newly created project appears at top of project list",
     "steps": "1. Navigate to Projects page.\n2. Observe the first row in project list.",
@@ -1115,8 +1259,8 @@
     "expectedResult": "Newly created project is displayed at the top of the projects table with correct Org and today's date.",
     "actualResult": ""
   },
-  "TC_RECON_021": {
-    "tcId": "TC_RECON_021",
+  "TC_RECON_037": {
+    "tcId": "TC_RECON_037",
     "module": "PO-ACK Recon",
     "description": "Verify navigating into a project opens project document list page",
     "steps": "1. Click on any project name (e.g. 'Tech_Soluton').\n2. Observe URL and page content.",
@@ -1124,8 +1268,8 @@
     "expectedResult": "User navigates to /po-ack-recon/<projectId>. Document list page loads with search box, 'Upload Documents' button, status filter tabs, and document table.",
     "actualResult": ""
   },
-  "TC_RECON_022": {
-    "tcId": "TC_RECON_022",
+  "TC_RECON_038": {
+    "tcId": "TC_RECON_038",
     "module": "PO-ACK Recon",
     "description": "Verify project document list table displays configured columns",
     "steps": "1. Inspect table headers in project document list.",
@@ -1133,8 +1277,8 @@
     "expectedResult": "Table displays columns: 'PO / MANUFACTURER', 'ACK VERSIONS', 'LAST UPDATE', 'STATUS', and 'ACTION'.",
     "actualResult": ""
   },
-  "TC_RECON_023": {
-    "tcId": "TC_RECON_023",
+  "TC_RECON_039": {
+    "tcId": "TC_RECON_039",
     "module": "PO-ACK Recon",
     "description": "Verify breadcrumbs on project documents list display 'PO-ACK Recon > [Project Name]'",
     "steps": "1. Observe breadcrumb navigation trail above table.",
@@ -1142,8 +1286,8 @@
     "expectedResult": "Breadcrumbs display 'PO-ACK Recon > Tech_Soluton' reflecting current project context.",
     "actualResult": ""
   },
-  "TC_RECON_024": {
-    "tcId": "TC_RECON_024",
+  "TC_RECON_040": {
+    "tcId": "TC_RECON_040",
     "module": "PO-ACK Recon",
     "description": "Verify clicking 'PO-ACK Recon' in breadcrumb navigates back to Projects page",
     "steps": "1. Click 'PO-ACK Recon' link in breadcrumb.\n2. Observe URL and page.",
@@ -1151,8 +1295,8 @@
     "expectedResult": "User is navigated back to /po-ack-recon Projects list page.",
     "actualResult": ""
   },
-  "TC_RECON_025": {
-    "tcId": "TC_RECON_025",
+  "TC_RECON_041": {
+    "tcId": "TC_RECON_041",
     "module": "PO-ACK Recon",
     "description": "Verify 'Upload Documents' button opens upload modal inside project",
     "steps": "1. Click 'Upload Documents' button in top right.\n2. Observe modal.",
@@ -1160,8 +1304,8 @@
     "expectedResult": "Upload Documents modal opens with title 'Upload Documents', subtitle 'Add your purchase order and acknowledgment files to get started.', Purchase Order section (Required), Acknowledgment section, and '+ Add another file' button.",
     "actualResult": ""
   },
-  "TC_RECON_026": {
-    "tcId": "TC_RECON_026",
+  "TC_RECON_042": {
+    "tcId": "TC_RECON_042",
     "module": "PO-ACK Recon",
     "description": "Verify upload modal UI layout and section requirements",
     "steps": "1. Inspect Purchase Order dropzone.\n2. Inspect Acknowledgment dropzone.\n3. Check action buttons.",
@@ -1169,8 +1313,8 @@
     "expectedResult": "Purchase Order section displays 'Required' badge. Both sections display cloud upload icon with 'Drag & drop here or Browse files' and 'Supports PDF'. 'Cancel' and 'Upload Files' buttons are present.",
     "actualResult": ""
   },
-  "TC_RECON_027": {
-    "tcId": "TC_RECON_027",
+  "TC_RECON_043": {
+    "tcId": "TC_RECON_043",
     "module": "PO-ACK Recon",
     "description": "Verify attaching valid Purchase Order file via Browse or Drag & Drop",
     "steps": "1. In Purchase Order section, click 'Browse files' (or drag & drop).\n2. Select valid PO PDF from CRI Files.\n3. Observe dropzone state.",
@@ -1178,8 +1322,8 @@
     "expectedResult": "PO file is successfully attached, file name and size are displayed in the dropzone, and dropzone indicates selected state.",
     "actualResult": ""
   },
-  "TC_RECON_028": {
-    "tcId": "TC_RECON_028",
+  "TC_RECON_044": {
+    "tcId": "TC_RECON_044",
     "module": "PO-ACK Recon",
     "description": "Verify attaching valid Acknowledgment (ACK) file via Browse or Drag & Drop",
     "steps": "1. In Acknowledgment section, click 'Browse files' (or drag & drop).\n2. Select matching ACK PDF from CRI Files.\n3. Observe dropzone state.",
@@ -1187,8 +1331,8 @@
     "expectedResult": "ACK file is successfully attached and listed under Acknowledgment section.",
     "actualResult": ""
   },
-  "TC_RECON_029": {
-    "tcId": "TC_RECON_029",
+  "TC_RECON_045": {
+    "tcId": "TC_RECON_045",
     "module": "PO-ACK Recon",
     "description": "Verify '+ Add another file' button adds multiple ACK file dropzones",
     "steps": "1. In Acknowledgment section, click '+ Add another file' button.\n2. Observe new dropzone.\n3. Click '+ Add another file' again.",
@@ -1196,8 +1340,8 @@
     "expectedResult": "A new Acknowledgment dropzone is dynamically appended for each click, enabling multi-version or multi-vendor ACK attachments.",
     "actualResult": ""
   },
-  "TC_RECON_030": {
-    "tcId": "TC_RECON_030",
+  "TC_RECON_046": {
+    "tcId": "TC_RECON_046",
     "module": "PO-ACK Recon",
     "description": "Verify attaching multiple ACK files for a single PO",
     "steps": "1. Attach primary ACK file in first dropzone.\n2. Click '+ Add another file'.\n3. Attach secondary ACK file in second dropzone.",
@@ -1205,8 +1349,8 @@
     "expectedResult": "Both ACK files are attached under Acknowledgment section with individual file names and sizes displayed.",
     "actualResult": ""
   },
-  "TC_RECON_031": {
-    "tcId": "TC_RECON_031",
+  "TC_RECON_047": {
+    "tcId": "TC_RECON_047",
     "module": "PO-ACK Recon",
     "description": "Verify Cancel button closes upload modal and discards attached files",
     "steps": "1. Attach PO and ACK files.\n2. Click 'Cancel' button.\n3. Check document list.",
@@ -1214,8 +1358,8 @@
     "expectedResult": "Modal closes immediately, attached files are discarded, and no new record is created in the document table.",
     "actualResult": ""
   },
-  "TC_RECON_032": {
-    "tcId": "TC_RECON_032",
+  "TC_RECON_048": {
+    "tcId": "TC_RECON_048",
     "module": "PO-ACK Recon",
     "description": "Verify Close (X) icon closes upload modal",
     "steps": "1. Click 'X' icon at top right of modal.\n2. Observe page.",
@@ -1223,8 +1367,8 @@
     "expectedResult": "Modal closes cleanly, returning user to project document list.",
     "actualResult": ""
   },
-  "TC_RECON_033": {
-    "tcId": "TC_RECON_033",
+  "TC_RECON_049": {
+    "tcId": "TC_RECON_049",
     "module": "PO-ACK Recon",
     "description": "Verify Upload Files button submits PO and ACK files to Processing",
     "steps": "1. Attach valid PO file (Required).\n2. Attach matching ACK file.\n3. Click 'Upload Files' button.\n4. Observe UI.",
@@ -1232,8 +1376,8 @@
     "expectedResult": "Modal closes, success toast notification displays, and new record appears in the table with initial status 'Processing' or 'Pending Review'.",
     "actualResult": ""
   },
-  "TC_RECON_034": {
-    "tcId": "TC_RECON_034",
+  "TC_RECON_050": {
+    "tcId": "TC_RECON_050",
     "module": "PO-ACK Recon",
     "description": "Verify document status changes to Awaiting ACK when only PO is uploaded",
     "steps": "1. Upload PO file without attaching ACK.\n2. Click 'Upload Files'.\n3. Check document status in table.",
@@ -1241,8 +1385,8 @@
     "expectedResult": "Document row displays status 'Awaiting ACK'.",
     "actualResult": ""
   },
-  "TC_RECON_035": {
-    "tcId": "TC_RECON_035",
+  "TC_RECON_051": {
+    "tcId": "TC_RECON_051",
     "module": "PO-ACK Recon",
     "description": "Verify document status changes to Pending Review after ACK is uploaded",
     "steps": "1. Upload PO and ACK files.\n2. Observe status once processing completes.",
@@ -1250,8 +1394,8 @@
     "expectedResult": "Document row displays status 'Pending Review' with an active 'Review' button.",
     "actualResult": ""
   },
-  "TC_RECON_036": {
-    "tcId": "TC_RECON_036",
+  "TC_RECON_052": {
+    "tcId": "TC_RECON_052",
     "module": "PO-ACK Recon",
     "description": "Verify document shows multiple ACK versions count (e.g. '2 versions')",
     "steps": "1. Locate uploaded multi-ACK document in table.\n2. Check 'ACK VERSIONS' column.",
@@ -1259,8 +1403,8 @@
     "expectedResult": "'ACK VERSIONS' column displays '2 versions' badge.",
     "actualResult": ""
   },
-  "TC_RECON_037": {
-    "tcId": "TC_RECON_037",
+  "TC_RECON_053": {
+    "tcId": "TC_RECON_053",
     "module": "PO-ACK Recon",
     "description": "Verify Awaiting ACK filter displays only documents awaiting ACK files",
     "steps": "1. Click 'Awaiting ACK' filter button.\n2. Wait for table reload.\n3. Inspect status on every visible row.",
@@ -1268,8 +1412,8 @@
     "expectedResult": "Table reloads showing strictly documents with 'Awaiting ACK' status. Documents with other statuses are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_038": {
-    "tcId": "TC_RECON_038",
+  "TC_RECON_054": {
+    "tcId": "TC_RECON_054",
     "module": "PO-ACK Recon",
     "description": "Verify Pending Review filter displays only documents ready for review",
     "steps": "1. Click 'Pending Review' filter button.\n2. Wait for table reload.\n3. Inspect status on every visible row.",
@@ -1277,8 +1421,8 @@
     "expectedResult": "Table reloads showing strictly documents with 'Pending Review' status. All other documents are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_039": {
-    "tcId": "TC_RECON_039",
+  "TC_RECON_055": {
+    "tcId": "TC_RECON_055",
     "module": "PO-ACK Recon",
     "description": "Verify Matched filter displays only matched reconciliation documents",
     "steps": "1. Click 'Matched' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
@@ -1286,8 +1430,8 @@
     "expectedResult": "Table reloads displaying only records with 'Matched' status badge. Non-matched records are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_040": {
-    "tcId": "TC_RECON_040",
+  "TC_RECON_056": {
+    "tcId": "TC_RECON_056",
     "module": "PO-ACK Recon",
     "description": "Verify Medium discrepancy filter displays only medium discrepancy documents",
     "steps": "1. Click 'Medium' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
@@ -1295,8 +1439,8 @@
     "expectedResult": "Table reloads displaying only records with 'Medium' discrepancy badge. Other records are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_041": {
-    "tcId": "TC_RECON_041",
+  "TC_RECON_057": {
+    "tcId": "TC_RECON_057",
     "module": "PO-ACK Recon",
     "description": "Verify Critical discrepancy filter displays only critical discrepancy documents",
     "steps": "1. Click 'Critical' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
@@ -1304,8 +1448,8 @@
     "expectedResult": "Table reloads displaying only records with 'Critical' discrepancy badge. Non-critical records are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_042": {
-    "tcId": "TC_RECON_042",
+  "TC_RECON_058": {
+    "tcId": "TC_RECON_058",
     "module": "PO-ACK Recon",
     "description": "Verify Minor discrepancy filter displays only minor discrepancy documents",
     "steps": "1. Click 'Minor' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
@@ -1313,8 +1457,8 @@
     "expectedResult": "Table reloads displaying only records with 'Minor' discrepancy badge. Other records are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_043": {
-    "tcId": "TC_RECON_043",
+  "TC_RECON_059": {
+    "tcId": "TC_RECON_059",
     "module": "PO-ACK Recon",
     "description": "Verify Failed filter displays only failed processing documents",
     "steps": "1. Click 'Failed' filter button.\n2. Wait for table reload.\n3. Inspect status badge on all visible rows.",
@@ -1322,8 +1466,8 @@
     "expectedResult": "Table reloads displaying only records with 'Failed' status badge. Successful documents are filtered out.",
     "actualResult": ""
   },
-  "TC_RECON_044": {
-    "tcId": "TC_RECON_044",
+  "TC_RECON_060": {
+    "tcId": "TC_RECON_060",
     "module": "PO-ACK Recon",
     "description": "Verify All filter resets and displays documents across all statuses",
     "steps": "1. Click 'All' filter button.\n2. Wait for table reload.\n3. Inspect visible rows.",
@@ -1331,8 +1475,8 @@
     "expectedResult": "Filter resets completely; table displays all documents across all statuses (Awaiting ACK, Pending Review, Critical, Medium, Minor, Matched).",
     "actualResult": ""
   },
-  "TC_RECON_045": {
-    "tcId": "TC_RECON_045",
+  "TC_RECON_061": {
+    "tcId": "TC_RECON_061",
     "module": "PO-ACK Recon",
     "description": "Verify clicking Review button opens Document Review page",
     "steps": "1. Locate document with 'Review' button in Action column.\n2. Click 'Review' button.\n3. Observe URL and review interface.",
@@ -1340,8 +1484,8 @@
     "expectedResult": "User navigates to Document Review page (/po-ack-recon/review/<docId>). Review interface loads showing PO and ACK data side by side.",
     "actualResult": ""
   },
-  "TC_RECON_046": {
-    "tcId": "TC_RECON_046",
+  "TC_RECON_062": {
+    "tcId": "TC_RECON_062",
     "module": "PO-ACK Recon",
     "description": "Verify Review page breadcrumbs display 'PO-ACK Recon > [Project Name] > [PO Number]'",
     "steps": "1. Inspect breadcrumb trail above review interface.",
@@ -1349,8 +1493,8 @@
     "expectedResult": "Breadcrumbs display 'PO-ACK Recon > [Project Name] > [PO Number]' showing complete hierarchical context.",
     "actualResult": ""
   },
-  "TC_RECON_047": {
-    "tcId": "TC_RECON_047",
+  "TC_RECON_063": {
+    "tcId": "TC_RECON_063",
     "module": "PO-ACK Recon",
     "description": "Verify clicking Project Name breadcrumb returns user to project document list",
     "steps": "1. Click Project Name link in breadcrumb.\n2. Observe URL and page.",
@@ -1358,8 +1502,8 @@
     "expectedResult": "User is navigated back to the project document list (/po-ack-recon/<projectId>).",
     "actualResult": ""
   },
-  "TC_RECON_048": {
-    "tcId": "TC_RECON_048",
+  "TC_RECON_064": {
+    "tcId": "TC_RECON_064",
     "module": "PO-ACK Recon",
     "description": "Verify clicking PO-ACK Recon breadcrumb returns user to Projects page",
     "steps": "1. Click 'PO-ACK Recon' link in breadcrumb.\n2. Observe URL and page.",
@@ -1367,8 +1511,8 @@
     "expectedResult": "User is navigated back to the main /po-ack-recon Projects list page.",
     "actualResult": ""
   },
-  "TC_RECON_049": {
-    "tcId": "TC_RECON_049",
+  "TC_RECON_065": {
+    "tcId": "TC_RECON_065",
     "module": "PO-ACK Recon",
     "description": "Verify single PO values are reflected correctly in PO Data card",
     "steps": "1. Locate PO Data card in review interface.\n2. Verify PO Number, Order Date, Vendor, and Total Amount.",
@@ -1376,8 +1520,8 @@
     "expectedResult": "PO Data card displays submitted PO values matching original uploaded document.",
     "actualResult": ""
   },
-  "TC_RECON_050": {
-    "tcId": "TC_RECON_050",
+  "TC_RECON_066": {
+    "tcId": "TC_RECON_066",
     "module": "PO-ACK Recon",
     "description": "Verify extracted PO values are read-only and cannot be directly edited",
     "steps": "1. Attempt to edit PO Number and PO header values.\n2. Check input element type.",
@@ -1385,8 +1529,8 @@
     "expectedResult": "PO data fields are rendered as static read-only text, preventing direct inline editing.",
     "actualResult": ""
   },
-  "TC_RECON_051": {
-    "tcId": "TC_RECON_051",
+  "TC_RECON_067": {
+    "tcId": "TC_RECON_067",
     "module": "PO-ACK Recon",
     "description": "Verify ACK section displays 'ACK yet to add' when reviewing document without ACK",
     "steps": "1. Open Review for document with status 'Awaiting ACK'.\n2. Check ACK Data and PDF sections.",
@@ -1394,8 +1538,8 @@
     "expectedResult": "ACK section displays placeholder 'ACK yet to add' indicating missing acknowledgment file.",
     "actualResult": ""
   },
-  "TC_RECON_052": {
-    "tcId": "TC_RECON_052",
+  "TC_RECON_068": {
+    "tcId": "TC_RECON_068",
     "module": "PO-ACK Recon",
     "description": "Verify View PDFs / Show PDFs button displays split PDF viewer",
     "steps": "1. Locate 'View PDFs' / 'Show PDFs' button in header.\n2. Click button.\n3. Observe layout.",
@@ -1403,8 +1547,8 @@
     "expectedResult": "PDF viewer panel opens, displaying original PO PDF alongside ACK PDF for visual comparison.",
     "actualResult": ""
   },
-  "TC_RECON_053": {
-    "tcId": "TC_RECON_053",
+  "TC_RECON_069": {
+    "tcId": "TC_RECON_069",
     "module": "PO-ACK Recon",
     "description": "Verify Collapse PDF's / Hide PDFs button collapses PDF viewer",
     "steps": "1. Click 'Hide PDFs' / 'Collapse PDF' button.\n2. Observe layout.",
@@ -1412,8 +1556,8 @@
     "expectedResult": "PDF viewer panel closes, restoring full-width extracted data review layout.",
     "actualResult": ""
   },
-  "TC_RECON_054": {
-    "tcId": "TC_RECON_054",
+  "TC_RECON_070": {
+    "tcId": "TC_RECON_070",
     "module": "PO-ACK Recon",
     "description": "Verify ACK dropdown allows switching between multiple ACK versions",
     "steps": "1. Click ACK dropdown (e.g. 'ACK 1').\n2. Observe dropdown options.\n3. Select 'ACK 2'.",
@@ -1421,8 +1565,8 @@
     "expectedResult": "Dropdown displays all ACK versions ('ACK 1', 'ACK 2'). Selecting 'ACK 2' reloads extracted ACK data corresponding to the selected version.",
     "actualResult": ""
   },
-  "TC_RECON_055": {
-    "tcId": "TC_RECON_055",
+  "TC_RECON_071": {
+    "tcId": "TC_RECON_071",
     "module": "PO-ACK Recon",
     "description": "Verify discrepancy fields between PO and ACK are highlighted in yellow",
     "steps": "1. Compare PO and ACK line-item values.\n2. Observe discrepancy styling.",
@@ -1430,8 +1574,8 @@
     "expectedResult": "Discrepancy fields (e.g. mismatched unit price, quantity, or shipping date) are highlighted with yellow/amber background.",
     "actualResult": ""
   },
-  "TC_RECON_056": {
-    "tcId": "TC_RECON_056",
+  "TC_RECON_072": {
+    "tcId": "TC_RECON_072",
     "module": "PO-ACK Recon",
     "description": "Verify discrepancy summary badges display counts by severity",
     "steps": "1. Locate discrepancy badge counter above tables.\n2. Check counts for Critical, Medium, Minor, and Matched.",
@@ -1439,8 +1583,8 @@
     "expectedResult": "Discrepancy badges accurately display counts matching discrepancies found (e.g. '1 Critical', '2 Medium', '3 Matched').",
     "actualResult": ""
   },
-  "TC_RECON_057": {
-    "tcId": "TC_RECON_057",
+  "TC_RECON_073": {
+    "tcId": "TC_RECON_073",
     "module": "PO-ACK Recon",
     "description": "Verify hovering over header field displays edit icon",
     "steps": "1. Hover mouse over editable header/address field.\n2. Observe field actions.",
@@ -1448,8 +1592,8 @@
     "expectedResult": "Edit pencil icon appears on hover over editable header fields.",
     "actualResult": ""
   },
-  "TC_RECON_058": {
-    "tcId": "TC_RECON_058",
+  "TC_RECON_074": {
+    "tcId": "TC_RECON_074",
     "module": "PO-ACK Recon",
     "description": "Verify user can edit header field values",
     "steps": "1. Click edit icon on header field.\n2. Update value.\n3. Save changes.",
@@ -1457,8 +1601,8 @@
     "expectedResult": "Field becomes editable, accepts updated value, and persists change upon save.",
     "actualResult": ""
   },
-  "TC_RECON_059": {
-    "tcId": "TC_RECON_059",
+  "TC_RECON_075": {
+    "tcId": "TC_RECON_075",
     "module": "PO-ACK Recon",
     "description": "Verify Select All checkbox selects all discrepancy fields",
     "steps": "1. Locate 'Select All' checkbox in line items section.\n2. Click 'Select All'.",
@@ -1466,8 +1610,8 @@
     "expectedResult": "All discrepancy line-item checkboxes are checked simultaneously.",
     "actualResult": ""
   },
-  "TC_RECON_060": {
-    "tcId": "TC_RECON_060",
+  "TC_RECON_076": {
+    "tcId": "TC_RECON_076",
     "module": "PO-ACK Recon",
     "description": "Verify Preview Selected popup displays selected discrepancy fields",
     "steps": "1. Select discrepancy checkboxes.\n2. Click 'Preview selected' button.\n3. Observe popup.",
@@ -1475,8 +1619,8 @@
     "expectedResult": "Preview popup opens displaying structured table of all selected discrepancy items.",
     "actualResult": ""
   },
-  "TC_RECON_061": {
-    "tcId": "TC_RECON_061",
+  "TC_RECON_077": {
+    "tcId": "TC_RECON_077",
     "module": "PO-ACK Recon",
     "description": "Verify selected discrepancy fields can be copied to clipboard",
     "steps": "1. Click 'Copy' button inside popup.\n2. Verify copy confirmation toast.",
@@ -1484,8 +1628,8 @@
     "expectedResult": "Selected discrepancy details are copied to clipboard; toast confirms successful copy.",
     "actualResult": ""
   },
-  "TC_RECON_062": {
-    "tcId": "TC_RECON_062",
+  "TC_RECON_078": {
+    "tcId": "TC_RECON_078",
     "module": "PO-ACK Recon",
     "description": "Verify hovering over discrepancy field displays flag icon",
     "steps": "1. Hover over a highlighted discrepancy field.\n2. Observe flag action.",
@@ -1493,8 +1637,8 @@
     "expectedResult": "Flag icon is displayed on hover, indicating discrepancy severity classification control.",
     "actualResult": ""
   },
-  "TC_RECON_063": {
-    "tcId": "TC_RECON_063",
+  "TC_RECON_079": {
+    "tcId": "TC_RECON_079",
     "module": "PO-ACK Recon",
     "description": "Verify user can change discrepancy flag severity (Critical, Medium, Minor, Matched)",
     "steps": "1. Click flag icon on discrepancy field.\n2. Select severity from dropdown (e.g. Critical -> Medium).",
@@ -1502,8 +1646,8 @@
     "expectedResult": "Flag severity is updated, and flag icon color updates to match new severity (Red for Critical, Orange for Medium, Yellow for Minor, Green for Matched).",
     "actualResult": ""
   },
-  "TC_RECON_064": {
-    "tcId": "TC_RECON_064",
+  "TC_RECON_080": {
+    "tcId": "TC_RECON_080",
     "module": "PO-ACK Recon",
     "description": "Verify Edit All button enables editing of line-item fields",
     "steps": "1. Locate 'Edit All' button in Line Items section.\n2. Click 'Edit All'.\n3. Observe line-item cells.",
@@ -1511,8 +1655,8 @@
     "expectedResult": "Line-item fields transition into editable input fields, and 'Save and Continue' / 'Cancel' buttons appear.",
     "actualResult": ""
   },
-  "TC_RECON_065": {
-    "tcId": "TC_RECON_065",
+  "TC_RECON_081": {
+    "tcId": "TC_RECON_081",
     "module": "PO-ACK Recon",
     "description": "Verify modifying line item values creates visual discrepancy highlighting",
     "steps": "1. Modify unit price or quantity in line item.\n2. Click 'Save and Continue'.\n3. Observe edited field.",
@@ -1520,8 +1664,8 @@
     "expectedResult": "Edited field is updated and highlighted with discrepancy background styling reflecting the modification.",
     "actualResult": ""
   },
-  "TC_RECON_066": {
-    "tcId": "TC_RECON_066",
+  "TC_RECON_082": {
+    "tcId": "TC_RECON_082",
     "module": "PO-ACK Recon",
     "description": "Verify Complete button is enabled for first extraction review",
     "steps": "1. Observe 'Complete' button in header action bar.",
@@ -1529,8 +1673,8 @@
     "expectedResult": "'Complete' button is visible and enabled for submission.",
     "actualResult": ""
   },
-  "TC_RECON_067": {
-    "tcId": "TC_RECON_067",
+  "TC_RECON_083": {
+    "tcId": "TC_RECON_083",
     "module": "PO-ACK Recon",
     "description": "Verify clicking Complete finishes document review and updates document status",
     "steps": "1. Click 'Complete' button.\n2. Confirm completion prompt if displayed.\n3. Observe navigation and status.",
@@ -2038,7 +2182,7 @@
     "module": "Settings & Org",
     "description": "Verify Direct Estimate Creation can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": ""
   },
@@ -2056,7 +2200,7 @@
     "module": "Settings & Org",
     "description": "Verify Life Line Traking can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": ""
   },
@@ -2470,7 +2614,7 @@
     "module": "Settings & Org",
     "description": "Verify Edit User functionality",
     "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
-    "testData": "Viewer \u2192 Admin",
+    "testData": "Viewer → Admin",
     "expectedResult": "User role should be updated successfully.",
     "actualResult": ""
   },
@@ -2488,7 +2632,7 @@
     "module": "Settings & Org",
     "description": "Verify Organization Details update",
     "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
-    "testData": "Corpdesign \u2192 Corpdesign QA",
+    "testData": "Corpdesign → Corpdesign QA",
     "expectedResult": "Updated organization details should be displayed.",
     "actualResult": ""
   },
@@ -3525,7 +3669,7 @@
     "module": "Left side fields",
     "description": "Verify Direct Estimate Creation can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": "Toggle returns to disabled state."
   },
@@ -3543,7 +3687,7 @@
     "module": "Left side fields",
     "description": "Verify Life Line Traking can be disabled",
     "steps": "1. Enable Direct Estimate Creation.\n2. Click toggle again.",
-    "testData": "Toggle: ON \u2192 OFF",
+    "testData": "Toggle: ON → OFF",
     "expectedResult": "Toggle should returns to disabled state.",
     "actualResult": "Toggle returns to disabled state."
   },
@@ -3957,7 +4101,7 @@
     "module": "Left side fields",
     "description": "Verify Edit User functionality",
     "steps": "1. Click Edit icon for a user. \n2. Modify role. \n3. Save.",
-    "testData": "Viewer \u2192 Admin",
+    "testData": "Viewer → Admin",
     "expectedResult": "User role should be updated successfully.",
     "actualResult": "User role updated successfully"
   },
@@ -3975,7 +4119,7 @@
     "module": "Left side fields",
     "description": "Verify Organization Details update",
     "steps": "1. Click Edit.   \n2. Modify Organization Name. \n3. Save changes.",
-    "testData": "Corpdesign \u2192 Corpdesign QA",
+    "testData": "Corpdesign → Corpdesign QA",
     "expectedResult": "Updated organization details should be displayed.",
     "actualResult": "Updated organization details successfully"
   },

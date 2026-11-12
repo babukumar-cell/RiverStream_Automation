@@ -27,7 +27,7 @@ function uniqueCopy(source: string, label: string): string {
 test.describe('Smoke: PO-ACK Recon', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('TC_RECON_045: Reference project opens a recon review with PO data, ACK data and discrepancies', async ({ page }) => {
+  test('TC_RECON_061: Reference project opens a recon review with PO data, ACK data and discrepancies', async ({ page }) => {
     await page.goto('/po-ack-recon');
     await page.getByPlaceholder('Search projects...').fill(QaData.reconProject);
     await page.getByRole('row').filter({ hasText: QaData.reconProject }).first().click();
@@ -47,7 +47,7 @@ test.describe('Smoke: PO-ACK Recon', () => {
     await expect(page.getByText(/discrepanc(y|ies) against PO/i)).toBeVisible();
   });
 
-  test('TC_RECON_033: Upload a PO and ACK pair and get it ready for review', async ({ page }) => {
+  test('TC_RECON_049: Upload a PO and ACK pair and get it ready for review', async ({ page }) => {
     test.setTimeout(420000);
     await page.goto('/po-ack-recon');
     const search = page.getByPlaceholder('Search projects...');

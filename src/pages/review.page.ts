@@ -1,274 +1,397 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, Response, expect } from '@playwright/test';
 import { BasePage } from './base.page';
 
-export class ReviewPage extends BasePage {
-  // Top Header Actions
-  readonly pageTitle: Locator;
-  readonly backButton: Locator;
-  readonly completeButton: Locator;
-  readonly submitToErpButton: Locator;
-  readonly statusBadge: Locator;
+/** One extracted value as stored by the backend (GET /api/getDocument/<id>) */
+export interface ReviewField {
+  value: string | number | null;
+  user_value?: string | null;
+  confidence_score?: number;
+  citation?: { text?: string; page?: number } | string | null;
+}
 
-  // Left Panel - PDF Viewer & Controls
-  readonly documentTitle: Locator;
-  readonly documentPreview: Locator;
-  readonly pageNumberIndicator: Locator;
+export type ReviewFieldKey =
+  | 'customer_name'
+  | 'purchase_order'
+  | 'invoice_date'
+  | 'total_amount'
+  | 'billing_addressee_name'
+  | 'shipping_addressee_name'
+  | 'billing_address'
+  | 'shipping_address';
+
+export interface ReviewDocument {
+  _id: string;
+  fileName: string;
+  status: string;
+  selectedDocType: string;
+  extractedData: Record<ReviewFieldKey, ReviewField> & { order_line_items: Array<Record<string, ReviewField>> };
+}
+
+/** Card label shown on the review page for each extracted field */
+export const FIELD_LABELS: Record<ReviewFieldKey, string> = {
+  customer_name: 'Customer Name',
+  purchase_order: 'Purchase Order',
+  invoice_date: 'Invoice Date',
+  total_amount: 'Total Amount',
+  billing_addressee_name: 'Billing Addressee Name',
+  shipping_addressee_name: 'Shipping Addressee Name',
+  billing_address: 'Billing Address',
+  shipping_address: 'Shipping Address',
+};
+
+/**
+ * Document Review page (/review/<id>?from=documents|dashboard), Nov 2026 UI:
+ *  - header: "Back to Documents|Dashboard", "Document Review", status badge, "Submit to ERP"
+ *  - left card: file name, "Original PDF document", page / zoom / download / search toolbar, PDF viewer
+ *    (react-pdf-viewer: one region "Page N" per page, drawn on a canvas)
+ *  - right card: "Document Analysis", "Complete", tabs "Extracted Data" / "JSON View", one card per field
+ *    (confidence badge, value, "Source: Page N", copy / edit / pick-from-PDF buttons), Swap buttons between
+ *    billing and shipping, and the "Order Line Items" summary that expands into a table popup.
+ * Edits on the page stay in the browser until "Complete" saves them (POST /api/updateDocument).
+ */
+export class ReviewPage extends BasePage {
+  // Header
+  readonly backButton: Locator;
+  readonly pageHeading: Locator;
+  readonly submitToErpButton: Locator;
+  readonly erpOrderMessage: Locator;
+  readonly erpErrorDialog: Locator;
+
+  // Viewer
+  readonly fileTypeLabel: Locator;
+  readonly pageIndicator: Locator;
   readonly prevPageButton: Locator;
   readonly nextPageButton: Locator;
   readonly zoomInButton: Locator;
   readonly zoomOutButton: Locator;
-  readonly zoomPercentage: Locator;
+  readonly zoomLevel: Locator;
   readonly downloadButton: Locator;
-  readonly fitToPageButton: Locator;
-  readonly selectionButton: Locator;
+  readonly downloadLink: Locator;
+  readonly searchButton: Locator;
+  readonly searchInput: Locator;
+  readonly searchSubmitButton: Locator;
+  readonly searchResultCount: Locator;
+  readonly pdfCanvas: Locator;
+  readonly pickBanner: Locator;
 
-  // Right Panel - Tabs & Analysis
+  // Analysis
+  readonly analysisHeading: Locator;
+  readonly completeButton: Locator;
   readonly extractedDataTab: Locator;
   readonly jsonViewTab: Locator;
-  readonly jsonContainer: Locator;
-  readonly confidenceScores: Locator;
-  readonly sourceCitationLinks: Locator;
-  readonly copyButtons: Locator;
-  readonly editButtons: Locator;
-  readonly addressSwapButtons: Locator;
-
-  // Extracted Fields
-  readonly customerNameField: Locator;
-  readonly poNumberField: Locator;
-  readonly dateField: Locator;
-  readonly totalAmountField: Locator;
-  readonly billingAddressField: Locator;
-  readonly shippingAddressField: Locator;
-
-  // Order Line Items & Modal
-  readonly orderLineItemsHeader: Locator;
+  readonly tabPanel: Locator;
+  readonly jsonBlock: Locator;
+  readonly swapNamesButton: Locator;
+  readonly swapAddressesButton: Locator;
+  readonly lineItemsSummary: Locator;
   readonly expandLineItemsButton: Locator;
+  readonly lineItemsSectionTitle: Locator;
+  readonly inlineLineItemRows: Locator;
+
+  // Order Line Items popup
   readonly lineItemsModal: Locator;
+  readonly lineItemsRowCount: Locator;
+  readonly closeLineItemsButton: Locator;
   readonly editAllButton: Locator;
-  readonly editingStatusIndicator: Locator;
-  readonly cancelEditButton: Locator;
+  readonly editingButton: Locator;
   readonly saveAllButton: Locator;
+  readonly cancelButton: Locator;
   readonly addRowButton: Locator;
-  readonly lineItemTable: Locator;
+  readonly saveChangesButton: Locator;
+  readonly newRowButton: Locator;
+  readonly lineItemHeaders: Locator;
   readonly lineItemRows: Locator;
-  readonly lineItemInputs: Locator;
-  readonly deleteRowButtons: Locator;
-  readonly closeModalButton: Locator;
 
   constructor(page: Page) {
     super(page);
 
-    // Top Header
-    this.pageTitle = page.locator('h1:has-text("Review Document"), :text("Review Document")').first();
-    this.backButton = page.locator('button:has-text("Back to Documents"), a:has-text("Back to Documents"), button:has-text("Back")').first();
-    this.completeButton = page.locator('button:has-text("Complete")').first();
-    this.submitToErpButton = page.locator('button:has-text("Submit to ERP")').first();
-    this.statusBadge = page.locator('text=/Partially Success|Extracted|Complete|Processing/i').first();
+    this.backButton = page.getByRole('button', { name: /^Back to (Documents|Dashboard)$/ });
+    this.pageHeading = page.getByRole('heading', { name: 'Document Review', level: 1 });
+    this.submitToErpButton = page.getByRole('button', { name: 'Submit to ERP', exact: true });
+    // "Sales Order is submitted in ERP frappe with Order Number: SAL-ORD-..." (the number is a separate link)
+    this.erpOrderMessage = page.locator('div').filter({ has: page.getByText(/Sales Order is submitted in ERP/) }).filter({ hasText: /SAL-ORD-/ }).last();
+    this.erpErrorDialog = page.getByRole('dialog').or(page.getByRole('alertdialog')).filter({ hasText: 'ERP Insertion Failed' });
 
-    // Left Panel - PDF Viewer & Controls
-    this.documentTitle = page.locator('div:has(> text=/Original (PDF|XLS|XLSX) document/i) h2, div:has(> text=/Original (PDF|XLS|XLSX) document/i) h3')
-      .or(page.locator('h2, h3, h4').filter({ hasText: /\.(pdf|xls|xlsx)|purchase|quote|order|document/i }))
-      .or(page.getByText(/Original (PDF|XLS|XLSX) document/i))
-      .or(page.locator('div[class*="border"] h2, div[class*="border"] h3, div[class*="rounded"] h2, div[class*="rounded"] h3'))
-      .first();
-    this.documentPreview = page.locator('img, canvas, .pdf-viewer, embed, iframe, div[class*="pdf"], div[class*="viewer"], table, div[class*="overflow"]').first();
-    this.pageNumberIndicator = page.getByText(/Page\s*\d+\s*[\/of]\s*\d+/i).first()
-      .or(page.locator(':text("Page 1")').first())
-      .or(page.getByText(/Showing sheet\s*\d+\s*of\s*\d+/i).first())
-      .or(page.getByText(/Rows:\s*\d+/i).first())
-      .or(page.locator('div:has(button:has-text("<"))').first());
-    this.prevPageButton = page.locator('button:has-text("<")').first();
-    this.nextPageButton = page.locator('button:has-text(">")').first();
-    this.zoomInButton = page.locator('button:has(svg.lucide-zoom-in), button[aria-label*="zoom in" i], button:has-text("+")').first();
-    this.zoomOutButton = page.locator('button:has(svg.lucide-zoom-out), button[aria-label*="zoom out" i], button:has-text("-")').first();
-    this.zoomPercentage = page.locator('text=/\\d+%/i, text=/100%/i, div:has(button:has-text("+")) span').first();
-    this.downloadButton = page.locator('button:has(svg.lucide-download), button[aria-label*="download" i], a[aria-label*="download" i]').first();
-    this.fitToPageButton = page.locator('button:has(svg.lucide-scan), button:has(svg.lucide-expand)').first();
-    this.selectionButton = page.locator('button:has(svg.lucide-mouse-pointer), button[aria-label*="select" i]').first();
+    this.fileTypeLabel = page.getByText(/^Original \w+ document$/);
+    this.pageIndicator = page.getByText(/^Page \d+ \/ \d+$/);
+    this.prevPageButton = this.pageIndicator.locator('xpath=preceding-sibling::button[1]');
+    this.nextPageButton = this.pageIndicator.locator('xpath=following-sibling::button[1]');
+    this.zoomInButton = page.getByRole('button', { name: 'Zoom in' });
+    this.zoomOutButton = page.getByRole('button', { name: 'Zoom out' });
+    this.zoomLevel = this.zoomOutButton.locator('xpath=following-sibling::*[1]');
+    this.downloadButton = page.getByRole('button', { name: 'Download' });
+    this.downloadLink = page.getByRole('link').filter({ has: this.downloadButton });
+    this.searchButton = page.getByRole('button', { name: 'Search in PDF' });
+    this.searchInput = page.getByRole('textbox', { name: 'Search in PDF…' });
+    this.searchSubmitButton = page.getByRole('button', { name: 'Search', exact: true });
+    this.searchResultCount = this.searchInput.locator('xpath=../..').getByText(/^\d+ \/ \d+$/);
+    this.pdfCanvas = page.locator('.rpv-core__inner-pages canvas, canvas');
+    this.pickBanner = page.getByText(/^Select text in the PDF to fill/);
 
-    // Right Panel - Tabs & Analysis
-    this.extractedDataTab = page.locator('button:has-text("Extracted Data"), [role="tab"]:has-text("Extracted Data")').first();
-    this.jsonViewTab = page.locator('button:has-text("JSON View"), [role="tab"]:has-text("JSON View")').first();
-    this.jsonContainer = page.locator('pre, code, textarea, [class*="json"]').first();
-    this.confidenceScores = page.locator('span:has-text("%"), [class*="badge"]:has-text("%")');
-    this.sourceCitationLinks = page.locator('text=/Source:\\s*Page/i');
-    this.copyButtons = page.locator('button:has(svg.lucide-copy), [aria-label*="copy" i]');
-    this.editButtons = page.locator('button:has(svg.lucide-pen), button:has(svg.lucide-pencil), [aria-label*="edit" i]');
-    this.addressSwapButtons = page.locator('button:has(svg.lucide-arrow-left-right), button:has(svg.lucide-arrow-right-left), button:has(svg.lucide-arrow-up-down), button:has-text("⇄")');
+    this.analysisHeading = page.getByRole('heading', { name: 'Document Analysis' });
+    this.completeButton = page.getByRole('button', { name: 'Complete', exact: true });
+    this.extractedDataTab = page.getByRole('tab', { name: 'Extracted Data' });
+    this.jsonViewTab = page.getByRole('tab', { name: 'JSON View' });
+    this.tabPanel = page.getByRole('tabpanel');
+    this.jsonBlock = this.tabPanel.locator('pre');
+    // Two Swap buttons: addressee names, then addresses
+    this.swapNamesButton = page.getByRole('button', { name: 'Swap', exact: true }).nth(0);
+    this.swapAddressesButton = page.getByRole('button', { name: 'Swap', exact: true }).nth(1);
+    this.lineItemsSummary = page.getByText(/^(Table with \d+ rows?|Array with \d+ items?)$/);
+    this.expandLineItemsButton = page.getByRole('button', { name: 'Expand table to view or edit values' });
+    // Clicking the section title opens the table inside the panel (its values link to the PDF page)
+    this.lineItemsSectionTitle = this.tabPanel.getByText('Order Line Items', { exact: true });
+    this.inlineLineItemRows = this.tabPanel.locator('table tbody tr');
 
-    // Extracted Fields
-    this.customerNameField = page.locator('div:has(> p:has-text("Customer Name")), div:has-text("Customer Name")').last();
-    this.poNumberField = page.locator('div:has(> p:has-text("Purchase Order")), div:has(> p:has-text("Po Number")), div:has-text("Purchase Order")').last();
-    this.dateField = page.locator('div:has(> p:has-text("Invoice Date")), div:has(> p:has-text("Estimate Date")), div:has-text("Invoice Date")').last();
-    this.totalAmountField = page.locator('div:has(> p:has-text("Total Amount")), div:has-text("Total Amount")').last();
-    this.billingAddressField = page.locator('div:has-text("Billing Address"), div:has-text("Billing Addressee Name")').last();
-    this.shippingAddressField = page.locator('div:has-text("Shipping Address"), div:has-text("Shipping Addressee Name")').last();
-
-    // Order Line Items & Modal
-    this.orderLineItemsHeader = page.locator(':text("Order Line Items")').first();
-    this.expandLineItemsButton = page.locator('div:has-text("Order Line Items") button:has(svg), div:has-text("Order Line Items") svg').last();
-    this.lineItemsModal = page.locator('[role="dialog"]:has-text("Order Line Items"), div:has(h2:has-text("Order Line Items"))').first();
-    this.editAllButton = page.locator('button:has-text("Edit All")').first();
-    this.editingStatusIndicator = page.locator('button:has-text("Editing"), :text("Editing")').first();
-    this.cancelEditButton = page.locator('button:has-text("Cancel")').first();
-    this.saveAllButton = page.locator('button:has-text("Save All"), button:has-text("Save")').first();
-    this.addRowButton = page.locator('button:has-text("+ Add Row"), button:has-text("Add Row")').first();
-    this.lineItemTable = page.locator('[role="dialog"] table, table').first();
-    this.lineItemRows = page.locator('[role="dialog"] table tbody tr, table tbody tr');
-    this.lineItemInputs = page.locator('[role="dialog"] table tbody tr input, table tbody tr input');
-    this.deleteRowButtons = page.locator('[role="dialog"] table tbody tr button:has(svg.lucide-trash), table tbody tr button:has(svg)');
-    this.closeModalButton = page.locator('[role="dialog"] button:has(svg.lucide-x), [role="dialog"] button:has-text("×")').first();
+    // The popup is the innermost element holding both its heading and its table
+    this.lineItemsModal = page
+      .locator('div')
+      .filter({ has: page.getByRole('heading', { name: 'Order Line Items', level: 2 }) })
+      .filter({ has: page.locator('table') })
+      .last();
+    this.lineItemsRowCount = this.lineItemsModal.getByText(/^\d+ rows?$/);
+    this.closeLineItemsButton = this.lineItemsModal.locator('button:has(svg.lucide-x)').first();
+    this.editAllButton = this.lineItemsModal.getByRole('button', { name: 'Edit All', exact: true });
+    this.editingButton = this.lineItemsModal.getByRole('button', { name: 'Editing...', exact: true });
+    this.saveAllButton = this.lineItemsModal.getByRole('button', { name: 'Save All', exact: true });
+    this.cancelButton = this.lineItemsModal.getByRole('button', { name: 'Cancel', exact: true });
+    this.addRowButton = this.lineItemsModal.getByRole('button', { name: '+ Add Row', exact: true });
+    this.saveChangesButton = this.lineItemsModal.getByRole('button', { name: 'Save Changes', exact: true });
+    this.newRowButton = this.lineItemsModal.getByRole('button', { name: '+ New row', exact: true });
+    this.lineItemHeaders = this.lineItemsModal.locator('thead th');
+    this.lineItemRows = this.lineItemsModal.locator('tbody tr');
   }
 
-  /**
-   * Wait for review page loading spinner to finish and core UI elements to be visible
-   */
-  async waitForReviewLoaded(): Promise<void> {
-    // Explicitly wait for any document loading spinner/overlay to disappear
-    const loading = this.page.locator(':text("Loading document..."), :text("Loading...")').first();
-    await loading.waitFor({ state: 'hidden', timeout: 35000 }).catch(() => {});
-    await this.page.waitForLoadState('domcontentloaded');
+  // =========================================================================
+  // Loading
+  // =========================================================================
 
-    // Explicitly wait until the core review interface element is visible
-    const reviewReady = this.completeButton
-      .or(this.extractedDataTab)
-      .or(this.pageNumberIndicator)
-      .or(this.documentTitle)
-      .first();
-    await reviewReady.waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
+  static isGetDocument = (r: Response, id?: string) =>
+    r.request().method() === 'GET' && (id ? r.url().includes(`/api/getDocument/${id}`) : /\/api\/getDocument\/\w+/.test(r.url()));
 
-    // Dismiss any popup error dialog (such as "ERP Insertion Failed") if one appeared
-    const errorDialogClose = this.page.locator('button:has-text("Close"), div[role="dialog"] button:has-text("Close")').first();
-    if (await errorDialogClose.isVisible().catch(() => false)) {
-      await errorDialogClose.click({ force: true }).catch(() => {});
-    }
-  }
-
-  /**
-   * Navigate to Documents library or Dashboard and open a reviewable document
-   */
-  async openFirstPdfDocument(): Promise<void> {
-    // If already on a review page, explicitly verify and return
-    if (this.page.url().includes('/review/')) {
-      await this.waitForReviewLoaded();
-      return;
-    }
-
-    await this.navigateTo('/documents');
-
-    // Explicitly wait for the documents table to render rows
-    const tableRow = this.page.locator('table tbody tr').first();
-    const hasTable = await tableRow.waitFor({ state: 'visible', timeout: 25000 }).then(() => true).catch(() => false);
-
-    if (hasTable) {
-      // Look for a PDF document review button
-      let pdfReviewBtn = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).locator('button:has-text("Review")').first();
-      let hasPdfBtn = await pdfReviewBtn.isVisible().catch(() => false);
-
-      // If no PDF review button is currently visible on the first page, search for .pdf
-      if (!hasPdfBtn) {
-        const searchInput = this.page.locator('input[placeholder*="search" i], input[type="search"]').first();
-        if (await searchInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await searchInput.fill('.pdf');
-          await this.page.keyboard.press('Enter');
-          await this.page.waitForTimeout(1000);
-          pdfReviewBtn = this.page.locator('table tbody tr').filter({ hasText: /\.pdf/i }).locator('button:has-text("Review")').first();
-          hasPdfBtn = await pdfReviewBtn.isVisible({ timeout: 5000 }).catch(() => false);
-        }
-      }
-
-      const anyReviewBtn = this.page.locator('table tbody tr button:has-text("Review"), button:has-text("Review")').first();
-      const targetBtn = hasPdfBtn ? pdfReviewBtn : anyReviewBtn;
-
-      if (await targetBtn.isVisible().catch(() => false)) {
-        await targetBtn.scrollIntoViewIfNeeded().catch(() => {});
-        await Promise.all([
-          this.page.waitForURL('**/review/**', { timeout: 35000 }),
-          targetBtn.click({ force: true }),
-        ]);
-        await this.waitForReviewLoaded();
-        return;
-      }
-    }
-
-    // Fallback: Open from Dashboard pending review table
-    await this.navigateTo('/dashboard');
-    const dashReviewBtn = this.page.locator('table tbody tr button:has-text("Review")').first();
-    await dashReviewBtn.waitFor({ state: 'visible', timeout: 25000 });
-    await dashReviewBtn.scrollIntoViewIfNeeded().catch(() => {});
-    await Promise.all([
-      this.page.waitForURL('**/review/**', { timeout: 35000 }),
-      dashReviewBtn.click({ force: true }),
-    ]);
+  /** Opens /review/<id> and returns the document the page loaded (reloading while it is still processing). */
+  async open(id: string, from: 'documents' | 'dashboard' = 'documents'): Promise<ReviewDocument> {
+    let doc: ReviewDocument | undefined;
+    await expect(async () => {
+      const loaded = this.page.waitForResponse((r) => ReviewPage.isGetDocument(r, id), { timeout: 45000 });
+      await this.navigateTo(`/review/${id}?from=${from}`);
+      const r = await loaded;
+      expect(r.status(), 'getDocument HTTP status').toBe(200);
+      doc = (await r.json()) as ReviewDocument;
+      expect(doc.status, `${doc.fileName} has finished processing`).not.toBe('processing');
+    }).toPass({ timeout: 300000, intervals: [10000, 15000, 20000] });
     await this.waitForReviewLoaded();
+    return doc!;
+  }
+
+  /** Waits until the analysis panel and the document preview have rendered (shared by other suites). */
+  async waitForReviewLoaded(): Promise<void> {
+    // "Extracted Data" is on every review page (PO, quote / SIF, spreadsheets)
+    await expect(this.extractedDataTab.or(this.page.getByText(/Loading document/i)).first()).toBeVisible({ timeout: 45000 });
+    await expect(this.page.getByText(/^Loading document/i)).toHaveCount(0, { timeout: 45000 });
+    await expect(this.extractedDataTab).toBeVisible({ timeout: 45000 });
+    // PDF: drawn on a canvas (zoom reads 0% until then); spreadsheets / EDI / SIF render as a table or text
+    await this.pdfCanvas
+      .first()
+      .or(this.page.getByText(/^Showing sheet \d+ of \d+$/))
+      .first()
+      .waitFor({ state: 'visible', timeout: 45000 })
+      .catch(() => {});
+    if (await this.pdfCanvas.first().isVisible()) await expect(this.zoomLevel).not.toHaveText('0%', { timeout: 30000 });
+  }
+
+  /** Re-reads the document from the API (same auth as the page). */
+  async reload(): Promise<ReviewDocument> {
+    const loaded = this.page.waitForResponse((r) => ReviewPage.isGetDocument(r), { timeout: 45000 });
+    await this.page.reload();
+    const doc = (await (await loaded).json()) as ReviewDocument;
+    await this.waitForReviewLoaded();
+    return doc;
+  }
+
+  // =========================================================================
+  // Header
+  // =========================================================================
+
+  /** Status badge next to "Submit to ERP" (Extracted, Reviewed, Success, ...). */
+  statusBadge(status: string | RegExp): Locator {
+    return this.page
+      .locator('div')
+      .filter({ has: this.backButton })
+      .filter({ has: this.submitToErpButton })
+      .last()
+      .getByText(status, { exact: typeof status === 'string' });
+  }
+
+  // =========================================================================
+  // Viewer
+  // =========================================================================
+
+  fileHeading(fileName: string): Locator {
+    return this.page.getByRole('heading', { name: fileName, level: 2 });
+  }
+
+  /** Text layer of one PDF page (role=region "Page N"). */
+  pdfPage(n: number): Locator {
+    return this.page.getByRole('region', { name: `Page ${n}`, exact: true });
   }
 
   /**
-   * Verify if document review page is loaded
+   * Waits until the PDF viewer has stopped scrolling. The page counter changes as soon as Next / Previous /
+   * a citation is clicked, before the viewer scrolls; a click made during that scroll is overridden by it.
    */
-  async isDocumentLoaded(): Promise<boolean> {
-    const hasHeader = await this.pageTitle.isVisible({ timeout: 10000 }).catch(() => false);
-    const hasComplete = await this.completeButton.isVisible({ timeout: 5000 }).catch(() => false);
-    return hasHeader || hasComplete;
+  async waitForPdfScrollSettled(): Promise<void> {
+    const scroller = this.page.locator('.rpv-core__inner-pages').first();
+    let last = -1;
+    await expect
+      .poll(
+        async () => {
+          const top = await scroller.evaluate((e) => e.scrollTop);
+          const settled = top === last;
+          last = top;
+          return settled;
+        },
+        { message: 'PDF viewer stopped scrolling', intervals: [400], timeout: 15000 },
+      )
+      .toBe(true);
   }
 
-  /**
-   * Expand Order Line Items modal
-   */
-  async expandOrderLineItems(): Promise<void> {
-    const isAlreadyOpen = await this.lineItemsModal.isVisible().catch(() => false);
-    if (!isAlreadyOpen) {
-      const expandBtn = this.page.locator('div:has-text("Order Line Items") button:has(svg), div:has-text("Order Line Items") svg, [aria-label*="expand" i]').last();
-      await expandBtn.scrollIntoViewIfNeeded().catch(() => {});
-      await expandBtn.click({ force: true });
-      await this.lineItemsModal.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
-    }
+  /** Goes to the next / previous PDF page and waits for the viewer to get there. */
+  async goToPage(direction: 'next' | 'previous'): Promise<void> {
+    await (direction === 'next' ? this.nextPageButton : this.prevPageButton).click();
+    await this.waitForPdfScrollSettled();
   }
 
-  /**
-   * Close Order Line Items modal
-   */
-  async closeOrderLineItems(): Promise<void> {
-    const isModalOpen = await this.lineItemsModal.isVisible().catch(() => false);
-    if (!isModalOpen) return;
-
-    const closeBtn = this.page.locator('[role="dialog"] button:has(svg.lucide-x), [role="dialog"] button:has-text("×"), [role="dialog"] button[aria-label*="close" i]').first();
-    if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await closeBtn.click();
-    } else {
-      await this.page.keyboard.press('Escape');
-    }
-    await this.lineItemsModal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+  async zoomPercent(): Promise<number> {
+    return parseInt((await this.zoomLevel.innerText()).replace('%', ''), 10);
   }
 
-  // Convenience helpers
-  async openJsonView(): Promise<void> {
-    await this.jsonViewTab.click();
+  /** "Pick value from PDF" for a field, then draws the selection rectangle around `text` on PDF page `pageNo`. */
+  async pickFromPdf(label: string, pageNo: number, text: string): Promise<void> {
+    await this.fieldPickButton(label).click();
+    await expect(this.pickBanner).toHaveText(`Select text in the PDF to fill "${label}"`);
+    const span = this.pdfPage(pageNo).locator('span.rpv-core__text-layer-text').filter({ hasText: new RegExp(`^${escapeRe(text)}$`) }).first();
+    await span.scrollIntoViewIfNeeded();
+    const box = (await span.boundingBox())!;
+    await this.page.mouse.move(box.x - 3, box.y - 3);
+    await this.page.mouse.down();
+    await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
+    await this.page.mouse.move(box.x + box.width + 3, box.y + box.height + 3, { steps: 10 });
+    await this.page.mouse.up();
+    await expect(this.pickBanner).toHaveCount(0);
   }
 
-  async openExtractedData(): Promise<void> {
-    await this.extractedDataTab.click();
+  // =========================================================================
+  // Extracted Data cards
+  // =========================================================================
+
+  /** A field card: label, confidence, value, "Source: Page N" and its buttons. */
+  fieldCard(label: string): Locator {
+    return this.tabPanel.locator('div.rounded-xl').filter({ has: this.page.getByText(label, { exact: true }) }).last();
   }
 
-  async getJsonContent(): Promise<string> {
-    return (await this.jsonContainer.innerText().catch(() => '')) || '';
+  /** Displayed value (the paragraph under the label; not shown while the field is being edited). */
+  fieldValue(label: string): Locator {
+    return this.fieldCard(label).locator('p').nth(1);
   }
 
-  async openLineItemsModal(): Promise<void> {
-    await this.expandOrderLineItems();
+  fieldConfidence(label: string): Locator {
+    return this.fieldCard(label).getByText(/^\d+%$/);
   }
 
-  async closeLineItemsModal(): Promise<void> {
-    await this.closeOrderLineItems();
+  fieldSource(label: string): Locator {
+    return this.fieldCard(label).getByText(/^Source: Page \d+$/);
   }
 
-  async isInEditMode(): Promise<boolean> {
-    return this.cancelEditButton.isVisible({ timeout: 2000 }).catch(() => false);
+  fieldCopyButton(label: string): Locator {
+    return this.fieldCard(label).locator('button:has(svg.lucide-copy)');
   }
 
-  async cancelEditing(): Promise<void> {
-    if (await this.cancelEditButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await this.cancelEditButton.click();
-    }
+  fieldEditButton(label: string): Locator {
+    return this.fieldCard(label).locator('button:has(svg.lucide-pen)');
+  }
+
+  fieldPickButton(label: string): Locator {
+    return this.fieldCard(label).getByRole('button', { name: 'Pick value from PDF' });
+  }
+
+  fieldInput(label: string): Locator {
+    return this.fieldCard(label).getByRole('textbox');
+  }
+
+  fieldSaveButton(label: string): Locator {
+    return this.fieldCard(label).locator('button:has(svg.lucide-check)');
+  }
+
+  /** Displayed value with line breaks / repeated spaces collapsed. */
+  async fieldText(label: string): Promise<string> {
+    return (await this.fieldValue(label).innerText()).replace(/\s+/g, ' ').trim();
+  }
+
+  // =========================================================================
+  // Order Line Items popup
+  // =========================================================================
+
+  async openLineItems(): Promise<void> {
+    await this.expandLineItemsButton.scrollIntoViewIfNeeded();
+    await this.expandLineItemsButton.click();
+    await expect(this.lineItemsModal).toBeVisible();
+    await expect(this.lineItemRows.first()).toBeVisible();
+  }
+
+  async closeLineItems(): Promise<void> {
+    await this.closeLineItemsButton.click();
+    await expect(this.lineItemsModal).toBeHidden();
+  }
+
+  /** Header texts of the line-items table. */
+  async lineItemColumns(): Promise<string[]> {
+    return (await this.lineItemHeaders.allInnerTexts()).map((t) => t.trim());
+  }
+
+  /** Cell texts of every row (input values while editing), without the Actions column. */
+  async lineItemValues(): Promise<string[][]> {
+    return this.lineItemRows.evaluateAll((rows) =>
+      rows.map((r) =>
+        [...(r as HTMLTableRowElement).cells]
+          .slice(0, -1)
+          .map((c) => ((c.querySelector('input, textarea') as HTMLInputElement | null)?.value ?? (c as HTMLElement).innerText).trim()),
+      ),
+    );
+  }
+
+  lineItemCell(row: number, column: number): Locator {
+    return this.lineItemRows.nth(row).locator('td').nth(column);
+  }
+
+  lineItemInput(row: number, column: number): Locator {
+    return this.lineItemCell(row, column).locator('input, textarea');
+  }
+
+  deleteRowButton(row: number): Locator {
+    return this.lineItemRows.nth(row).getByRole('button', { name: 'Delete row' });
+  }
+
+  clearRowButton(row: number): Locator {
+    return this.lineItemRows.nth(row).getByRole('button', { name: 'Clear row' });
+  }
+
+  /** Opens the line-items table inside the Extracted Data panel. */
+  async expandLineItemsInline(): Promise<void> {
+    await this.lineItemsSectionTitle.scrollIntoViewIfNeeded();
+    await this.lineItemsSectionTitle.click();
+    await expect(this.inlineLineItemRows.first()).toBeVisible();
+  }
+
+  /** Clickable value of an inline line-item cell (clicking it shows its PDF page). */
+  inlineLineItemValue(row: number, column: number): Locator {
+    return this.inlineLineItemRows.nth(row).locator('td').nth(column).locator('div[title]').first();
+  }
+
+  /** Drags line-item row `from` onto row `to` (HTML5 drag and drop). */
+  async dragRow(from: number, to: number): Promise<void> {
+    await this.lineItemRows.nth(from).dragTo(this.lineItemRows.nth(to));
   }
 }
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
