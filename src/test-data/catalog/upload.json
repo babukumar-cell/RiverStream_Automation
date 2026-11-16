@@ -1,0 +1,312 @@
+{
+  "TC_UP_001": {
+    "tcId": "TC_UP_001",
+    "module": "Upload Document",
+    "description": "Verify Document Type dropdown displays configured options (Quote Request, Purchase Order)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Navigate to Upload page\n2. Click Document type dropdown",
+    "testData": "-",
+    "expectedResult": "Options 'Quote Request' and 'Purchase Order' are visible",
+    "actualResult": ""
+  },
+  "TC_UP_002": {
+    "tcId": "TC_UP_002",
+    "module": "Upload Document",
+    "description": "Verify selection of 'Quote Request' document type",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Open Document type dropdown\n2. Select 'Quote Request'",
+    "testData": "Quote Request",
+    "expectedResult": "Quote Request is selected and reflected in the dropdown",
+    "actualResult": ""
+  },
+  "TC_UP_003": {
+    "tcId": "TC_UP_003",
+    "module": "Upload Document",
+    "description": "Verify selection of 'Purchase Order' document type",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Open Document type dropdown\n2. Select 'Purchase Order'",
+    "testData": "Purchase Order",
+    "expectedResult": "Purchase Order is selected and reflected in the dropdown",
+    "actualResult": ""
+  },
+  "TC_UP_004": {
+    "tcId": "TC_UP_004",
+    "module": "Upload Document",
+    "description": "Verify behavior when uploading without selecting a Document Type",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Choose a file without selecting Doc Type\n2. Click Process",
+    "testData": "invoice.pdf",
+    "expectedResult": "The Upload and Process button stays disabled until a document type is selected.",
+    "actualResult": ""
+  },
+  "TC_UP_005": {
+    "tcId": "TC_UP_005",
+    "module": "Upload Document",
+    "description": "Verify Document Type persistence when replacing attached file",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select Quote Request\n2. Attach file A\n3. Replace with file B",
+    "testData": "quote1.sif -> quote2.sif",
+    "expectedResult": "Selected document type remains Quote Request",
+    "actualResult": ""
+  },
+  "TC_UP_006": {
+    "tcId": "TC_UP_006",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid PDF file using Choose File",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select Purchase Order\n2. Click Choose File\n3. Select sample-invoice.pdf\n4. Click Process",
+    "testData": "sample-invoice.pdf",
+    "expectedResult": "File is uploaded and processed successfully",
+    "actualResult": ""
+  },
+  "TC_UP_007": {
+    "tcId": "TC_UP_007",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid EDI file using Choose File",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select Purchase Order\n2. Choose valid EDI file\n3. Click Process",
+    "testData": "order.edi",
+    "expectedResult": "EDI file accepted and ingestion triggered",
+    "actualResult": ""
+  },
+  "TC_UP_008": {
+    "tcId": "TC_UP_008",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid modern Excel workbook (.xlsx)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select Purchase Order\n2. Choose valid XLSX file\n3. Click Process",
+    "testData": "data.xlsx",
+    "expectedResult": "XLSX file accepted and uploaded successfully",
+    "actualResult": ""
+  },
+  "TC_UP_009": {
+    "tcId": "TC_UP_009",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid legacy Excel spreadsheet (.xls)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select Purchase Order\n2. Choose valid XLS file\n3. Click Process",
+    "testData": "report.xls",
+    "expectedResult": "XLS file accepted and uploaded successfully",
+    "actualResult": ""
+  },
+  "TC_UP_010": {
+    "tcId": "TC_UP_010",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid Riverstone SIF quotation file (.sif)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select Quote Request\n2. Choose customer SIF file\n3. Click Process",
+    "testData": "Riverstone SIF file",
+    "expectedResult": "SIF file is accepted, processed and parsed",
+    "actualResult": ""
+  },
+  "TC_UP_011": {
+    "tcId": "TC_UP_011",
+    "module": "Upload Document",
+    "description": "Verify upload of multi-page complex PDF document (>10 pages)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Attach multi-page invoice PDF\n2. Click Process",
+    "testData": "multi_page_po.pdf",
+    "expectedResult": "Multi-page PDF uploaded and queued for page-by-page extraction",
+    "actualResult": ""
+  },
+  "TC_UP_012": {
+    "tcId": "TC_UP_012",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid PDF file using Drag and Drop",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Drag PDF into dropzone\n2. Release mouse\n3. Click Process",
+    "testData": "invoice.pdf",
+    "expectedResult": "PDF dropped into zone, file attaches and processes",
+    "actualResult": ""
+  },
+  "TC_UP_013": {
+    "tcId": "TC_UP_013",
+    "module": "Upload Document",
+    "description": "Verify user can upload a valid SIF file using Drag and Drop",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Drag SIF file into dropzone\n2. Release mouse\n3. Click Process",
+    "testData": "order.sif",
+    "expectedResult": "SIF file dropped into zone and attaches successfully",
+    "actualResult": ""
+  },
+  "TC_UP_014": {
+    "tcId": "TC_UP_014",
+    "module": "Upload Document",
+    "description": "Verify clicking drag-and-drop container triggers file selection browser",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Click the Choose File button inside the dashed dropzone area\n2. Pick a file in the system file chooser",
+    "testData": "-",
+    "expectedResult": "Native system file chooser opens and the picked file is attached in the dropzone",
+    "actualResult": ""
+  },
+  "TC_UP_015": {
+    "tcId": "TC_UP_015",
+    "module": "Upload Document",
+    "description": "Verify visual border highlight state when dragging file over dropzone",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Drag a file over dropzone without releasing",
+    "testData": "Any file",
+    "expectedResult": "Dropzone displays active dashed highlight state",
+    "actualResult": ""
+  },
+  "TC_UP_016": {
+    "tcId": "TC_UP_016",
+    "module": "Upload Document",
+    "description": "Verify selected file name and size display before clicking Process",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select file via Choose File",
+    "testData": "invoice.pdf",
+    "expectedResult": "Selected file name is clearly displayed in UI",
+    "actualResult": ""
+  },
+  "TC_UP_017": {
+    "tcId": "TC_UP_017",
+    "module": "Upload Document",
+    "description": "Verify replacing attached file with a different file before processing",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Attach File A\n2. Click Remove File, click Choose File and select File B",
+    "testData": "fileA -> fileB",
+    "expectedResult": "File B replaces File A in preview",
+    "actualResult": ""
+  },
+  "TC_UP_018": {
+    "tcId": "TC_UP_018",
+    "module": "Upload Document",
+    "description": "Verify removal of attached file prior to submission",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Attach file\n2. Click Remove / Delete icon",
+    "testData": "invoice.pdf",
+    "expectedResult": "File is detached, dropzone returns to empty state",
+    "actualResult": ""
+  },
+  "TC_UP_019": {
+    "tcId": "TC_UP_019",
+    "module": "Upload Document",
+    "description": "Verify error when uploading image formats (JPG, PNG)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select image file (JPG/PNG)\n2. Click Process",
+    "testData": "photo.jpg",
+    "expectedResult": "Unsupported format error displayed (.pdf,.edi,.xlsx,.xls,.sif only)",
+    "actualResult": ""
+  },
+  "TC_UP_020": {
+    "tcId": "TC_UP_020",
+    "module": "Upload Document",
+    "description": "Verify error when uploading executable file (.exe, .bat)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select executable file\n2. Attempt upload",
+    "testData": "setup.exe",
+    "expectedResult": "Security block / invalid file type error shown",
+    "actualResult": ""
+  },
+  "TC_UP_021": {
+    "tcId": "TC_UP_021",
+    "module": "Upload Document",
+    "description": "Verify error when uploading plain text file (.txt)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select plain text file\n2. Attempt upload",
+    "testData": "notes.txt",
+    "expectedResult": "Unsupported format error shown",
+    "actualResult": ""
+  },
+  "TC_UP_022": {
+    "tcId": "TC_UP_022",
+    "module": "Upload Document",
+    "description": "Verify error when uploading file without file extension",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select extensionless file\n2. Attempt upload",
+    "testData": "invoice_no_ext",
+    "expectedResult": "System rejects file without recognized extension",
+    "actualResult": ""
+  },
+  "TC_UP_023": {
+    "tcId": "TC_UP_023",
+    "module": "Upload Document",
+    "description": "Verify error when uploading zero-byte (empty) file",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select 0-byte file\n2. Click Process",
+    "testData": "empty.pdf (0 KB)",
+    "expectedResult": "Error displayed indicating file is empty",
+    "actualResult": ""
+  },
+  "TC_UP_024": {
+    "tcId": "TC_UP_024",
+    "module": "Upload Document",
+    "description": "Verify error when uploading corrupted PDF file",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select corrupted PDF\n2. Click Process",
+    "testData": "corrupted.pdf",
+    "expectedResult": "The Upload page does not allow the corrupted file: an error is shown and the file is not uploaded",
+    "actualResult": ""
+  },
+  "TC_UP_025": {
+    "tcId": "TC_UP_025",
+    "module": "Upload Document",
+    "description": "Verify upload block for files exceeding maximum size limit (>50MB)",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Select oversized file (>50MB)\n2. Attempt upload",
+    "testData": "oversized.pdf (51MB)",
+    "expectedResult": "System displays file size limit exceeded error ('File is too large (51.00 MB). Maximum file size is 50MB.')",
+    "actualResult": ""
+  },
+  "TC_UP_026": {
+    "tcId": "TC_UP_026",
+    "module": "Upload Document",
+    "description": "Verify multi-file selection rejection when only single file allowed",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Attempt to pass 2 files at once",
+    "testData": "file1.pdf + file2.pdf",
+    "expectedResult": "System only accepts single file or shows error",
+    "actualResult": ""
+  },
+  "TC_UP_027": {
+    "tcId": "TC_UP_027",
+    "module": "Upload Document",
+    "description": "Verify duplicate file name collision detection and handling",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Upload invoice.pdf\n2. Upload exact same invoice.pdf again",
+    "testData": "invoice.pdf",
+    "expectedResult": "System identifies existing file or prompts duplicate warning",
+    "actualResult": ""
+  },
+  "TC_UP_028": {
+    "tcId": "TC_UP_028",
+    "module": "Upload Document",
+    "description": "Verify Process button state before file attachment",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Observe Process button when no file attached",
+    "testData": "-",
+    "expectedResult": "The Upload and Process button is not shown until a file is attached (the dropzone asks for a file)",
+    "actualResult": ""
+  },
+  "TC_UP_029": {
+    "tcId": "TC_UP_029",
+    "module": "Upload Document",
+    "description": "Verify success notification toast message upon upload completion",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Complete valid file upload\n2. Observe toast notification",
+    "testData": "valid.sif",
+    "expectedResult": "Success toast notification appears",
+    "actualResult": ""
+  },
+  "TC_UP_030": {
+    "tcId": "TC_UP_030",
+    "module": "Upload Document",
+    "description": "Verify 'Back to Dashboard' navigation link",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Click Back to Dashboard button",
+    "testData": "-",
+    "expectedResult": "User is navigated back to /dashboard",
+    "actualResult": ""
+  },
+  "TC_UP_031": {
+    "tcId": "TC_UP_031",
+    "module": "Upload Document",
+    "description": "Verify newly uploaded document appears in Document Library table",
+    "preconditions": "User on /upload page with Riverstone Org selected",
+    "steps": "1. Complete upload\n2. Navigate to /documents",
+    "testData": "uploaded_doc.pdf",
+    "expectedResult": "Uploaded document is listed in table with 'Processing' or 'Extracted' status",
+    "actualResult": ""
+  }
+}

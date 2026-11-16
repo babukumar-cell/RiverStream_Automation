@@ -141,8 +141,9 @@ export const SUBJECTS = {
 } as const;
 
 /** Waits for the RiverStream email with this subject sent to the run's Admin after `since` */
-export async function waitForMail(mail: MailService, subject: string, since: Date): Promise<RetrievedEmail> {
-  return mail.waitForReply({ token: subject, from: MAIL_FROM, to: RUN.adminEmail, since: new Date(since.getTime() - 60_000), timeoutMs: 240_000 });
+/** Waits for the email (default 4 min; the "Auto-renewal cancelled" email can take 5-6 min to arrive) */
+export async function waitForMail(mail: MailService, subject: string, since: Date, timeoutMs = 240_000): Promise<RetrievedEmail> {
+  return mail.waitForReply({ token: subject, from: MAIL_FROM, to: RUN.adminEmail, since: new Date(since.getTime() - 60_000), timeoutMs });
 }
 
 /** First link in the email whose URL matches `pattern` */

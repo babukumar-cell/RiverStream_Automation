@@ -299,6 +299,8 @@ export const MODULES: ModuleDef[] = [
   { key: 'review', order: 8, name: 'Document Review', shortName: 'Review', icon: '🔍', idPrefixes: ['REV', 'REVIEW_PAGE'], pathHints: ['review'] },
   { key: 'settings', order: 9, name: 'Settings & Organizations', shortName: 'Settings', icon: '⚙️', idPrefixes: ['SETT'], pathHints: ['settings'] },
   { key: 'email', order: 10, name: 'Email Order Ingestion', shortName: 'Email', icon: '✉️', idPrefixes: ['EM', 'RS_EM'], pathHints: ['email'] },
+  { key: 'sif', order: 11, name: 'SIF Conversion', shortName: 'SIF Conversion', icon: '🔄', idPrefixes: ['SIF'], pathHints: ['sif-conversion'] },
+  { key: 'billing', order: 12, name: 'Auto Renewal & Billing', shortName: 'Auto Renewal', icon: '💳', idPrefixes: ['BILL'], pathHints: ['autorenewal'] },
 ];
 
 export const GENERAL_MODULE: ModuleDef = {
@@ -649,6 +651,21 @@ interface AttemptLike {
   attachments: Array<{ name: string; contentType: string; path?: string }>;
 }
 
+/**
+ * Media a test opted into or out of via annotations:
+ * - video recordings of passed tests are kept only for tests annotated `video` (failed/flaky tests keep theirs);
+ * - `no-final-screenshot` drops Playwright's automatic end-of-test screenshot (the test attaches its own evidence).
+ */
+function filterMedia(status: CaseStatus, annotations: Annotation[], attachments: CaseAttachment[]): CaseAttachment[] {
+  const has = (type: string) => annotations.some((a) => a.type === type);
+  return attachments.filter((a) => {
+    const isVideo = a.contentType.startsWith('video/') || /\.(webm|mp4)$/i.test(a.path);
+    if (isVideo && status === 'passed' && !has('video')) return false;
+    if (a.name === 'screenshot' && has('no-final-screenshot')) return false;
+    return true;
+  });
+}
+
 function pickAttachments(status: CaseStatus, results: AttemptLike[]): CaseAttachment[] {
   // Final attempt, plus failed attempts of a flaky test so the transient failure is visible.
   const attempts = status === 'flaky' ? results : results.slice(-1);
@@ -700,7 +717,7 @@ export function rawCasesFromSuite(rootSuite: Suite, rootDir: string): RawCase[] 
       error,
       errorStack: stack,
       annotations: test.annotations.map((a) => ({ type: a.type, description: a.description })),
-      attachments: pickAttachments(status, results),
+      attachments: filterMedia(status, test.annotations, pickAttachments(status, results)),
       steps,
     };
   });
@@ -728,7 +745,7 @@ function rawCaseFromJson(spec: JSONReportSpec, test: JSONReportTest): RawCase {
     error,
     errorStack: stack,
     annotations: test.annotations || [],
-    attachments: pickAttachments(status, results),
+    attachments: filterMedia(status, test.annotations || [], pickAttachments(status, results)),
     steps: (last?.steps || []).map((s) => ({ title: s.title, durationMs: s.duration, ok: !s.error })),
   };
 }
@@ -737,7 +754,8 @@ function rawCaseFromJson(spec: JSONReportSpec, test: JSONReportTest): RawCase {
 // Enrichment and run assembly
 // ---------------------------------------------------------------------------
 
-const SETUP_PROJECTS = new Set(['setup']);
+// Login steps that save a session for the suites (sif-setup: the Testing organization user of the SIF suite)
+const SETUP_PROJECTS = new Set(['setup', 'sif-setup']);
 
 function skipReasonOf(raw: RawCase): string {
   const ann = raw.annotations.find((a) => a.type === 'skip' || a.type === 'fixme' || a.type === 'fail');

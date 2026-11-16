@@ -30,6 +30,9 @@ export const Config = {
     return requireEnv('ADMIN_PASSWORD');
   },
 
+  /** RiverStream backend API used by the web app (suites use it for test data setup and cleanup) */
+  apiBaseUrl: normalizeBaseUrl(process.env.API_BASE_URL || 'https://stream-qa-document-extraction.azurewebsites.net/api/'),
+
   /** Path of the saved admin session produced by tests/auth.setup.ts */
   adminStorageState: path.resolve(__dirname, '../../.auth/admin.json'),
 

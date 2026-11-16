@@ -35,10 +35,14 @@ export default defineConfig({
     navigationTimeout: 60000,
     trace: 'retain-on-failure',
     screenshot: 'on',
-    video: 'retain-on-failure',
+    // Videos are recorded at the window size, so the whole page is in the video (a project with a
+    // different viewport sets the same size for its video)
+    video: { mode: 'retain-on-failure', size: { width: 1280, height: 720 } },
     viewport: { width: 1280, height: 720 },
     launchOptions: {
       slowMo: process.env.SLOWMO ? parseInt(process.env.SLOWMO, 10) : 0,
+      // Windows display scaling (e.g. 125%) would zoom and crop the recorded videos: render at scale 1
+      args: ['--force-device-scale-factor=1'],
     },
   },
   projects: [
@@ -59,6 +63,27 @@ export default defineConfig({
       },
     },
     {
+      // Session of the Testing organization user (the SIF Conversion suite runs as that user)
+      name: 'sif-setup',
+      testMatch: /sif-user\.setup\.ts/,
+    },
+    {
+      // SIF Conversion in the organization Testing (uploads, reviews and deletes its own PDFs);
+      // the Super Admin session (setup) is used to switch Testing's SIF Conversion setting
+      name: 'sif-conversion',
+      dependencies: ['setup', 'sif-setup'],
+      testMatch: [/sif-conversion[/\\][^/\\]+\.spec\.ts/],
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.env.BROWSER_CHANNEL || undefined,
+        storageState: '.auth/sif-user.json',
+        // Wider window: the file table (9 columns + row button) fits without horizontal scrolling
+        viewport: { width: 1600, height: 900 },
+        // recorded for every case at the window size; the report shows it for the cases annotated 'video' (and for failures)
+        video: { mode: 'on', size: { width: 1600, height: 900 } },
+      },
+    },
+    {
       // Billing / Stripe auto-renewal lifecycle (creates and deletes its own organization)
       name: 'autorenewal',
       dependencies: ['setup'],
@@ -69,6 +94,8 @@ export default defineConfig({
         storageState: Config.adminStorageState,
         // Wider window: the Billing History table and the plan cards fit without horizontal scrolling
         viewport: { width: 1600, height: 900 },
+        // recorded for every case at the window size; the report shows it for the cases annotated 'video' (and for failures)
+        video: { mode: 'on', size: { width: 1600, height: 900 } },
       },
     },
     {

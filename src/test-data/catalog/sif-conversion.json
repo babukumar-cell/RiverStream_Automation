@@ -1,0 +1,812 @@
+{
+  "TC_SIF_001": {
+    "tcId": "TC_SIF_001",
+    "module": "SIF - Access & Layout",
+    "description": "Verify that a logged-in organization user can view the SIF Conversion menu.",
+    "preconditions": "User on the Sign-In page",
+    "steps": "1. Log in as an organization user (divya.d@riverstonetech.com, organization Testing).\n2. Observe the left side menu.",
+    "testData": "User name: divya.d@riverstonetech.com\nPassword: River@123\n(organization Testing)",
+    "expectedResult": "The SIF Conversion menu should be visible in the left side menu.",
+    "actualResult": ""
+  },
+  "TC_SIF_002": {
+    "tcId": "TC_SIF_002",
+    "module": "SIF - Access & Layout",
+    "description": "Verify that the SIF Conversion menu is accessible.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing)",
+    "steps": "1. Click on SIF Conversion in the left side menu.",
+    "testData": "User name: divya.d@riverstonetech.com\nPassword: River@123\n(organization Testing)",
+    "expectedResult": "The SIF Conversion page should open (/sif-conversion).",
+    "actualResult": ""
+  },
+  "TC_SIF_003": {
+    "tcId": "TC_SIF_003",
+    "module": "SIF - Access & Layout",
+    "description": "Verify the SIF Conversion list page layout.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing)",
+    "steps": "1. Click on SIF Conversion.\n2. Observe the page.",
+    "testData": "User name: divya.d@riverstonetech.com\nPassword: River@123\n(organization Testing)",
+    "expectedResult": "The page shows the title \"SIF Conversion\", the subtitle, the \"New conversion\" button, the status tabs (All, Ready for review, Extracting, Reviewed, Converted, Failed) with counts, the search box \"Search by file name\", the three filters (All document types, All templates, Anyone) and the file table with the columns File, Organization, Type, Status, Template, Line items, Uploaded by and Uploaded.",
+    "actualResult": ""
+  },
+  "TC_SIF_004": {
+    "tcId": "TC_SIF_004",
+    "module": "SIF - Status Tabs",
+    "description": "Verify that the \"All\" tab shows every file.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on the \"All\" tab.\n2. Scroll to the end of the list.",
+    "testData": "-",
+    "expectedResult": "All files are listed (all statuses) and the number of rows equals the count on the \"All\" tab.",
+    "actualResult": ""
+  },
+  "TC_SIF_005": {
+    "tcId": "TC_SIF_005",
+    "module": "SIF - Status Tabs",
+    "description": "Verify the \"Ready for review\" tab filter.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on the \"Ready for review\" tab.\n2. Scroll to the end of the list.",
+    "testData": "-",
+    "expectedResult": "Only files with the \"Ready for review\" status are listed and the number of rows equals the count on the \"Ready for review\" tab. If the count is 0, the message \"No conversions match these filters.\" is displayed and no rows appear.",
+    "actualResult": ""
+  },
+  "TC_SIF_006": {
+    "tcId": "TC_SIF_006",
+    "module": "SIF - Status Tabs",
+    "description": "Verify the \"Converted\" tab filter.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on the \"Converted\" tab.\n2. Scroll to the end of the list.",
+    "testData": "-",
+    "expectedResult": "Only files with the \"Converted\" status are listed and the number of rows equals the count on the \"Converted\" tab. If the count is 0, the message \"No conversions match these filters.\" is displayed and no rows appear.",
+    "actualResult": ""
+  },
+  "TC_SIF_007": {
+    "tcId": "TC_SIF_007",
+    "module": "SIF - Status Tabs",
+    "description": "Verify the \"Extracting\" tab filter.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on the \"Extracting\" tab.\n2. Scroll to the end of the list.",
+    "testData": "-",
+    "expectedResult": "Only files with the \"Extracting\" status are listed and the number of rows equals the count on the \"Extracting\" tab. If the count is 0, the message \"No conversions match these filters.\" is displayed and no rows appear.",
+    "actualResult": ""
+  },
+  "TC_SIF_008": {
+    "tcId": "TC_SIF_008",
+    "module": "SIF - Status Tabs",
+    "description": "Verify the \"Reviewed\" tab filter.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on the \"Reviewed\" tab.\n2. Scroll to the end of the list.",
+    "testData": "-",
+    "expectedResult": "Only files with the \"Reviewed\" status are listed and the number of rows equals the count on the \"Reviewed\" tab. If the count is 0, the message \"No conversions match these filters.\" is displayed and no rows appear.",
+    "actualResult": ""
+  },
+  "TC_SIF_009": {
+    "tcId": "TC_SIF_009",
+    "module": "SIF - Search",
+    "description": "Verify search by full file name.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Type the full file name in the search box.",
+    "testData": "Search: AUTO_SIF_<run>_PO.pdf",
+    "expectedResult": "Only the file with that name is listed.",
+    "actualResult": ""
+  },
+  "TC_SIF_010": {
+    "tcId": "TC_SIF_010",
+    "module": "SIF - Search",
+    "description": "Verify search by partial file name.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Type part of a file name in the search box.",
+    "testData": "Search: AUTO_SIF_<run>",
+    "expectedResult": "All files whose names contain the text are listed (the suite's files) and no other file.",
+    "actualResult": ""
+  },
+  "TC_SIF_011": {
+    "tcId": "TC_SIF_011",
+    "module": "SIF - Search",
+    "description": "Verify that search is case-insensitive.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Type the same partial name in lower case.",
+    "testData": "Search: auto_sif_<run>",
+    "expectedResult": "The same results as TC_SIF_010 are listed.",
+    "actualResult": ""
+  },
+  "TC_SIF_012": {
+    "tcId": "TC_SIF_012",
+    "module": "SIF - Search",
+    "description": "Verify search with no match.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Type a name that no file has.",
+    "testData": "Search: xyz123",
+    "expectedResult": "The message \"No conversions match these filters.\" is displayed and no rows appear.",
+    "actualResult": ""
+  },
+  "TC_SIF_013": {
+    "tcId": "TC_SIF_013",
+    "module": "SIF - Search",
+    "description": "Verify clearing the search.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Search for a file name.\n2. Clear the search box.",
+    "testData": "Search: AUTO_SIF_<run>",
+    "expectedResult": "The full list of the selected tab comes back (count equal to the tab count).",
+    "actualResult": ""
+  },
+  "TC_SIF_014": {
+    "tcId": "TC_SIF_014",
+    "module": "SIF - Filters",
+    "description": "Verify the Document type filter options.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on \"All document types\".",
+    "testData": "-",
+    "expectedResult": "The options are All document types (selected by default), Quote Request and Purchase Order.",
+    "actualResult": ""
+  },
+  "TC_SIF_015": {
+    "tcId": "TC_SIF_015",
+    "module": "SIF - Filters",
+    "description": "Verify the filter by Quote Request.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Select \"Quote Request\".",
+    "testData": "-",
+    "expectedResult": "Only rows with Type QR / Quote Request are listed and the filter shows \"Quote Request\".",
+    "actualResult": ""
+  },
+  "TC_SIF_016": {
+    "tcId": "TC_SIF_016",
+    "module": "SIF - Filters",
+    "description": "Verify the filter by Purchase Order.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Select \"Purchase Order\".",
+    "testData": "-",
+    "expectedResult": "Only rows with Type PO / Purchase Order are listed and the filter shows \"Purchase Order\".",
+    "actualResult": ""
+  },
+  "TC_SIF_017": {
+    "tcId": "TC_SIF_017",
+    "module": "SIF - Filters",
+    "description": "Verify the Template filter options.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on \"All templates\".",
+    "testData": "Organization: Testing (divya.d@riverstonetech.com)",
+    "expectedResult": "The options are All templates (selected by default) and the templates available to the organization Testing (Default PO, Default QR and its custom templates, e.g. New Template). Templates of other organizations (e.g. MBM QR, MBM_PO_Template used by MBM files) are not listed.",
+    "actualResult": ""
+  },
+  "TC_SIF_018": {
+    "tcId": "TC_SIF_018",
+    "module": "SIF - Filters",
+    "description": "Verify the filter by a template.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Select \"Default QR\".",
+    "testData": "-",
+    "expectedResult": "Only rows using the Default QR template are listed.",
+    "actualResult": ""
+  },
+  "TC_SIF_019": {
+    "tcId": "TC_SIF_019",
+    "module": "SIF - Filters",
+    "description": "Verify the Uploaded by filter options.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on \"Anyone\".",
+    "testData": "-",
+    "expectedResult": "The options are Anyone (selected by default) and Uploaded by me.",
+    "actualResult": ""
+  },
+  "TC_SIF_020": {
+    "tcId": "TC_SIF_020",
+    "module": "SIF - Filters",
+    "description": "Verify the filter \"Uploaded by me\".",
+    "preconditions": "User on the Sign-In page",
+    "steps": "1. Log in as divya.d@riverstonetech.com.\n2. Click on SIF Conversion.\n3. Select \"Uploaded by me\".",
+    "testData": "User name: divya.d@riverstonetech.com\nPassword: River@123\n(organization Testing)",
+    "expectedResult": "Only files uploaded by Divya are listed (none from other users).",
+    "actualResult": ""
+  },
+  "TC_SIF_021": {
+    "tcId": "TC_SIF_021",
+    "module": "SIF - Filters",
+    "description": "Verify combined filters.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on the \"Converted\" tab.\n2. Select Type = Quote Request.\n3. Select \"Uploaded by me\".",
+    "testData": "-",
+    "expectedResult": "Only rows matching all three conditions are listed, or the message \"No conversions match these filters.\" is displayed and no rows appear.",
+    "actualResult": ""
+  },
+  "TC_SIF_022": {
+    "tcId": "TC_SIF_022",
+    "module": "SIF - Filters",
+    "description": "Verify resetting the filters.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Apply filters.\n2. Set every filter back to \"All document types\" / \"All templates\" / \"Anyone\".",
+    "testData": "-",
+    "expectedResult": "The full list is displayed again (rows equal to the All tab count).",
+    "actualResult": ""
+  },
+  "TC_SIF_023": {
+    "tcId": "TC_SIF_023",
+    "module": "SIF - Row Actions",
+    "description": "Verify the status badge colors.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Observe the Status column.",
+    "testData": "-",
+    "expectedResult": "\"Converted\" shows a green badge and \"Ready for review\" shows an orange (amber) badge.",
+    "actualResult": ""
+  },
+  "TC_SIF_024": {
+    "tcId": "TC_SIF_024",
+    "module": "SIF - Row Actions",
+    "description": "Verify Download SIF from the list.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open; a converted file exists",
+    "steps": "1. Click on \"Download SIF\" of a converted file.\n2. Open the downloaded file.",
+    "testData": "AUTO_SIF_<run>_CONV.pdf (converted by the suite)",
+    "expectedResult": "A .sif file is downloaded and its content matches the extracted data and line items (P1 = PO number, PN / PD / QT for each line).",
+    "actualResult": ""
+  },
+  "TC_SIF_025": {
+    "tcId": "TC_SIF_025",
+    "module": "SIF - Row Actions",
+    "description": "Verify the Review button.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on \"Review\" of a \"Ready for review\" file.",
+    "testData": "AUTO_SIF_<run>_QR.pdf (Quote Request, Default QR)",
+    "expectedResult": "The Review page opens with the extracted data of that file.",
+    "actualResult": ""
+  },
+  "TC_SIF_026": {
+    "tcId": "TC_SIF_026",
+    "module": "SIF - Row Actions",
+    "description": "Verify the kebab (⋮) menu options.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on ⋮ of a row.",
+    "testData": "-",
+    "expectedResult": "The options are Review, Re-run extraction, Download original PDF and Delete (Delete shown in red).",
+    "actualResult": ""
+  },
+  "TC_SIF_027": {
+    "tcId": "TC_SIF_027",
+    "module": "SIF - Row Actions",
+    "description": "Verify Review from the kebab menu.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on ⋮.\n2. Click on Review.",
+    "testData": "AUTO_SIF_<run>_QR.pdf (Quote Request, Default QR)",
+    "expectedResult": "The Review page opens for that file.",
+    "actualResult": ""
+  },
+  "TC_SIF_028": {
+    "tcId": "TC_SIF_028",
+    "module": "SIF - Row Actions",
+    "description": "Verify Re-run extraction.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on ⋮.\n2. Click on Re-run extraction.\n3. Click on \"Re-run\" in the confirmation.",
+    "testData": "AUTO_SIF_<run>_ACT.pdf",
+    "expectedResult": "A confirmation \"Re-run extraction\" is displayed first. After Re-run the status changes to \"Extracting\" (Extracting tab count +1) and, when extraction finishes, to \"Ready for review\" (or \"Failed\" on error).",
+    "actualResult": ""
+  },
+  "TC_SIF_029": {
+    "tcId": "TC_SIF_029",
+    "module": "SIF - Row Actions",
+    "description": "Verify Download original PDF.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on ⋮.\n2. Click on Download original PDF.",
+    "testData": "AUTO_SIF_<run>_ACT.pdf",
+    "expectedResult": "The original PDF is downloaded with the same name and content as the uploaded file.",
+    "actualResult": ""
+  },
+  "TC_SIF_030": {
+    "tcId": "TC_SIF_030",
+    "module": "SIF - Row Actions",
+    "description": "Verify the Delete confirmation.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on ⋮.\n2. Click on Delete.",
+    "testData": "AUTO_SIF_<run>_ACT.pdf",
+    "expectedResult": "The confirmation \"Delete conversion\" (\"Delete <file>? It will no longer appear in the list.\") is displayed with Cancel and Delete, before anything is deleted.",
+    "actualResult": ""
+  },
+  "TC_SIF_031": {
+    "tcId": "TC_SIF_031",
+    "module": "SIF - Row Actions",
+    "description": "Verify Delete with confirmation.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on ⋮.\n2. Click on Delete.\n3. Click on Delete in the confirmation.",
+    "testData": "AUTO_SIF_<run>_ACT.pdf",
+    "expectedResult": "The message \"<file> deleted.\" is displayed, the file is removed from the list and the tab counts decrease.",
+    "actualResult": ""
+  },
+  "TC_SIF_032": {
+    "tcId": "TC_SIF_032",
+    "module": "SIF - Row Actions",
+    "description": "Verify Delete with Cancel.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Find the file in the list and click on its ⋮.\n2. Click on Delete.\n3. Click on Cancel.",
+    "testData": "AUTO_SIF_<run>_ACT.pdf",
+    "expectedResult": "The confirmation closes and the file stays in the list unchanged.",
+    "actualResult": ""
+  },
+  "TC_SIF_033": {
+    "tcId": "TC_SIF_033",
+    "module": "SIF - Row Actions",
+    "description": "Verify closing the kebab menu.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Open the ⋮ menu.\n2. Press Esc (or click outside it).",
+    "testData": "-",
+    "expectedResult": "The menu closes without any action.",
+    "actualResult": ""
+  },
+  "TC_SIF_034": {
+    "tcId": "TC_SIF_034",
+    "module": "SIF - Row Actions",
+    "description": "Verify the New conversion button.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on \"New conversion\".",
+    "testData": "-",
+    "expectedResult": "The New conversion (upload) page opens.",
+    "actualResult": ""
+  },
+  "TC_SIF_035": {
+    "tcId": "TC_SIF_035",
+    "module": "SIF - New Conversion",
+    "description": "Verify the New conversion page layout.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on \"New conversion\".\n2. Observe the page.",
+    "testData": "-",
+    "expectedResult": "The page shows the title \"Convert a PDF to SIF\", the subtitle, the Document type dropdown, the SIF template dropdown, the Preview fields link, the upload area, the \"Choose File\" button and the text \"Accepted format: PDF · Max file size: 25MB\".",
+    "actualResult": ""
+  },
+  "TC_SIF_036": {
+    "tcId": "TC_SIF_036",
+    "module": "SIF - New Conversion",
+    "description": "Verify the default state of the dropdowns.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Observe the Document type and SIF template dropdowns.",
+    "testData": "-",
+    "expectedResult": "Document type shows \"Choose a document type\". SIF template is disabled and shows \"Choose a document type first\".",
+    "actualResult": ""
+  },
+  "TC_SIF_037": {
+    "tcId": "TC_SIF_037",
+    "module": "SIF - New Conversion",
+    "description": "Verify the Document type options.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Click on the Document type dropdown.",
+    "testData": "-",
+    "expectedResult": "The options are Purchase Order and Quote Request.",
+    "actualResult": ""
+  },
+  "TC_SIF_038": {
+    "tcId": "TC_SIF_038",
+    "module": "SIF - New Conversion",
+    "description": "Verify selecting Purchase Order.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select \"Purchase Order\".",
+    "testData": "-",
+    "expectedResult": "The dropdown shows \"Purchase Order\", SIF template becomes enabled and \"Default PO\" is selected.",
+    "actualResult": ""
+  },
+  "TC_SIF_039": {
+    "tcId": "TC_SIF_039",
+    "module": "SIF - New Conversion",
+    "description": "Verify selecting Quote Request.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select \"Quote Request\".",
+    "testData": "-",
+    "expectedResult": "The dropdown shows \"Quote Request\", SIF template becomes enabled and \"Default QR\" is selected.",
+    "actualResult": ""
+  },
+  "TC_SIF_040": {
+    "tcId": "TC_SIF_040",
+    "module": "SIF - New Conversion",
+    "description": "Verify the default template for Quote Request.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select Quote Request in Document type.\n2. Observe the SIF template dropdown.\n3. Open the SIF template dropdown.",
+    "testData": "-",
+    "expectedResult": "\"Default QR\" is selected automatically in the SIF template dropdown; in the option list it is shown under \"Default\" and marked as the selected option.",
+    "actualResult": ""
+  },
+  "TC_SIF_041": {
+    "tcId": "TC_SIF_041",
+    "module": "SIF - Preview Fields",
+    "description": "Verify the Preview fields data for Default QR.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select Quote Request (Default QR).\n2. Click on Preview fields.",
+    "testData": "-",
+    "expectedResult": "All fields are listed with SIF key, level and type, e.g. Project = P1 / Document / Text, Part Number = PN / Product line / Text, Option List Price = OL / Option / finish / Price.",
+    "actualResult": ""
+  },
+  "TC_SIF_042": {
+    "tcId": "TC_SIF_042",
+    "module": "SIF - Preview Fields",
+    "description": "Verify that required fields are marked.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Open Preview fields for Default QR.",
+    "testData": "-",
+    "expectedResult": "Part Number, Description and Qty are marked with a red asterisk (*).",
+    "actualResult": ""
+  },
+  "TC_SIF_043": {
+    "tcId": "TC_SIF_043",
+    "module": "SIF - Preview Fields",
+    "description": "Verify that the preview is view-only.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Open Preview fields.\n2. Try to edit any value.",
+    "testData": "-",
+    "expectedResult": "The popup says \"(view only)\" and has no editable field.",
+    "actualResult": ""
+  },
+  "TC_SIF_044": {
+    "tcId": "TC_SIF_044",
+    "module": "SIF - Preview Fields",
+    "description": "Verify the preview of Default PO.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select Purchase Order (Default PO).\n2. Click on Preview fields.",
+    "testData": "-",
+    "expectedResult": "The popup shows \"Default PO\" with the Purchase Order template fields (e.g. PO Number = P1).",
+    "actualResult": ""
+  },
+  "TC_SIF_045": {
+    "tcId": "TC_SIF_045",
+    "module": "SIF - Preview Fields",
+    "description": "Verify closing the preview.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Open Preview fields.\n2. Click on Close.",
+    "testData": "-",
+    "expectedResult": "The popup closes and the page keeps the same selections.",
+    "actualResult": ""
+  },
+  "TC_SIF_046": {
+    "tcId": "TC_SIF_046",
+    "module": "SIF - Upload",
+    "description": "Verify uploading a PDF with \"Choose File\".",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select the document type and template.\n2. Click on \"Choose File\" and select a valid PDF.\n3. Click on \"Upload and Extract\".",
+    "testData": "AUTO_SIF_<run>_UP1.pdf",
+    "expectedResult": "The chosen file name is shown on the upload page and \"Upload and Extract\" is enabled; after clicking it the file is uploaded, extraction starts and the file is listed with the status \"Extracting\".",
+    "actualResult": ""
+  },
+  "TC_SIF_047": {
+    "tcId": "TC_SIF_047",
+    "module": "SIF - Upload",
+    "description": "Verify uploading a PDF by drag and drop.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select the document type and template.\n2. Drag a PDF over the upload area and drop it.",
+    "testData": "AUTO_SIF_<run>_DND.pdf",
+    "expectedResult": "The area is highlighted while dragging, and the dropped file is shown, ready to upload.",
+    "actualResult": ""
+  },
+  "TC_SIF_048": {
+    "tcId": "TC_SIF_048",
+    "module": "SIF - Upload",
+    "description": "Verify uploading a file that is not a PDF.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select the document type.\n2. Choose a .docx and then a .jpg file.",
+    "testData": "not-a-pdf.docx, picture.jpg",
+    "expectedResult": "The message \"Only PDF files can be converted.\" is displayed and the file is not accepted.",
+    "actualResult": ""
+  },
+  "TC_SIF_049": {
+    "tcId": "TC_SIF_049",
+    "module": "SIF - Upload",
+    "description": "Verify uploading a file larger than 25MB.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select the document type.\n2. Choose a 30MB PDF.",
+    "testData": "big-30MB.pdf",
+    "expectedResult": "The message \"The PDF is larger than 25 MB.\" is displayed and the file is not accepted.",
+    "actualResult": ""
+  },
+  "TC_SIF_050": {
+    "tcId": "TC_SIF_050",
+    "module": "SIF - Upload",
+    "description": "Verify uploading a file of exactly 25MB.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select the document type.\n2. Choose a 25MB PDF.\n3. Click on \"Upload and Extract\".",
+    "testData": "AUTO_SIF_<run>_25MB.pdf",
+    "expectedResult": "The file is accepted (25.00 MB) and uploaded successfully.",
+    "actualResult": ""
+  },
+  "TC_SIF_051": {
+    "tcId": "TC_SIF_051",
+    "module": "SIF - Upload",
+    "description": "Verify uploading an empty PDF.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select the document type.\n2. Choose a 0 KB PDF.",
+    "testData": "empty.pdf",
+    "expectedResult": "The message \"This file is empty.\" is displayed and the file is not accepted.",
+    "actualResult": ""
+  },
+  "TC_SIF_052": {
+    "tcId": "TC_SIF_052",
+    "module": "SIF - Upload",
+    "description": "Verify Back to SIF Conversion.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Click on \"Back to SIF Conversion\" at the top.",
+    "testData": "-",
+    "expectedResult": "The SIF Conversion list opens and nothing is uploaded.",
+    "actualResult": ""
+  },
+  "TC_SIF_053": {
+    "tcId": "TC_SIF_053",
+    "module": "SIF - Upload",
+    "description": "Verify that the Remove button appears after choosing a file.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Select the document type and template.\n2. Choose a PDF.",
+    "testData": "AUTO_SIF_<run>_UP2.pdf",
+    "expectedResult": "The file name and size are shown in the upload area with a \"Remove File\" button.",
+    "actualResult": ""
+  },
+  "TC_SIF_054": {
+    "tcId": "TC_SIF_054",
+    "module": "SIF - Upload",
+    "description": "Verify removing the chosen file.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Choose a PDF.\n2. Click on \"Remove File\".",
+    "testData": "AUTO_SIF_<run>_UP2.pdf",
+    "expectedResult": "The file is removed, the empty upload area comes back and \"Upload and Extract\" is no longer available.",
+    "actualResult": ""
+  },
+  "TC_SIF_055": {
+    "tcId": "TC_SIF_055",
+    "module": "SIF - Upload",
+    "description": "Verify choosing a new file after removing one.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Choose a PDF.\n2. Click on \"Remove File\".\n3. Choose a different PDF.",
+    "testData": "AUTO_SIF_<run>_UP1.pdf, AUTO_SIF_<run>_UP2.pdf",
+    "expectedResult": "The new file is shown and \"Upload and Extract\" is available.",
+    "actualResult": ""
+  },
+  "TC_SIF_056": {
+    "tcId": "TC_SIF_056",
+    "module": "SIF - Extraction",
+    "description": "Verify the status Extracting.",
+    "preconditions": "File uploaded (TC_SIF_056)",
+    "steps": "1. Observe the new row.",
+    "testData": "AUTO_SIF_<run>_UP2.pdf",
+    "expectedResult": "The status is \"Extracting\" with \"Processing...\" and the \"Extracting\" tab count increases by 1.",
+    "actualResult": ""
+  },
+  "TC_SIF_057": {
+    "tcId": "TC_SIF_057",
+    "module": "SIF - Extraction",
+    "description": "Verify the status Ready for review.",
+    "preconditions": "File uploaded (TC_SIF_056)",
+    "steps": "1. Wait until the extraction finishes.",
+    "testData": "AUTO_SIF_<run>_UP2.pdf",
+    "expectedResult": "The status changes to \"Ready for review\", the line items count is shown, the tab counts update and the \"Review\" button appears.",
+    "actualResult": ""
+  },
+  "TC_SIF_058": {
+    "tcId": "TC_SIF_058",
+    "module": "SIF - Extraction",
+    "description": "Verify a failed extraction.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); New conversion page open",
+    "steps": "1. Choose an unreadable (corrupted) PDF.\n2. Click on \"Upload and Extract\".",
+    "testData": "AUTO_SIF_<run>_BAD.pdf (corrupted)",
+    "expectedResult": "The status changes to \"Failed\" and the \"Failed\" tab count increases by 1.",
+    "actualResult": ""
+  },
+  "TC_SIF_059": {
+    "tcId": "TC_SIF_059",
+    "module": "SIF - Review",
+    "description": "Verify that the Review button opens the Review page.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on \"Review\" of a \"Ready for review\" file.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The Review page opens with the PDF on the left and the extracted data on the right.",
+    "actualResult": ""
+  },
+  "TC_SIF_060": {
+    "tcId": "TC_SIF_060",
+    "module": "SIF - Review",
+    "description": "Verify the Review page header.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Observe the header.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The header shows Back, the file name, \"Purchase Order · Template: Default PO\", the \"Ready for review\" badge, Save (disabled) and \"Convert to SIF\".",
+    "actualResult": ""
+  },
+  "TC_SIF_061": {
+    "tcId": "TC_SIF_061",
+    "module": "SIF - Review",
+    "description": "Verify the PDF preview.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Scroll the PDF on the left.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The PDF is readable and every page is shown.",
+    "actualResult": ""
+  },
+  "TC_SIF_062": {
+    "tcId": "TC_SIF_062",
+    "module": "SIF - Review",
+    "description": "Verify that Extracted Data is selected by default.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Observe the right panel.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "\"Extracted Data\" is selected and shows the Document section and the Product Lines section.",
+    "actualResult": ""
+  },
+  "TC_SIF_063": {
+    "tcId": "TC_SIF_063",
+    "module": "SIF - Review",
+    "description": "Verify the copy icon.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on the copy icon of PO Number.\n2. Paste it.",
+    "testData": "PO Number of the suite's PO",
+    "expectedResult": "The PO number is copied and the message \"Copied to clipboard!\" is displayed.",
+    "actualResult": ""
+  },
+  "TC_SIF_064": {
+    "tcId": "TC_SIF_064",
+    "module": "SIF - Review",
+    "description": "Verify editing a document field.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on the edit icon of Project.\n2. Change the value.\n3. Click on the tick icon.",
+    "testData": "Project: Edited Project <run>",
+    "expectedResult": "The field shows the new value.",
+    "actualResult": ""
+  },
+  "TC_SIF_065": {
+    "tcId": "TC_SIF_065",
+    "module": "SIF - Review",
+    "description": "Verify that Save is disabled before any edit.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Observe the Save button.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The Save button is disabled.",
+    "actualResult": ""
+  },
+  "TC_SIF_066": {
+    "tcId": "TC_SIF_066",
+    "module": "SIF - Review",
+    "description": "Verify that Save becomes enabled after an edit.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Edit any field or row.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The Save button becomes enabled.",
+    "actualResult": ""
+  },
+  "TC_SIF_067": {
+    "tcId": "TC_SIF_067",
+    "module": "SIF - Review",
+    "description": "Verify saving the changes.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Edit a field.\n2. Click on Save.\n3. Refresh the page.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The message \"Saved.\" is displayed, the status becomes \"Reviewed\", the edited value stays after refresh and Save is disabled again.",
+    "actualResult": ""
+  },
+  "TC_SIF_068": {
+    "tcId": "TC_SIF_068",
+    "module": "SIF - Product Lines",
+    "description": "Verify the edit and delete icons of each row.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Scroll the Product Lines table to the right.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "Every row has an Edit icon and a Delete icon in the Actions column.",
+    "actualResult": ""
+  },
+  "TC_SIF_069": {
+    "tcId": "TC_SIF_069",
+    "module": "SIF - Product Lines",
+    "description": "Verify editing a product line.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on the edit icon of a row.\n2. Change Qty.\n3. Click on the tick icon.",
+    "testData": "Qty: 5",
+    "expectedResult": "The row shows the new Qty and Save becomes enabled.",
+    "actualResult": ""
+  },
+  "TC_SIF_070": {
+    "tcId": "TC_SIF_070",
+    "module": "SIF - Product Lines",
+    "description": "Verify deleting a product line.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on the delete icon of a row.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The row is removed immediately (no confirmation), the row count (\"Table with N rows\") decreases and Save becomes enabled.",
+    "actualResult": ""
+  },
+  "TC_SIF_071": {
+    "tcId": "TC_SIF_071",
+    "module": "SIF - Product Lines",
+    "description": "Verify that New row creates an empty row.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on \"+ New row\".",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "An empty editable row appears at the end of the table, and New row, Save and Convert to SIF are disabled while it is being edited.",
+    "actualResult": ""
+  },
+  "TC_SIF_072": {
+    "tcId": "TC_SIF_072",
+    "module": "SIF - Product Lines",
+    "description": "Verify confirming a new row with the tick icon.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on New row.\n2. Enter Part Number, Description and Qty.\n3. Click on the tick icon.",
+    "testData": "CD-NEW-<run> / Automation New Row / 4",
+    "expectedResult": "The row is added, the row count increases by 1, New row is enabled again and Save becomes enabled.",
+    "actualResult": ""
+  },
+  "TC_SIF_073": {
+    "tcId": "TC_SIF_073",
+    "module": "SIF - Product Lines",
+    "description": "Verify adding another row.",
+    "preconditions": "New row added (TC_SIF_072)",
+    "steps": "1. Click on New row again.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "Another empty row is created at the end of the table.",
+    "actualResult": ""
+  },
+  "TC_SIF_074": {
+    "tcId": "TC_SIF_074",
+    "module": "SIF - Product Lines",
+    "description": "Verify collapsing and expanding Product Lines.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on the arrow next to \"Product Lines\".\n2. Click on it again.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The section collapses and expands.",
+    "actualResult": ""
+  },
+  "TC_SIF_075": {
+    "tcId": "TC_SIF_075",
+    "module": "SIF - Review",
+    "description": "Verify the JSON View.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on the \"JSON View\" tab.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The extracted data is shown in JSON format with the same values as Extracted Data.",
+    "actualResult": ""
+  },
+  "TC_SIF_076": {
+    "tcId": "TC_SIF_076",
+    "module": "SIF - Convert & Download",
+    "description": "Verify Convert to SIF.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Review the data.\n2. Click on \"Convert to SIF\".",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The SIF file is generated and downloaded (\"<file>.sif downloaded.\") and the status changes to \"Converted\".",
+    "actualResult": ""
+  },
+  "TC_SIF_077": {
+    "tcId": "TC_SIF_077",
+    "module": "SIF - Convert & Download",
+    "description": "Verify Download SIF of the converted file.",
+    "preconditions": "File converted (TC_SIF_076)",
+    "steps": "1. Go to the list.\n2. Click on \"Download SIF\" of the converted file.",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The SIF file is downloaded and its content matches the reviewed data, including the edits (Project, Qty, new row, deleted row).",
+    "actualResult": ""
+  },
+  "TC_SIF_078": {
+    "tcId": "TC_SIF_078",
+    "module": "SIF - Convert & Download",
+    "description": "Verify the Back button.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); Review page of the suite's Purchase Order file (Ready for review) open",
+    "steps": "1. Click on \"Back\".",
+    "testData": "AUTO_SIF_<run>_PO.pdf (Purchase Order, Default PO)",
+    "expectedResult": "The SIF Conversion list opens.",
+    "actualResult": ""
+  },
+  "TC_SIF_079": {
+    "tcId": "TC_SIF_079",
+    "module": "SIF - Organization Setting",
+    "description": "Verify that turning off the SIF Conversion toggle disables the feature for the organization.",
+    "preconditions": "User on the Sign-In page",
+    "steps": "1. Log in as Super Admin.\n2. Go to the Organizations page.\n3. Open the organization Testing.\n4. Click on Edit.\n5. Turn OFF the \"SIF Conversion\" toggle.\n6. Click on Save.\n7. Log out and log in as divya.d@riverstonetech.com (password River@123), a user of Testing.\n8. Check the side menu and open the SIF Conversion URL directly.\n9. (Clean-up) Turn the toggle ON again.",
+    "testData": "Super Admin:\nUser name: admin@riverstonetech.com\nPassword: River@123\nAdmin user (organization Testing):\nUser name: divya.d@riverstonetech.com\nPassword: River@123",
+    "expectedResult": "The toggle saves as OFF, \"SIF Conversion\" is hidden from the side menu of that organization's users, opening the SIF Conversion URL directly is blocked with an access message, and other organizations are not affected (their SIF Conversion setting is unchanged).",
+    "actualResult": ""
+  },
+  "TC_SIF_080": {
+    "tcId": "TC_SIF_080",
+    "module": "SIF - Status Tabs",
+    "description": "Verify the \"Failed\" tab filter.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Click on the \"Failed\" tab.",
+    "testData": "AUTO_SIF_<run>_BAD.pdf (failed)",
+    "expectedResult": "Only files with the \"Failed\" status are listed and the number of rows equals the count on the \"Failed\" tab.",
+    "actualResult": ""
+  },
+  "TC_SIF_081": {
+    "tcId": "TC_SIF_081",
+    "module": "SIF - Row Actions",
+    "description": "Verify the reason and Retry button of a failed file.",
+    "preconditions": "Logged in as divya.d@riverstonetech.com (organization Testing); SIF Conversion page open",
+    "steps": "1. Observe the failed file.\n2. Hover the \"Failed\" status.",
+    "testData": "AUTO_SIF_<run>_BAD.pdf (failed)",
+    "expectedResult": "The failed file shows a \"Retry\" button and the reason \"This PDF could not be read. It may be password-protected, damaged, or too large (max 100 pages).\"",
+    "actualResult": ""
+  }
+}

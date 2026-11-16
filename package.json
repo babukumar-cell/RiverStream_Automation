@@ -24,6 +24,7 @@
     "test:review": "playwright test tests/review",
     "test:settings": "playwright test tests/settings",
     "test:autorenewal": "playwright test --project=autorenewal",
+    "test:sif": "playwright test --project=sif-conversion",
     "test:email": "playwright test tests/email",
     "test:main": "npm run allure:clean && playwright test",
     "test:main:email": "node scripts/run-and-report.js",

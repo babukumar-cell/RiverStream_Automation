@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { expect as plainExpect } from '@playwright/test';
 import { test, expect } from '../../src/fixtures/test.fixture';
 import { Config } from '../../src/config/environment';
 import { LoginPage } from '../../src/pages/login.page';
@@ -45,6 +46,9 @@ import {
  */
 
 const ESC = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Cases whose execution video is attached to the report (the project records every case; the report keeps these) */
+const VIDEO = { annotation: { type: 'video', description: 'Execution video attached to the report' } };
 
 test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
   // In order, one worker. Not 'serial': a failed step must not skip the later independent steps and the cleanup.
@@ -195,7 +199,8 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await billing.plans.selectPeriod('Monthly');
     await billing.plans.selectPlan('Starter');
     await billing.plans.selectPlan('Growth');
-    await expect(billing.plans.card('Starter')).toHaveAttribute('aria-pressed', 'false');
+    // checked without highlighting: only the selected plan (Growth) is highlighted in the evidence
+    await plainExpect(billing.plans.card('Starter')).toHaveAttribute('aria-pressed', 'false');
     await expect(billing.selectedPlanValue).toHaveText('Growth');
     await expect(billing.plans.card('Growth')).toHaveAttribute('aria-pressed', 'true');
   });
@@ -351,7 +356,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(page.getByRole('link', { name: 'View Billing', exact: true })).toBeVisible();
   });
 
-  test('TC_BILL_019: Verify that the View Billing button in the email redirects to the application Billing page.', async ({ page, mailService }) => {
+  test('TC_BILL_019: Verify that the View Billing button in the email redirects to the application Billing page.', VIDEO, async ({ page, mailService }) => {
     requires(state.paidAt, 'the successful payment (TC_BILL_016)');
     const mail = await waitForMail(mailService, SUBJECTS.planActive, state.paidAt!);
     await asAdmin(page);
@@ -377,7 +382,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(billing.plans.currentPlanBadge('Growth')).toBeVisible();
   });
 
-  test('TC_BILL_021: Verify that switching plans is blocked while the subscription renews automatically.', async ({ page }) => {
+  test('TC_BILL_021: Verify that switching plans is blocked while the subscription renews automatically.', VIDEO, async ({ page }) => {
     requires(state.paidAt, 'the successful payment (TC_BILL_016)');
     await asAdmin(page);
     const billing = new BillingPage(page);
@@ -530,6 +535,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
   });
 
   test('TC_BILL_029: Verify that the Yes, cancel button cancels the subscription renewal.', async ({ page, mailService }) => {
+    test.setTimeout(900_000);
     requires(state.renewalDate, 'the active subscription (TC_BILL_017)');
     await asAdmin(page);
     const billing = new BillingPage(page);
@@ -550,7 +556,8 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(billing.cancelSubscriptionButton).toHaveCount(0);
 
     // Notification: the "Auto-renewal cancelled" email (shown in a second tab, also in the report)
-    const mail = await waitForMail(mailService, SUBJECTS.renewalCancelled, clickedAt);
+    // observed 4.5-5.6 min after the click (2026-11-16): waits up to 10 min
+    const mail = await waitForMail(mailService, SUBJECTS.renewalCancelled, clickedAt, 600_000);
     const mailPage = await page.context().newPage();
     await showEmail(mailPage, mail);
     await expect(mailPage.locator('#rs-mail-subject')).toHaveText(SUBJECTS.renewalCancelled);
@@ -559,7 +566,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(mailField(mailPage, 'Active until')).toHaveText(mailDate(new Date(state.renewalDate!)));
   });
 
-  test('TC_BILL_030: Verify that the plans are inactive during the cancellation period.', async ({ page }) => {
+  test('TC_BILL_030: Verify that the plans are inactive during the cancellation period.', VIDEO, async ({ page }) => {
     requires(state.cancelledAt, 'the cancelled renewal (TC_BILL_029)');
     await asAdmin(page);
     const billing = new BillingPage(page);
@@ -613,7 +620,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
   // Cleanup
   // =========================================================================================
 
-  test('TC_BILL_033: Verify that the Super Admin can delete the Admin user of the new organization.', async ({ page }) => {
+  test('TC_BILL_033: Verify that the Super Admin can delete the Admin user of the new organization.', VIDEO, async ({ page }) => {
     requires(state.orgId, 'the organization (TC_BILL_001)');
     await asSuperAdmin(page);
     const details = new OrganizationDetailsPage(page);
@@ -630,7 +637,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(details.noUsersMessage).toBeVisible();
   });
 
-  test('TC_BILL_034: Verify that the Super Admin can delete the new organization.', async ({ page }) => {
+  test('TC_BILL_034: Verify that the Super Admin can delete the new organization.', VIDEO, async ({ page }) => {
     requires(state.orgId, 'the organization (TC_BILL_001)');
     // Last step: if it fails, afterAll deletes what is left (before this step, afterAll never deletes anything)
     state.cleanupStarted = true;

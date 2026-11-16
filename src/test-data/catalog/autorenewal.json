@@ -1,0 +1,342 @@
+{
+  "TC_BILL_001": {
+    "tcId": "TC_BILL_001",
+    "module": "Billing - Org & Admin Setup",
+    "description": "Verify that the Super Admin can create a new organization.",
+    "preconditions": "User on the Sign-In page",
+    "steps": "1. Log in as Super Admin.\n2. Click on Settings > Organizations.\n3. Click on Add Organization.\n4. Enter the Organization Name and Domain.\n5. Keep the default Document Types.\n6. Select the Free Trial plan.\n7. Click on Create Organization.",
+    "testData": "Super Admin: admin@riverstonetech.com / River@123\nOrganization: AutoRenewal_<run id>\nDomain: autorenewal<run id>.com\nPlan: Free Trial",
+    "expectedResult": "The organization should be created successfully and displayed in the Organizations list with Active status.",
+    "actualResult": ""
+  },
+  "TC_BILL_002": {
+    "tcId": "TC_BILL_002",
+    "module": "Billing - Org & Admin Setup",
+    "description": "Verify that the Super Admin can add an Admin user to the new organization.",
+    "preconditions": "Logged in as Super Admin; new organization created",
+    "steps": "1. Search the new organization in Settings > Organizations.\n2. Click on the View (eye) icon.\n3. In the Users section, click on Add User.\n4. Enter First Name, Last Name and Email.\n5. Observe the Role (Admin).\n6. Click on Create User.",
+    "testData": "Organization: AutoRenewal_<run id>\nName: AutoRenewal Admin\nEmail: riverstreamautomation@gmail.com\n(Gmail alias: delivered to riverstreamautomation@gmail.com, which is already a user of another organization)\nRole: Admin",
+    "expectedResult": "The Role is Admin (\"The first user of a Free Trial organization is always an Admin.\"). The user should be added successfully and listed in the organization's Users section with the role Admin.",
+    "actualResult": ""
+  },
+  "TC_BILL_003": {
+    "tcId": "TC_BILL_003",
+    "module": "Billing - Org & Admin Setup",
+    "description": "Verify that the new Admin user receives the set password email.",
+    "preconditions": "Admin user added to the new organization",
+    "steps": "1. Open the Admin user's mailbox.\n2. Open the River Stream email received for the new user.",
+    "testData": "Mailbox: riverstreamautomation@gmail.com",
+    "expectedResult": "The email \"Set up your RiverStream password\" should be received (\"Your RiverStream account has been created.\") with a link to set the password.",
+    "actualResult": ""
+  },
+  "TC_BILL_004": {
+    "tcId": "TC_BILL_004",
+    "module": "Billing - Org & Admin Setup",
+    "description": "Verify that the Admin user can set the password from the email link.",
+    "preconditions": "Set password email received",
+    "steps": "1. Click on the link in the email.\n2. Enter Test@123 in the new password field.\n3. Enter Test@123 in the confirm password field.\n4. Click on the submit button.",
+    "testData": "New password: Test@123\nConfirm password: Test@123",
+    "expectedResult": "The password should be set successfully and the message \"Password set successfully!\" should be displayed.",
+    "actualResult": ""
+  },
+  "TC_BILL_005": {
+    "tcId": "TC_BILL_005",
+    "module": "Billing - Org & Admin Setup",
+    "description": "Verify that the Admin user can log in to the new organization.",
+    "preconditions": "Admin password set",
+    "steps": "1. Open the application.\n2. Enter the Admin email and password.\n3. Click on Login.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The Admin user should be logged in successfully and redirected to the Dashboard; the header shows \"AutoRenewal Admin\" and the sidebar shows \"Free trial Plan\".",
+    "actualResult": ""
+  },
+  "TC_BILL_006": {
+    "tcId": "TC_BILL_006",
+    "module": "Billing - Plans",
+    "description": "Verify that the Billing page opens from Settings.",
+    "preconditions": "Logged in as the new organization's Admin user",
+    "steps": "1. Click on Settings.\n2. Click on Billing.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The Billing page should display the heading \"Billing\", the text \"Manage your plan, payment methods, and billing history\" and the Overview and Billing History tabs, with Overview selected.",
+    "actualResult": ""
+  },
+  "TC_BILL_007": {
+    "tcId": "TC_BILL_007",
+    "module": "Billing - Plans",
+    "description": "Verify the Subscription period options on the Billing page.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open",
+    "steps": "1. Observe the Subscription period field.\n2. Select Monthly.",
+    "testData": "Subscription period: Monthly",
+    "expectedResult": "The mandatory \"Subscription period *\" field should display the Monthly and \"Yearly (save 9%)\" options, and Monthly should be selected.",
+    "actualResult": ""
+  },
+  "TC_BILL_008": {
+    "tcId": "TC_BILL_008",
+    "module": "Billing - Plans",
+    "description": "Verify the plan details displayed for the Monthly subscription period.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open",
+    "steps": "1. Select Monthly.\n2. Observe the plan cards.",
+    "testData": "Subscription period: Monthly",
+    "expectedResult": "The plans should display with a Get Started button and the \"Save 9% with annual billing\" label:\nStarter - $249 / month - For small teams getting started - 3 Users, 150 Documents /month, 30 Days Document History Retention.\nGrowth - $449 / month - For growing teams - 5 Users, 400 Documents /month, 60 Days Document History Retention.\nPro - $649 / month - For enterprise-scale operations - 10 Users, 1,000 Documents /month, 90 Days Document History Retention.",
+    "actualResult": ""
+  },
+  "TC_BILL_009": {
+    "tcId": "TC_BILL_009",
+    "module": "Billing - Plans",
+    "description": "Verify that a plan can be selected.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open",
+    "steps": "1. Select Monthly.\n2. Click on the Growth plan.",
+    "testData": "Plan: Growth (Monthly)",
+    "expectedResult": "The Growth plan card should be highlighted as selected.",
+    "actualResult": ""
+  },
+  "TC_BILL_010": {
+    "tcId": "TC_BILL_010",
+    "module": "Billing - Plans",
+    "description": "Verify that the Get Started button opens the Stripe payment form.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open; Growth plan selected",
+    "steps": "1. Click on Get Started in the Growth plan.",
+    "testData": "Plan: Growth (Monthly)",
+    "expectedResult": "The Payment Methods tab should open with \"Subscribing to Growth (Monthly)\", \"$449.00 / month\", the Stripe card form and the \"Subscribe for $449.00\" button.",
+    "actualResult": ""
+  },
+  "TC_BILL_011": {
+    "tcId": "TC_BILL_011",
+    "module": "Billing - Failed Payment",
+    "description": "Verify the Card payment method on the Stripe payment page.",
+    "preconditions": "Stripe payment form open for the Growth (Monthly) plan",
+    "steps": "1. Click on Card.",
+    "testData": "Payment method: Card",
+    "expectedResult": "The Card number, Expiration (MM/YY) and Security code fields should be displayed.",
+    "actualResult": ""
+  },
+  "TC_BILL_012": {
+    "tcId": "TC_BILL_012",
+    "module": "Billing - Failed Payment",
+    "description": "Verify that the payment fails with a declined card.",
+    "preconditions": "Stripe payment form open; Card selected",
+    "steps": "1. Enter 4000 0000 0000 0002 in the Card number field.\n2. Enter 12/26 in the Expiry date.\n3. Enter 123 in the Security code.\n4. Click on the Subscribe for $449.00 button.",
+    "testData": "Card number: 4000 0000 0000 0002\nExpiry: 12/26\nSecurity code: 123",
+    "expectedResult": "The payment should fail with the message \"Your card has been declined.\" and the subscription should not be activated.",
+    "actualResult": ""
+  },
+  "TC_BILL_013": {
+    "tcId": "TC_BILL_013",
+    "module": "Billing - Failed Payment",
+    "description": "Verify that the plan is not active after the failed payment.",
+    "preconditions": "Payment failed with the declined card",
+    "steps": "1. Navigate to Settings > Billing.\n2. Observe the plan cards.",
+    "testData": "Plan: Growth (Monthly)",
+    "expectedResult": "No Current Subscription should be displayed, the Growth plan should still show \"Get Started\" (not Current Plan) and the sidebar should still show \"Free trial Plan\".",
+    "actualResult": ""
+  },
+  "TC_BILL_014": {
+    "tcId": "TC_BILL_014",
+    "module": "Billing - Failed Payment",
+    "description": "Verify the Payment Failed email.",
+    "preconditions": "Payment failed with the declined card",
+    "steps": "1. Open the Admin user's mailbox.\n2. Open the email \"RiverStream: Payment failed for your Growth plan\".",
+    "testData": "Mailbox: riverstreamautomation@gmail.com",
+    "expectedResult": "The email should display the heading \"Payment Failed\", the text \"Your payment for <Organization>'s RiverStream Growth (Monthly) plan could not be processed, so the plan is not active yet.\", Plan: Growth (Monthly), Amount due: USD 449.00, Card: Visa ending 0002, Reason: Your card was declined and the Pay Now button.",
+    "actualResult": ""
+  },
+  "TC_BILL_015": {
+    "tcId": "TC_BILL_015",
+    "module": "Billing - Failed Payment",
+    "description": "Verify that the Pay Now button in the Payment Failed email redirects to the Stripe payment page.",
+    "preconditions": "Payment Failed email received",
+    "steps": "1. Click on the Pay Now button in the Payment Failed email.",
+    "testData": "Mailbox: riverstreamautomation@gmail.com",
+    "expectedResult": "The Stripe invoice payment page should open with the amount $449.00, To: <Organization>, the invoice number and the Card payment option.",
+    "actualResult": ""
+  },
+  "TC_BILL_016": {
+    "tcId": "TC_BILL_016",
+    "module": "Billing - Successful Payment",
+    "description": "Verify that the payment succeeds with a valid card.",
+    "preconditions": "Stripe invoice payment page opened from the Pay Now button",
+    "steps": "1. Select the USD amount ($449.00) if a currency choice is shown.\n2. Click on Card.\n3. Enter 4242 4242 4242 4242 in the Card number field.\n4. Enter 12/26 in the Expiry date.\n5. Enter 123 in the Security code.\n6. Click on the Pay button.",
+    "testData": "Card number: 4242 4242 4242 4242\nExpiry: 12/26\nSecurity code: 123",
+    "expectedResult": "The payment should succeed: Stripe shows \"Invoice paid\" with $449.00 and Visa •••• 4242, and the subscription status on the Billing page becomes Active.",
+    "actualResult": ""
+  },
+  "TC_BILL_017": {
+    "tcId": "TC_BILL_017",
+    "module": "Billing - Successful Payment",
+    "description": "Verify the Billing Overview after the successful payment.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open; payment successful",
+    "steps": "1. Click on the Overview tab.\n2. Observe the Current Subscription section.",
+    "testData": "Plan: Growth (Monthly)",
+    "expectedResult": "The Current Subscription should display Growth (Monthly) with the Active status and \"Renews automatically on <payment date + 1 month>.\"",
+    "actualResult": ""
+  },
+  "TC_BILL_018": {
+    "tcId": "TC_BILL_018",
+    "module": "Billing - Successful Payment",
+    "description": "Verify the \"Your Growth plan is active\" email.",
+    "preconditions": "Payment successful",
+    "steps": "1. Open the Admin user's mailbox.\n2. Open the email \"RiverStream: Your Growth plan is active\".",
+    "testData": "Mailbox: riverstreamautomation@gmail.com",
+    "expectedResult": "The email should display the heading \"Purchase Successful\", the text \"Thank you for subscribing. <Organization>'s RiverStream Growth (Monthly) plan is now active.\", Plan: Growth (Monthly), Invoice number, Amount paid: USD 449.00, Paid on: <payment date>, Service period: <payment date> - <payment date + 1 month>, Next renewal: <payment date + 1 month>, Paid with: Visa ending in 4242, the attachment Invoice-<invoice number>.pdf and the View Billing button.",
+    "actualResult": ""
+  },
+  "TC_BILL_019": {
+    "tcId": "TC_BILL_019",
+    "module": "Billing - Successful Payment",
+    "description": "Verify that the View Billing button in the email redirects to the application Billing page.",
+    "preconditions": "\"Your Growth plan is active\" email received",
+    "steps": "1. Click on the View Billing button.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The user should be redirected to the River Stream Billing page.",
+    "actualResult": ""
+  },
+  "TC_BILL_020": {
+    "tcId": "TC_BILL_020",
+    "module": "Billing - Successful Payment",
+    "description": "Verify that the subscribed plan is badged as Current Plan.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open; Growth plan subscribed",
+    "steps": "1. Select Monthly.\n2. Observe the Growth plan card.",
+    "testData": "Plan: Growth (Monthly)",
+    "expectedResult": "The Growth plan should display the \"Current Plan\" badge and a green dashed border, and its button should show \"Current Plan\" and be disabled.",
+    "actualResult": ""
+  },
+  "TC_BILL_021": {
+    "tcId": "TC_BILL_021",
+    "module": "Billing - Successful Payment",
+    "description": "Verify that other plans cannot be selected while the subscription renews automatically.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open; Growth plan subscribed",
+    "steps": "1. Observe the Starter and Pro plan cards.\n2. Observe the note below the Current Subscription.",
+    "testData": "Plan: Starter / Pro (Monthly)",
+    "expectedResult": "The Starter and Pro buttons should show \"Contact Sales\" and be disabled, and the note \"Your plan renews automatically. To switch plans, cancel this subscription and choose a new plan once it ends.\" should be displayed.",
+    "actualResult": ""
+  },
+  "TC_BILL_022": {
+    "tcId": "TC_BILL_022",
+    "module": "Billing - Super Admin View",
+    "description": "Verify that the Super Admin can see the current plan of the new organization.",
+    "preconditions": "Growth plan subscribed by the Admin user",
+    "steps": "1. Log out.\n2. Log in as Super Admin.\n3. Navigate to Settings > Organizations.\n4. Search the new organization.\n5. Click on the View (eye) icon.\n6. Click on Pay Now.\n7. Observe the current plan badge.",
+    "testData": "Super Admin: admin@riverstonetech.com / River@123\nOrganization: AutoRenewal_<run id>",
+    "expectedResult": "The Subscription Plan should be Growth (monthly) and the Pay Now plans should show the Growth plan with the Current Plan badge.",
+    "actualResult": ""
+  },
+  "TC_BILL_023": {
+    "tcId": "TC_BILL_023",
+    "module": "Billing - History & Invoice",
+    "description": "Verify the Billing History tab.",
+    "preconditions": "Growth plan subscribed",
+    "steps": "1. Log out.\n2. Log in as the Admin user.\n3. Navigate to Settings > Billing.\n4. Click on Billing History.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The Billing History should display the columns Invoice, Paid on, Plan, Type, Service period, Card, Amount and Invoice PDF, and the row of the Growth (Monthly) payment: invoice number, paid on date, New subscription, service period, Visa •••• 4242, USD 449.00 and the Download button.",
+    "actualResult": ""
+  },
+  "TC_BILL_024": {
+    "tcId": "TC_BILL_024",
+    "module": "Billing - History & Invoice",
+    "description": "Verify that the invoice can be downloaded.",
+    "preconditions": "Logged in as the new organization's Admin user; Billing History tab open",
+    "steps": "1. Click on the Download button of the invoice.",
+    "testData": "Invoice of the Growth (Monthly) plan",
+    "expectedResult": "The invoice Invoice-<invoice number>.pdf should be downloaded successfully.",
+    "actualResult": ""
+  },
+  "TC_BILL_025": {
+    "tcId": "TC_BILL_025",
+    "module": "Billing - History & Invoice",
+    "description": "Verify the details in the downloaded invoice.",
+    "preconditions": "Invoice downloaded",
+    "steps": "1. Open the downloaded invoice.\n2. Observe the invoice details.",
+    "testData": "Invoice of the Growth (Monthly) plan",
+    "expectedResult": "The invoice should display the status PAID, Invoice No. (same as in the \"Your Growth plan is active\" email), Issue Date, Bill To: <Organization>, Plan: Growth (Monthly), Service Period, AMOUNT PAID $449.00, Payment Method: Visa •••• 4242 and Balance Due $0.00.",
+    "actualResult": ""
+  },
+  "TC_BILL_026": {
+    "tcId": "TC_BILL_026",
+    "module": "Billing - Cancel Subscription",
+    "description": "Verify navigating back to the Overview tab.",
+    "preconditions": "Logged in as the new organization's Admin user; Billing History tab open",
+    "steps": "1. Click on the Overview tab.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The Overview tab should display the Current Subscription Growth (Monthly) and the Cancel Subscription button.",
+    "actualResult": ""
+  },
+  "TC_BILL_027": {
+    "tcId": "TC_BILL_027",
+    "module": "Billing - Cancel Subscription",
+    "description": "Verify the Cancel Subscription confirmation.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open; Growth plan subscribed",
+    "steps": "1. Click on the Cancel Subscription button.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The confirmation \"Cancel auto-renewal? Your plan stays active until the end of this period.\" should be displayed with the Yes, cancel and Keep subscription buttons.",
+    "actualResult": ""
+  },
+  "TC_BILL_028": {
+    "tcId": "TC_BILL_028",
+    "module": "Billing - Cancel Subscription",
+    "description": "Verify that the Keep subscription button does not cancel the subscription renewal.",
+    "preconditions": "Cancel Subscription confirmation displayed",
+    "steps": "1. Click on the Keep subscription button.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The confirmation should close, the subscription renewal should not be cancelled: the status stays Active and \"Renews automatically on <date>.\"",
+    "actualResult": ""
+  },
+  "TC_BILL_029": {
+    "tcId": "TC_BILL_029",
+    "module": "Billing - Cancel Subscription",
+    "description": "Verify that the Yes, cancel button cancels the subscription renewal.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open; Growth plan subscribed",
+    "steps": "1. Click on the Cancel Subscription button.\n2. Click on the Yes, cancel button.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The subscription renewal should be cancelled: the status should show \"Cancels On <renewal date>\" and \"Auto-renewal is off. Your plan stays active until <renewal date>.\", and the email \"RiverStream: Auto-renewal cancelled for your Growth plan\" should be received.",
+    "actualResult": ""
+  },
+  "TC_BILL_030": {
+    "tcId": "TC_BILL_030",
+    "module": "Billing - Cancel Subscription",
+    "description": "Verify that the plans are inactive during the cancellation period.",
+    "preconditions": "Logged in as the new organization's Admin user; Settings > Billing page open; subscription renewal cancelled",
+    "steps": "1. Observe the plan cards.",
+    "testData": "Admin: riverstreamautomation@gmail.com / Test@123",
+    "expectedResult": "The Growth plan should remain the Current Plan until the cancellation date, and the Starter and Pro buttons (\"Contact Sales\") should be disabled.",
+    "actualResult": ""
+  },
+  "TC_BILL_031": {
+    "tcId": "TC_BILL_031",
+    "module": "Billing - Cancel Subscription",
+    "description": "Verify that the Super Admin cannot change the plan during the cancellation period.",
+    "preconditions": "Subscription renewal cancelled by the Admin user",
+    "steps": "1. Log out.\n2. Log in as Super Admin.\n3. Navigate to Settings > Organizations.\n4. Search the new organization and click on the View (eye) icon.\n5. Click on Pay Now.\n6. Click on Get Started in another plan (Starter).",
+    "testData": "Super Admin: admin@riverstonetech.com / River@123\nOrganization: AutoRenewal_<run id>",
+    "expectedResult": "The message \"This organization already has a subscription that renews automatically. Cancel it first to switch plans.\" should be displayed and the plan should not be changed.",
+    "actualResult": ""
+  },
+  "TC_BILL_032": {
+    "tcId": "TC_BILL_032",
+    "module": "Billing - Expiry",
+    "description": "Verify that the subscription expiry email is received before the subscription expires.",
+    "preconditions": "Subscription renewal cancelled",
+    "steps": "1. Wait until the expiry reminder is sent (before the \"Cancels On\" date).\n2. Open the Admin user's mailbox.\n3. Open the expiry email.",
+    "testData": "Mailbox: riverstreamautomation@gmail.com",
+    "expectedResult": "The expiry email should be received by the Admin user before the subscription expires, with the plan name and the expiry date.",
+    "actualResult": ""
+  },
+  "TC_BILL_033": {
+    "tcId": "TC_BILL_033",
+    "module": "Billing - Cleanup",
+    "description": "Verify that the Super Admin can delete the Admin user of the new organization.",
+    "preconditions": "All the billing test cases executed",
+    "steps": "1. Log out.\n2. Log in as Super Admin.\n3. Navigate to Settings > Organizations.\n4. Search the new organization and click on the View (eye) icon.\n5. In the Users section, click on the Delete icon of the Admin user.\n6. Confirm the deletion in the popup.",
+    "testData": "Super Admin: admin@riverstonetech.com / River@123\nOrganization: AutoRenewal_<run id>\nUser: riverstreamautomation@gmail.com",
+    "expectedResult": "The Admin user should be deleted successfully and removed from the organization's Users section.",
+    "actualResult": ""
+  },
+  "TC_BILL_034": {
+    "tcId": "TC_BILL_034",
+    "module": "Billing - Cleanup",
+    "description": "Verify that the Super Admin can delete the new organization.",
+    "preconditions": "Logged in as Super Admin; Admin user deleted",
+    "steps": "1. Open the new organization's details page (View / eye icon).\n2. Click on the Delete button.\n3. Confirm the deletion in the popup.\n4. Search the organization in Settings > Organizations.",
+    "testData": "Super Admin: admin@riverstonetech.com / River@123\nOrganization: AutoRenewal_<run id>",
+    "expectedResult": "The organization should be deleted successfully and should not be displayed in the Organizations list.",
+    "actualResult": ""
+  }
+}

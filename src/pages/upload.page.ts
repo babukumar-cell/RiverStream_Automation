@@ -83,6 +83,27 @@ export class UploadPage extends BasePage {
     await expect(this.fileInput).toHaveAttribute('accept', /\.pdf/, { timeout: 20000 });
   }
 
+  /** "Client Name" (required once a SIF file is attached): a popover button listing the organization's clients */
+  get clientNameButton(): Locator {
+    return this.page.locator('#client-name');
+  }
+
+  /** Client entries of the open Client Name popover */
+  get clientOptions(): Locator {
+    return this.page.locator('[data-slot="popover-content"]').last().locator('[role="option"], [cmdk-item]');
+  }
+
+  /** Picks the client `name` in the Client Name popover (the first client when `name` is omitted); returns its name */
+  async selectClient(name?: string): Promise<string> {
+    await this.clientNameButton.click();
+    await expect(this.clientOptions.first()).toBeVisible();
+    const option = name ? this.clientOptions.filter({ hasText: new RegExp(`^\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i') }).first() : this.clientOptions.first();
+    const chosen = (await option.innerText()).trim();
+    await option.click();
+    await expect(this.clientNameButton).toHaveText(chosen);
+    return chosen;
+  }
+
   documentTypeOption(type: UploadDocumentType | string): Locator {
     return this.page.getByRole('option', { name: type, exact: true });
   }

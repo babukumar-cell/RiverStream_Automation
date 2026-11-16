@@ -5087,6 +5087,15 @@
     "testData": "Customer Name: \"Office Interiors Inc\"Client JSON Name: \"Office Interiors\"",
     "expectedResult": "System should identify the partial match and automatically replace the Client and Billing Address details with the values from the client JSON configuration."
   },
+  "TC_Review page_020": {
+    "tcId": "TC_Review page_020",
+    "module": "review",
+    "description": "Verify no replacement when Customer Name does not match client JSON",
+    "steps": "1. Upload a document.\n2. Ensure the extracted Customer Name does not match any Client Name in the JSON configuration.\n3. Process the document.",
+    "testData": "Customer Name: \"ABC Furniture\"",
+    "expectedResult": "Client and Billing Address details should remain unchanged.",
+    "actualResult": ""
+  },
   "TC_Review page_021": {
     "tcId": "TC_Review page_021",
     "module": "review",
