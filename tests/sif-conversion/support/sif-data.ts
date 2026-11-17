@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { APIRequestContext, APIResponse, Page, TestInfo, request } from '@playwright/test';
+import { APIRequestContext, APIResponse, Locator, Page, TestInfo, request } from '@playwright/test';
 import { test, expect } from '../../../src/fixtures/test.fixture';
 import { Config } from '../../../src/config/environment';
 import { SifDocType } from '../../../src/pages/sif-conversion.page';
@@ -11,8 +11,8 @@ import { SifDocType } from '../../../src/pages/sif-conversion.page';
 /*
  * Test data for the SIF Conversion suite (Test Cases/Module_Wise_Test_Cases/10_SIF_Conversion.xlsx).
  *
- * The suite works on its own PDFs, generated with known values and uploaded by the user of the organization
- * Testing (divya.d@riverstonetech.com). Their names start with AUTO_SIF_<run> and they are deleted after the run.
+ * The suite works on its own PDFs, generated with known values and uploaded by the suite's user,
+ * riverstreamautomation@gmail.com, in its organization (see sif-user.ts). Their names start with AUTO_SIF_<run> and they are deleted after the run.
  * PO, QR, CONV and ACT are uploaded through the API before the first case; the others through the page by their case.
  *   PO    Purchase Order (Default PO): Review page cases, edits, Save, Convert, Download SIF
  *   QR    Quote Request (Default QR): filters, Review button / menu, Delete > Cancel
@@ -169,16 +169,39 @@ export function requires(value: unknown, what: string): void {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Users: the suite runs as a user of the organization Testing; the Super Admin only switches Testing's
-// SIF Conversion setting (TC_SIF_079) and makes sure it is ON at the start and at the end of a run
+// User and organization: the suite runs as riverstreamautomation@gmail.com in its own organization, prepared by
+// tests/sif-conversion/sif-user.setup.ts (support/sif-user.ts): if the user exists its organization is used (the user
+// is re-created with a password when it cannot sign in); if not, an organization is created with the user as Admin.
+// The organization's SIF Conversion is switched ON if it is off. The Super Admin switches the setting (TC_SIF_079)
+// and makes sure it is ON at the start and at the end of a run.
 // ---------------------------------------------------------------------------------------------
 
-export const TOGGLE_ORG = 'Testing';
+/** Organization and user prepared by the setup (.auth/sif-org.json) */
+export interface SifOrg {
+  orgId: string;
+  orgName: string;
+  /** Name shown in the app for the user (Uploaded by, header) */
+  userName: string;
+  /** existing: the user existed and signed in as is; created: the setup created the user in an existing organization */
+  userSetup: 'existing' | 'created';
+  /** The setup switched the organization's SIF Conversion ON (it was off) */
+  sifTurnedOn: boolean;
+}
+export const SIF_ORG_FILE = path.resolve(__dirname, '../../../.auth/sif-org.json');
+export function sifOrg(): SifOrg {
+  expect(fs.existsSync(SIF_ORG_FILE), `${SIF_ORG_FILE} written by the sif-setup project`).toBe(true);
+  return JSON.parse(fs.readFileSync(SIF_ORG_FILE, 'utf8')) as SifOrg;
+}
+/** Name of the user's organization (the organization whose SIF Conversion setting the suite switches) */
+export const sifOrgName = () => sifOrg().orgName;
+
 export const ORG_USER = {
-  email: process.env.SIF_USER_EMAIL || 'divya.d@riverstonetech.com',
-  password: process.env.SIF_USER_PASSWORD || 'River@123',
-  /** name shown in the app (Uploaded by, header) */
-  name: process.env.SIF_USER_NAME || 'Divya',
+  email: process.env.SIF_USER_EMAIL || 'riverstreamautomation@gmail.com',
+  password: process.env.SIF_USER_PASSWORD || 'Test@123',
+  /** name shown in the app (Uploaded by, header), read by the setup */
+  get name(): string {
+    return process.env.SIF_USER_NAME || sifOrg().userName;
+  },
 };
 /** Session of ORG_USER, saved by tests/sif-conversion/sif-user.setup.ts */
 export const SIF_USER_STATE = path.resolve(__dirname, '../../../.auth/sif-user.json');
@@ -187,14 +210,14 @@ type SavedSession = { cookies: { name: string; value: string }[] };
 const readSession = (file: string): SavedSession => JSON.parse(fs.readFileSync(file, 'utf8')) as SavedSession;
 const cookie = (s: SavedSession, name: string) => decodeURIComponent(s.cookies.find((c) => c.name === name)?.value ?? '');
 
-/** orgId of the Testing organization (from the user's session) */
-export function testingOrgId(): string {
+/** orgId of the user's organization (from the user's session) */
+export function sifOrgId(): string {
   const info = JSON.parse(cookie(readSession(SIF_USER_STATE), 'userInfo') || '{}') as { orgId?: string };
   expect(info.orgId, `${ORG_USER.email} session has an organization`).toBeTruthy();
   return info.orgId!;
 }
 
-/** API client of the Testing user (default) or of the Super Admin */
+/** API client of the suite's user (default) or of the Super Admin */
 export async function sifApi(as: 'user' | 'superAdmin' = 'user'): Promise<APIRequestContext> {
   const token = cookie(readSession(as === 'user' ? SIF_USER_STATE : Config.adminStorageState), 'userToken');
   expect(token, `${as} session token`).toBeTruthy();
@@ -238,13 +261,13 @@ export async function orgSifEnabled(orgId: string): Promise<boolean> {
   }
 }
 
-/** SIF Conversion setting of every organization except Testing (Super Admin API): must not change in TC_SIF_079 */
+/** SIF Conversion setting of every organization except the user's (Super Admin API): must not change in TC_SIF_079 */
 export async function otherOrgsSif(): Promise<Record<string, boolean>> {
   const api = await sifApi('superAdmin');
   try {
     const listed = await ok(await api.post('superAdminListOrganizations', { data: { startIndex: 0, pageSize: 200, search_text: null } }), 'superAdminListOrganizations');
     // the list has no SIF setting: read each organization
-    const orgs = (listed.organizations as { orgId: string; name: string }[]).filter((o) => o.orgId !== testingOrgId());
+    const orgs = (listed.organizations as { orgId: string; name: string }[]).filter((o) => o.orgId !== sifOrgId());
     const out: Record<string, boolean> = {};
     for (const o of orgs) {
       const org = await ok(await api.get(`getOrganization/${o.orgId}`), `getOrganization ${o.orgId}`);
@@ -256,9 +279,9 @@ export async function otherOrgsSif(): Promise<Record<string, boolean>> {
   }
 }
 
-/** Turns Testing's SIF Conversion ON through the API (only that setting is sent) and checks it */
-export async function ensureTestingSifOn(): Promise<void> {
-  const orgId = testingOrgId();
+/** Turns the user's organization's SIF Conversion ON through the API (only that setting is sent) and checks it */
+export async function ensureSifOn(): Promise<void> {
+  const orgId = sifOrgId();
   if (await orgSifEnabled(orgId)) return;
   const api = await sifApi('superAdmin');
   try {
@@ -266,34 +289,25 @@ export async function ensureTestingSifOn(): Promise<void> {
   } finally {
     await api.dispose();
   }
-  expect(await orgSifEnabled(orgId), `${TOGGLE_ORG} (${orgId}): SIF Conversion is ON`).toBe(true);
+  expect(await orgSifEnabled(orgId), `${sifOrgName()} (${orgId}): SIF Conversion is ON`).toBe(true);
 }
 
 /**
- * Safety check before anything is uploaded or switched: the suite's user must be in the organization Testing.
- * (If the user was moved to another organization, the suite would upload there and TC_SIF_079 would switch that
- * organization's SIF Conversion setting.)
+ * Safety check before anything is uploaded or switched: the user's session is in the organization the setup
+ * prepared (if the user was moved meanwhile, the suite would upload to and switch another organization).
  */
-export async function assertTestingOrg(): Promise<void> {
-  const orgId = testingOrgId();
-  const api = await sifApi('superAdmin');
-  try {
-    const org = await ok(await api.get(`getOrganization/${orgId}`), 'getOrganization');
-    if (org.name !== TOGGLE_ORG) {
-      throw new Error(
-        `${ORG_USER.email} belongs to "${org.name}" (${orgId}), not "${TOGGLE_ORG}". The SIF Conversion suite only runs in ` +
-          `${TOGGLE_ORG}: move the user back to ${TOGGLE_ORG} (or set SIF_USER_EMAIL / SIF_USER_PASSWORD to a ${TOGGLE_ORG} user) and run again.`,
-      );
-    }
-  } finally {
-    await api.dispose();
+export async function assertSifOrg(): Promise<void> {
+  const org = sifOrg();
+  const orgId = sifOrgId();
+  if (orgId !== org.orgId) {
+    throw new Error(`${ORG_USER.email} session is in ${orgId}, but the setup prepared ${org.orgName} (${org.orgId}): run the sif-setup project again.`);
   }
 }
 
-/** Testing's SIF Conversion ON, then the suite's documents PO, QR, CONV, ACT uploaded (once per run) and CONV converted */
+/** The user's organization's SIF Conversion ON, then the suite's documents PO, QR, CONV, ACT uploaded (once per run) and CONV converted */
 export async function ensureSetup(): Promise<void> {
-  await assertTestingOrg();
-  await ensureTestingSifOn();
+  await assertSifOrg();
+  await ensureSifOn();
   if (state.setupDone) return;
   const api = await sifApi();
   try {
@@ -317,7 +331,7 @@ export async function ensureSetup(): Promise<void> {
   }
 }
 
-/** Names of the SIF templates available to the organization Testing */
+/** Names of the SIF templates available to the user's organization */
 export async function sifTemplateNames(documentType?: 'purchase_order' | 'quote_request'): Promise<string[]> {
   const api = await sifApi();
   try {
@@ -334,7 +348,7 @@ export async function customTemplate(type: SifDocType): Promise<string> {
   try {
     const listed = await ok(await api.get(`listSifTemplates?documentType=${API_TYPE[type].documentType}`), 'listSifTemplates');
     const custom = (listed.templates as { name: string; isDefault?: boolean }[]).find((t) => !t.isDefault)?.name;
-    expect(custom, `a custom ${type} template is available to the organization ${TOGGLE_ORG} (e.g. New Template)`).toBeTruthy();
+    expect(custom, `a custom ${type} template is available to the organization ${sifOrgName()} (e.g. New Template)`).toBeTruthy();
     return custom!;
   } finally {
     await api.dispose();
@@ -367,14 +381,14 @@ export async function setOrgSif(page: Page, orgUrl: string, on: boolean): Promis
 }
 
 // ---------------------------------------------------------------------------------------------
-// Cleanup (afterAll): Testing's SIF Conversion back ON (always), then the suite's files
+// Cleanup (afterAll): the organization's SIF Conversion back ON (always), then the suite's files
 // ---------------------------------------------------------------------------------------------
 
 export async function cleanup(): Promise<void> {
-  // Nothing to clean (and no setting to touch) when the user is not in Testing: assertTestingOrg stopped the run
-  if (!(await assertTestingOrg().then(() => true, () => false))) return;
+  // Nothing to clean (and no setting to touch) when the session is not in the prepared organization: assertSifOrg stopped the run
+  if (!(await assertSifOrg().then(() => true, () => false))) return;
   try {
-    await ensureTestingSifOn();
+    await ensureSifOn();
     state.orgToggledOff = false;
     if (!state.finishing) return; // a worker ended after a failed test: later steps still need the files
     const api = await sifApi();
@@ -388,7 +402,7 @@ export async function cleanup(): Promise<void> {
       await api.dispose();
     }
   } catch (err) {
-    console.warn(`[sif] cleanup failed (check that ${TOGGLE_ORG}'s SIF Conversion is ON and delete the ${TOKEN} files): ${(err as Error).message}`);
+    console.warn(`[sif] cleanup failed (check that ${sifOrgName()}'s SIF Conversion is ON and delete the ${TOKEN} files): ${(err as Error).message}`);
   }
 }
 
@@ -400,6 +414,33 @@ export async function attachEvidence(page: Page, testInfo: TestInfo, name: strin
   const file = testInfo.outputPath(`${name.replace(/[^\w-]+/g, '_')}.png`);
   await page.screenshot({ path: file });
   await testInfo.attach(name, { path: file, contentType: 'image/png' });
+}
+
+/**
+ * Green box drawn as a separate layer over the element. Used for disabled controls: the app fades a disabled button
+ * (opacity), which also fades the normal highlight drawn on the element itself.
+ */
+export async function outlineBox(page: Page, locator: Locator): Promise<void> {
+  await locator.scrollIntoViewIfNeeded();
+  const box = await locator.boundingBox();
+  expect(box, 'element on the page').toBeTruthy();
+  await page.evaluate((b) => {
+    const d = document.createElement('div');
+    d.setAttribute('data-rs-tested', 'true');
+    Object.assign(d.style, {
+      position: 'fixed',
+      left: `${b.x - 5}px`,
+      top: `${b.y - 5}px`,
+      width: `${b.width + 10}px`,
+      height: `${b.height + 10}px`,
+      border: '3px solid #10b981',
+      borderRadius: '8px',
+      boxShadow: '0 0 0 2px rgba(16, 185, 129, 0.25)',
+      pointerEvents: 'none',
+      zIndex: '2147483647',
+    });
+    document.body.appendChild(d);
+  }, box!);
 }
 
 /** "P1=X\r\nPN=..." -> [["P1","X"], ["PN", ...]] */

@@ -63,13 +63,15 @@ export default defineConfig({
       },
     },
     {
-      // Session of the Testing organization user (the SIF Conversion suite runs as that user)
+      // The SIF Conversion suite's user (riverstreamautomation@gmail.com) and organization, prepared by the Super Admin;
+      // the organization's SIF Conversion switched ON; the user's session saved (tests/sif-conversion/support/sif-user.ts)
       name: 'sif-setup',
+      dependencies: ['setup'],
       testMatch: /sif-user\.setup\.ts/,
     },
     {
-      // SIF Conversion in the organization Testing (uploads, reviews and deletes its own PDFs);
-      // the Super Admin session (setup) is used to switch Testing's SIF Conversion setting
+      // SIF Conversion as riverstreamautomation@gmail.com in its organization (uploads, reviews and deletes its own PDFs);
+      // the Super Admin session (setup) is used to switch the organization's SIF Conversion setting
       name: 'sif-conversion',
       dependencies: ['setup', 'sif-setup'],
       testMatch: [/sif-conversion[/\\][^/\\]+\.spec\.ts/],

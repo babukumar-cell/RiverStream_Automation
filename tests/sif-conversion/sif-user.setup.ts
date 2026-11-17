@@ -1,21 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-import { test as setup, expect } from '@playwright/test';
-import { LoginPage } from '../../src/pages/login.page';
-import { ORG_USER, SIF_USER_STATE } from './support/sif-data';
+import { test as setup } from '@playwright/test';
+import { prepareSifUser } from './support/sif-user';
 
 /**
- * Logs in once as the user of the organization Testing (the SIF Conversion suite runs as this user)
- * and saves the session to .auth/sif-user.json.
+ * Prepares the SIF Conversion suite's user (riverstreamautomation@gmail.com) and its organization, switches the
+ * organization's SIF Conversion ON if it is off, signs the user in and saves the session to .auth/sif-user.json
+ * (see support/sif-user.ts).
  */
-setup('authenticate as the Testing organization user', async ({ page }) => {
-  const login = new LoginPage(page);
-  await login.navigate();
-  await login.login(ORG_USER.email, ORG_USER.password);
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
-
-  fs.mkdirSync(path.dirname(SIF_USER_STATE), { recursive: true });
-  const tmp = `${SIF_USER_STATE}.${process.pid}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(await page.context().storageState(), null, 2));
-  fs.renameSync(tmp, SIF_USER_STATE);
+setup('prepare the SIF Conversion user and organization', async ({ browser }) => {
+  setup.setTimeout(30 * 60_000);
+  await prepareSifUser(browser);
 });

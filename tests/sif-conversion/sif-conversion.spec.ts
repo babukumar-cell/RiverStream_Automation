@@ -10,22 +10,23 @@ import { OrganizationDetailsPage } from '../../src/pages/settings/organization-d
 import { SIF_COLUMNS, SIF_TABS, SifListPage, SifReviewPage, SifTab, SifUploadPage, confirmDialog } from '../../src/pages/sif-conversion.page';
 import {
   ORG_USER,
-  TOGGLE_ORG,
   TOKEN,
   attachEvidence,
   cleanup,
   doc,
   ensureSetup,
   invalidFile,
+  outlineBox,
   parseSif,
   pdfFile,
   requires,
   asSuperAdmin,
-  ensureTestingSifOn,
+  ensureSifOn,
   otherOrgsSif,
   setOrgSif,
   sifTemplateNames,
-  testingOrgId,
+  sifOrgId,
+  sifOrgName,
   showSif,
   sifSwitch,
   state,
@@ -33,9 +34,10 @@ import {
 
 /*
  * Source: Test Cases/Module_Wise_Test_Cases/10_SIF_Conversion.xlsx (TC_SIF_001 - TC_SIF_081).
- * Runs in sheet order as the user of the organization Testing (divya.d@riverstonetech.com) on the suite's own PDFs
+ * Runs in sheet order as riverstreamautomation@gmail.com in its organization (prepared by sif-user.setup.ts: an
+ * organization is created with the user if it does not exist; SIF Conversion switched ON) on the suite's own PDFs
  * (AUTO_SIF_<run>_*, uploaded in beforeAll, deleted after the last case). TC_SIF_079 switches the SIF
- * Conversion setting of the organization "Testing" off for its user divya.d and back on.
+ * Conversion setting of the user's organization off and back on.
  */
 
 const PO = doc('PO');
@@ -271,7 +273,7 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
   }
 
   test('TC_SIF_017: Verify the Template filter options.', async ({ page }) => {
-    // the filter offers the templates available to the user's organization (Testing).
+    // the filter offers the templates available to the user's organization.
     // Files of other organizations (e.g. MBM) can use their own templates, which are not listed.
     const available = await sifTemplateNames();
     const list = new SifListPage(page);
@@ -279,8 +281,8 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
     const listbox = await list.openFilter(list.templateFilter);
     await expect(listbox.getByRole('option', { name: 'All templates' })).toHaveAttribute('data-state', 'checked');
     const options = (await listbox.getByRole('option').allInnerTexts()).map((o) => o.trim());
-    test.info().annotations.push({ type: 'Templates', description: `filter: ${options.join(', ')} | available to ${TOGGLE_ORG}: ${available.join(', ')}` });
-    expect(options.slice(1).sort(), `the filter offers the templates available to ${TOGGLE_ORG}`).toEqual([...available].sort());
+    test.info().annotations.push({ type: 'Templates', description: `filter: ${options.join(', ')} | available to ${sifOrgName()}: ${available.join(', ')}` });
+    expect(options.slice(1).sort(), `the filter offers the templates available to ${sifOrgName()}`).toEqual([...available].sort());
     for (const name of available) await expect(listbox.getByRole('option', { name, exact: true })).toBeVisible();
   });
 
@@ -369,16 +371,27 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
   // =========================================================================================
 
   test('TC_SIF_023: Verify the status badge colors.', async ({ page }) => {
+    // the list as it opens (no search): the first file of each status
     const list = new SifListPage(page);
     await list.goto();
-    await list.search(TOKEN);
-    await list.loadAllRows();
-    await expect(list.statusBadge(list.row(CONV.fileName))).toHaveText('Converted');
-    await expect(list.statusBadge(list.row(CONV.fileName))).toHaveClass(/bg-green-50/);
-    await expect(list.statusBadge(list.row(CONV.fileName))).toHaveClass(/text-green-700/);
-    await expect(list.statusBadge(list.row(QR.fileName))).toHaveText('Ready for review');
-    await expect(list.statusBadge(list.row(QR.fileName))).toHaveClass(/bg-amber-50/);
-    await expect(list.statusBadge(list.row(QR.fileName))).toHaveClass(/text-amber-700/);
+    await plainExpect(list.rows.first()).toBeVisible({ timeout: 30000 });
+    const firstWith = (status: string) =>
+      list.rows.filter({ has: page.locator('span.rounded-full, div.rounded-full', { hasText: new RegExp(`^${status}$`) }) }).first();
+    const converted = list.statusBadge(firstWith('Converted'));
+    const ready = list.statusBadge(firstWith('Ready for review'));
+    const failed = list.statusBadge(firstWith('Failed'));
+    await plainExpect(converted, 'a Converted file in the list').toBeVisible({ timeout: 30000 });
+    await plainExpect(ready, 'a Ready for review file in the list').toBeVisible({ timeout: 30000 });
+    await plainExpect(failed, 'a Failed file in the list').toBeVisible({ timeout: 30000 });
+    await expect(converted).toHaveText('Converted');
+    await expect(converted).toHaveClass(/bg-green-50/);
+    await expect(converted).toHaveClass(/text-green-700/);
+    await expect(ready).toHaveText('Ready for review');
+    await expect(ready).toHaveClass(/bg-amber-50/);
+    await expect(ready).toHaveClass(/text-amber-700/);
+    await expect(failed).toHaveText('Failed');
+    await expect(failed).toHaveClass(/bg-red-50/);
+    await expect(failed).toHaveClass(/text-red-700/);
   });
 
   test('TC_SIF_024: Verify Download SIF from the list.', async ({ page }, testInfo) => {
@@ -942,6 +955,9 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
     test('TC_SIF_065: Verify that Save is disabled before any edit.', async ({ page }) => {
       const review = await openPoReview(page);
       await expect(review.saveButton).toBeDisabled();
+      await page.waitForLoadState('networkidle').catch(() => {});
+      // the disabled button is drawn faded: the green box is a separate layer so it shows in the screenshot
+      await outlineBox(page, review.saveButton);
     });
 
     test('TC_SIF_066: Verify that Save becomes enabled after an edit.', async ({ page }) => {
@@ -1127,12 +1143,13 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
   // Only the two evidence images: the report leaves out the automatic end-of-test screenshot
   test.describe('Organization setting (evidence images only)', { annotation: { type: 'no-final-screenshot', description: 'Only the two evidence images are reported' } }, () => {
     test('TC_SIF_079: Verify that turning off the SIF Conversion toggle disables the feature for the organization.', async ({ page }, testInfo) => {
-      // the Super Admin switches the setting of the organization Testing
+      // the Super Admin switches the setting of the user's organization
       await asSuperAdmin(page);
-      // opened by the orgId of the user's organization (more than one organization can be named "Testing")
+      // opened by the orgId of the user's organization
       const details = new OrganizationDetailsPage(page);
-      await details.goto(testingOrgId());
-      await details.expectLoaded(TOGGLE_ORG);
+      await details.goto(sifOrgId());
+      // the heading capitalises the name ("Riverstonetech"): the Organization Name field holds it as saved
+      await plainExpect(details.nameInput).toHaveValue(sifOrgName(), { timeout: 30000 });
       state.orgUrl = page.url();
       await expect(sifSwitch(page)).toHaveAttribute('aria-checked', 'true');
       // other organizations: their setting before the change (compared after it)
@@ -1143,7 +1160,7 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
         await sifSwitch(page).scrollIntoViewIfNeeded();
         await expect(sifSwitch(page)).toHaveAttribute('aria-checked', 'false');
         await expect(page.getByRole('button', { name: 'Edit', exact: true }).first()).toBeVisible(); // saved: back to view mode
-        await attachEvidence(page, testInfo, `1 - ${TOGGLE_ORG}: SIF Conversion OFF saved`);
+        await attachEvidence(page, testInfo, `1 - ${sifOrgName()}: SIF Conversion OFF saved`);
 
         // Other organizations are not affected: their SIF Conversion setting is unchanged
         expect(await otherOrgsSif(), 'other organizations keep their SIF Conversion setting').toEqual(others);
@@ -1173,7 +1190,7 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
         test.info().annotations.push({ type: 'Observation', description: `"New conversion" button visible while SIF Conversion is off: ${await list.newConversionButton.isVisible()}` });
       } finally {
         // clean-up step 9: the setting is turned ON again (through the API: the evidence stays on the user's page)
-        await ensureTestingSifOn();
+        await ensureSifOn();
         state.orgToggledOff = false;
       }
     });
