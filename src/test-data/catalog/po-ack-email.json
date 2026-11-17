@@ -1,0 +1,112 @@
+{
+  "TC_PO-ACK_104": {
+    "tcId": "TC_PO-ACK_104",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify PO email acknowledgement",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Send a PO through email with the project name in the email body.\n2. Check the reply email.",
+    "testData": "Valid PO,\nProject: <project name> (In the Body)\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The user should receive an acknowledgement email confirming that the document has been received.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_105": {
+    "tcId": "TC_PO-ACK_105",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify PO document in the UI",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Send a PO through email.\n2. Open Stream.\n3. Navigate to the specified project.",
+    "testData": "Valid PO, existing project name\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The uploaded PO document should be visible under the specified project.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_106": {
+    "tcId": "TC_PO-ACK_106",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify ACK attachment submission",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Reply to the original PO email thread.\n2. Attach the first ACK document.\n3. Send the email.",
+    "testData": "Valid ACK attachment\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The system should receive and process the ACK document successfully.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_107": {
+    "tcId": "TC_PO-ACK_107",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify ACK receipt acknowledgement email",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Send the ACK attachment in the PO email thread.\n2. Wait for the system response.\n3. Check the reply email.",
+    "testData": "Valid ACK attachment\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The user should receive an acknowledgement email confirming that the ACK document has been received.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_108": {
+    "tcId": "TC_PO-ACK_108",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify ACK document appears in the UI without refreshing",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Keep the relevant project page open in Stream.\n2. Send the ACK attachment through the PO email thread.\n3. Wait for processing.\n4. Observe the UI without refreshing the page.",
+    "testData": "Valid ACK attachment\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The ACK document should appear in the UI automatically without requiring a page refresh.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_109": {
+    "tcId": "TC_PO-ACK_109",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify comparison report email",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Send a PO through email.\n2. Send the ACK attachment in the same email thread.\n3. Wait for processing to complete.\n4. Check the email.",
+    "testData": "Valid PO and ACK documents\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The user should receive a comparison report email containing the Review in Stream button.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_110": {
+    "tcId": "TC_PO-ACK_110",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify discrepancies in the comparison report",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Complete the PO and ACK email submission process.\n2. Open the comparison report.\n3. Compare the listed discrepancies with the Stream review page.",
+    "testData": "PO and ACK documents containing discrepancies\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The comparison report should display the total discrepancies and corresponding discrepancy details consistently with the Stream review page.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_111": {
+    "tcId": "TC_PO-ACK_111",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify multiple ACK submissions",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Send a PO through email.\n2. Reply to the same email thread with the first ACK attachment.\n3. Wait for acknowledgement.\n4. Send another ACK attachment in the same thread.\n5. Check the reply emails.",
+    "testData": "One PO and multiple ACK attachments\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The system should process each ACK attachment and send a separate acknowledgement email for each submission.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_112": {
+    "tcId": "TC_PO-ACK_112",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify multiple ACK documents in the UI",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Submit multiple ACK attachments one by one in the same PO email thread.\n2. Open the corresponding project in Stream.\n3. Check the uploaded documents.",
+    "testData": "One PO and multiple ACK attachments\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "All successfully processed ACK documents should be displayed under the correct project.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_113": {
+    "tcId": "TC_PO-ACK_113",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify the Review in Stream button",
+    "preconditions": "Riverstonetech user mailbox (PO_ACK_MAIL_USER); the project exists in PO-ACK Recon",
+    "steps": "1. Receive the comparison report email.\n2. Click the Review in Stream button.",
+    "testData": "Comparison report email\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
+    "expectedResult": "The user should be redirected to the relevant PO review page in Stream.",
+    "actualResult": ""
+  },
+  "TC_PO-ACK_114": {
+    "tcId": "TC_PO-ACK_114",
+    "module": "PO-ACK Recon - Email Process",
+    "description": "Verify a PO emailed again with an existing PO number is listed as a new row",
+    "preconditions": "TC_PO-ACK_104: the project already holds the PO (57226-116400)",
+    "steps": "1. Send the same PO again in a new email (new thread, another file name) with the same project name in the body.\n2. Check the reply email.\n3. Open the project in Stream.",
+    "testData": "PO: SPATAB-57226-116400-DIRO.pdf sent as AUTO_<token>_SPATAB-57226-116400-DIRO.pdf\nProject: the run project",
+    "expectedResult": "The user receives the Document Received acknowledgement, and the emailed PO is listed as a new separate row in the project (one more row for that PO number); the existing row is not updated.",
+    "actualResult": ""
+  }
+}

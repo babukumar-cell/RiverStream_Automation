@@ -21,6 +21,9 @@ import { Config } from '../config/environment';
 // Types
 // ---------------------------------------------------------------------------------------------
 
+/** Mailbox settings (default: Config.email from .env); another mailbox can be passed to new MailService({...}) */
+export type MailAccount = typeof Config.email;
+
 export interface EmailAttachment {
   filename: string;
   content?: Buffer | string;
@@ -376,22 +379,25 @@ const HEADER_FIELDS = 'HEADER.FIELDS (MESSAGE-ID SUBJECT FROM DATE)';
 
 export class MailService {
   private readonly transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
+  /** Mailbox used to send and read: the .env account (Config.email) unless another one is passed */
+  readonly account: MailAccount;
 
-  constructor() {
+  constructor(account: Partial<MailAccount> = {}) {
+    this.account = { ...Config.email, ...account };
     this.transporter = nodemailer.createTransport({
-      host: Config.email.smtpHost,
-      port: Config.email.smtpPort,
-      secure: Config.email.smtpPort === 465,
-      auth: { user: Config.email.senderEmail, pass: Config.email.senderAppPassword },
+      host: this.account.smtpHost,
+      port: this.account.smtpPort,
+      secure: this.account.smtpPort === 465,
+      auth: { user: this.account.senderEmail, pass: this.account.senderAppPassword },
       tls: { rejectUnauthorized: tlsRejectUnauthorized() },
     });
   }
 
   private assertConfigured(): void {
-    if (!Config.email.senderEmail || !Config.email.senderAppPassword) {
+    if (!this.account.senderEmail || !this.account.senderAppPassword) {
       throw new MailAuthError('[MailService] SENDER_EMAIL and SENDER_APP_PASSWORD must be set in .env to run email tests.');
     }
-    if (!Config.email.ingestionEmail) {
+    if (!this.account.ingestionEmail) {
       throw new MailConnectionError('[MailService] INGESTION_EMAIL must be set in .env to run email tests.');
     }
   }
@@ -402,7 +408,7 @@ export class MailService {
     try {
       await this.transporter.verify();
     } catch (err) {
-      throw wrapMailError(err, 'SMTP', Config.email.smtpHost);
+      throw wrapMailError(err, 'SMTP', this.account.smtpHost);
     }
   }
 
@@ -424,8 +430,8 @@ export class MailService {
   /** Send an email (to the ingestion address unless `to` is given). */
   async sendEmail(options: SendEmailOptions): Promise<SentEmail> {
     this.assertConfigured();
-    const to = options.to ?? Config.email.ingestionEmail;
-    const from = Config.email.senderEmail;
+    const to = options.to ?? this.account.ingestionEmail;
+    const from = this.account.senderEmail;
     const sentAt = new Date();
     let info: SMTPTransport.SentMessageInfo;
     try {
@@ -440,7 +446,7 @@ export class MailService {
         references: options.references,
       });
     } catch (err) {
-      throw wrapMailError(err, 'SMTP', Config.email.smtpHost);
+      throw wrapMailError(err, 'SMTP', this.account.smtpHost);
     }
     const asStrings = (list: Array<string | { address: string }>) =>
       list.map((a) => (typeof a === 'string' ? a : a.address).toLowerCase());
@@ -479,8 +485,8 @@ export class MailService {
 
   /** Wait until at least `count` correlated replies exist; returns them oldest first. */
   async waitForReplies(query: ReplyQuery, count: number): Promise<RetrievedEmail[]> {
-    const timeoutMs = query.timeoutMs ?? Config.email.pollTimeoutMs;
-    const intervalMs = query.intervalMs ?? Config.email.pollIntervalMs;
+    const timeoutMs = query.timeoutMs ?? this.account.pollTimeoutMs;
+    const intervalMs = query.intervalMs ?? this.account.pollIntervalMs;
     const deadline = Date.now() + timeoutMs;
     let conn: ImapSimple | undefined = await this.connectImap();
     let spamBox: string | undefined;
@@ -501,9 +507,9 @@ export class MailService {
         } catch (err) {
           // Auth/TLS problems are thrown straight away; a dropped or hung connection is replaced
           // (also after the deadline, so the final search still runs on a working connection).
-          if (isAuthError(err) || isTlsError(err)) throw wrapMailError(err, 'IMAP', Config.email.imapHost);
+          if (isAuthError(err) || isTlsError(err)) throw wrapMailError(err, 'IMAP', this.account.imapHost);
           if (reconnects >= MAX_IMAP_RECONNECTS) {
-            throw err instanceof MailConnectionError ? err : wrapMailError(err, 'IMAP', Config.email.imapHost);
+            throw err instanceof MailConnectionError ? err : wrapMailError(err, 'IMAP', this.account.imapHost);
           }
           reconnects++;
           console.warn(`[MailService] IMAP problem while waiting for "${query.token}" (${(err as Error).message}); reconnecting (${reconnects}/${MAX_IMAP_RECONNECTS}).`);
@@ -519,7 +525,7 @@ export class MailService {
         if (found.length >= count) return found;
         if (Date.now() + intervalMs > deadline) {
           throw new ReplyTimeoutError(
-            `[MailService] Expected ${count} reply(ies) from ${query.from ?? Config.email.ingestionEmail} with "${query.token}" ` +
+            `[MailService] Expected ${count} reply(ies) from ${query.from ?? this.account.ingestionEmail} with "${query.token}" ` +
               `in the subject within ${Math.round(timeoutMs / 1000)}s of ${query.since.toISOString()}; found ${found.length}.`,
           );
         }
@@ -536,7 +542,7 @@ export class MailService {
     try {
       return await this.searchReplies(conn, query, await this.findSpamBox(conn));
     } catch (err) {
-      throw err instanceof MailAuthError || err instanceof MailConnectionError ? err : wrapMailError(err, 'IMAP', Config.email.imapHost);
+      throw err instanceof MailAuthError || err instanceof MailConnectionError ? err : wrapMailError(err, 'IMAP', this.account.imapHost);
     } finally {
       this.safeEnd(conn);
     }
@@ -549,12 +555,12 @@ export class MailService {
   private async connectImap(): Promise<ImapSimple> {
     this.assertConfigured();
     const imapConfig: Imap.Config = {
-      user: Config.email.senderEmail,
-      password: Config.email.senderAppPassword,
-      host: Config.email.imapHost,
-      port: Config.email.imapPort,
+      user: this.account.senderEmail,
+      password: this.account.senderAppPassword,
+      host: this.account.imapHost,
+      port: this.account.imapPort,
       tls: true,
-      tlsOptions: { rejectUnauthorized: tlsRejectUnauthorized(), servername: Config.email.imapHost },
+      tlsOptions: { rejectUnauthorized: tlsRejectUnauthorized(), servername: this.account.imapHost },
       authTimeout: 20000,
       connTimeout: 20000,
     };
@@ -565,7 +571,7 @@ export class MailService {
       watchConnection(conn);
       return conn;
     } catch (err) {
-      throw wrapMailError(err, 'IMAP', Config.email.imapHost);
+      throw wrapMailError(err, 'IMAP', this.account.imapHost);
     }
   }
 
@@ -602,7 +608,7 @@ export class MailService {
 
   private async searchMailbox(conn: ImapSimple, mailbox: string, query: ReplyQuery): Promise<RetrievedEmail[]> {
     await conn.openBox(mailbox);
-    const from = query.from ?? Config.email.ingestionEmail;
+    const from = query.from ?? this.account.ingestionEmail;
     // IMAP SINCE has day granularity; the exact cut-off is applied on INTERNALDATE below.
     const sinceDay = new Date(query.since.getTime() - 24 * 60 * 60 * 1000);
     const criteria = [['SINCE', sinceDay], ['HEADER', 'SUBJECT', query.token], ['FROM', from]];
@@ -625,8 +631,11 @@ export class MailService {
     if (wanted.length === 0) return [];
 
     // 2) full source only for the correlated messages
-    const uids = wanted.map((m) => m.attributes.uid);
-    const full: Message[] = await conn.search([['UID', uids.join(',')]], { bodies: [''], markSeen: false });
+    // A UID list ("410,411,...") only returns its first message through imap-simple, so search the UID range
+    // and keep the wanted UIDs
+    const uids = new Set(wanted.map((m) => m.attributes.uid));
+    const range = `${Math.min(...uids)}:${Math.max(...uids)}`;
+    const full: Message[] = (await conn.search([['UID', range]], { bodies: [''], markSeen: false })).filter((m) => uids.has(m.attributes.uid));
     const parsed: RetrievedEmail[] = [];
     for (const m of full) {
       const source = m.parts.find((p) => p.which === '')?.body as string | undefined;

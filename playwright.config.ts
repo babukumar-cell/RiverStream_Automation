@@ -99,12 +99,34 @@ export default defineConfig({
       },
     },
     {
+      // Smoke suite (TC_SMOKE_001-020, workbook 11_Smoke_Test.xlsx): one quick pass over every module as the Super Admin
+      name: 'smoke',
+      dependencies: ['setup'],
+      testMatch: [/smoke[/\\][^/\\]+\.spec\.ts/],
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.env.BROWSER_CHANNEL || undefined,
+        storageState: Config.adminStorageState,
+      },
+    },
+    {
+      // ERP fail: Super Admin uploads a SIF, submits it with a customer that is not in the ERP, checks the popup and
+      // the alert email (adds and deletes the automation mailbox as an Admin of its organization)
+      name: 'erp-fail',
+      dependencies: ['setup'],
+      testMatch: [/erp-fail[/\\][^/\\]+\.spec\.ts/],
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.env.BROWSER_CHANNEL || undefined,
+        storageState: Config.adminStorageState,
+        viewport: { width: 1600, height: 900 },
+        video: { mode: 'retain-on-failure', size: { width: 1600, height: 900 } },
+      },
+    },
+    {
       name: 'po-ack',
       dependencies: ['setup'],
-      testMatch: [
-        /po-ack-recon[/\\][^/\\]+\.spec\.ts/,
-        /po-ack-smoke\.spec\.ts/,
-      ],
+      testMatch: [/po-ack-recon[/\\][^/\\]+\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         channel: process.env.BROWSER_CHANNEL || undefined,

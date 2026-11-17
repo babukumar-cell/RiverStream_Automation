@@ -21,7 +21,9 @@ import {
   asSuperAdmin,
   attachEvidence,
   deleteRunOrganization,
+  removeExistingAutomationUser,
   requires,
+  restoreExistingAutomationUser,
   mailDate,
   mailField,
   mailLink,
@@ -37,6 +39,9 @@ import {
 /*
  * Source: Test Cases/Module_Wise_Test_Cases/09_Auto_Renewal.xlsx (TC_BILL_001 - TC_BILL_034).
  *
+ * Precondition: if riverstreamautomation@gmail.com is already a user (e.g. the Riverstonetech user of the PO-ACK email
+ * suite), the Super Admin deletes it before the run and adds it back to its organization after the run.
+ *
  * One end-to-end lifecycle, run in order (serial): the Super Admin creates an organization and its Admin user,
  * the Admin subscribes to Growth (Monthly) on Settings > Billing (Stripe test mode): the 4000 0000 0000 0002 card
  * is declined, the "Pay Now" button of the Payment Failed email is paid with 4242 4242 4242 4242, then the
@@ -50,6 +55,12 @@ const ESC = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** Cases whose execution video is attached to the report (the project records every case; the report keeps these) */
 const VIDEO = { annotation: { type: 'video', description: 'Execution video attached to the report' } };
 
+/** Known bug: RiverStream emails are not delivered (Azure email service), so the cases that wait for an email fail */
+const EMAIL_BUG = {
+  type: 'issue',
+  description: 'Known bug: RiverStream emails are not delivered (Azure email service issue); this step waits for a RiverStream email.',
+};
+
 test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
   // In order, one worker. Not 'serial': a failed step must not skip the later independent steps and the cleanup.
   // Each step that needs an earlier one checks for its result (requires) and is skipped with the reason if missing.
@@ -57,12 +68,21 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
   // Each test signs in explicitly (Super Admin / the run's Admin), as the steps switch users
   test.use({ storageState: { cookies: [], origins: [] } });
 
+  // Precondition of TC_BILL_001: the run's Admin email must not be a RiverStream user yet (deleted here, once per run)
+  test.beforeAll(async ({ browser }) => {
+    test.setTimeout(180_000);
+    await removeExistingAutomationUser(browser);
+  });
+
   test.beforeEach(async () => {
     test.setTimeout(300_000);
   });
 
   test.afterAll(async ({ browser }) => {
+    test.setTimeout(300_000);
     await deleteRunOrganization(browser);
+    // The user deleted by the precondition goes back to its organization once the run is over
+    await restoreExistingAutomationUser(browser);
   });
 
   // =========================================================================================
@@ -108,7 +128,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(details.userRowRole(row)).toHaveText(/^admin$/i);
   });
 
-  test('TC_BILL_003: Verify that the new Admin user receives the set password email.', async ({ page, mailService }) => {
+  test('TC_BILL_003: Verify that the new Admin user receives the set password email.', { annotation: EMAIL_BUG }, async ({ page, mailService }) => {
     requires(state.userAddedAt, 'the Admin user (TC_BILL_002)');
     const mail = await waitForMail(mailService, SUBJECTS.setPassword, state.userAddedAt!);
     state.setPasswordLink = mailLink(mail, /\/set-password\?token=/);
@@ -258,7 +278,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(new LeftSidePage(page).planName).toHaveText('Free trial Plan');
   });
 
-  test('TC_BILL_014: Verify the Payment Failed email.', async ({ page, mailService }) => {
+  test('TC_BILL_014: Verify the Payment Failed email.', { annotation: EMAIL_BUG }, async ({ page, mailService }) => {
     requires(state.failedAt, 'the declined payment (TC_BILL_012)');
     const mail = await waitForMail(mailService, SUBJECTS.paymentFailed, state.failedAt!);
     state.payNowLink = mailLink(mail, /^https:\/\/invoice\.stripe\.com\//);
@@ -275,7 +295,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(page.getByRole('link', { name: 'Pay Now', exact: true })).toBeVisible();
   });
 
-  test('TC_BILL_015: Verify that the Pay Now button in the Payment Failed email redirects to the Stripe payment page.', async ({ page, mailService }) => {
+  test('TC_BILL_015: Verify that the Pay Now button in the Payment Failed email redirects to the Stripe payment page.', { annotation: EMAIL_BUG }, async ({ page, mailService }) => {
     requires(state.failedAt, 'the declined payment (TC_BILL_012)');
     const mail = await waitForMail(mailService, SUBJECTS.paymentFailed, state.failedAt!);
     await showEmail(page, mail);
@@ -331,7 +351,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(billing.switchPlansNote).toBeVisible();
   });
 
-  test('TC_BILL_018: Verify the "Your Growth plan is active" email.', async ({ page, mailService }) => {
+  test('TC_BILL_018: Verify the "Your Growth plan is active" email.', { annotation: EMAIL_BUG }, async ({ page, mailService }) => {
     requires(state.paidAt, 'the successful payment (TC_BILL_016)');
     const mail = await waitForMail(mailService, SUBJECTS.planActive, state.paidAt!);
     await showEmail(page, mail);
@@ -356,7 +376,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(page.getByRole('link', { name: 'View Billing', exact: true })).toBeVisible();
   });
 
-  test('TC_BILL_019: Verify that the View Billing button in the email redirects to the application Billing page.', VIDEO, async ({ page, mailService }) => {
+  test('TC_BILL_019: Verify that the View Billing button in the email redirects to the application Billing page.', { annotation: [VIDEO.annotation, EMAIL_BUG] }, async ({ page, mailService }) => {
     requires(state.paidAt, 'the successful payment (TC_BILL_016)');
     const mail = await waitForMail(mailService, SUBJECTS.planActive, state.paidAt!);
     await asAdmin(page);
@@ -534,7 +554,7 @@ test.describe('River Stream - Auto Renewal (TC_BILL_001 - TC_BILL_034)', () => {
     await expect(billing.cancelSubscriptionButton).toBeVisible();
   });
 
-  test('TC_BILL_029: Verify that the Yes, cancel button cancels the subscription renewal.', async ({ page, mailService }) => {
+  test('TC_BILL_029: Verify that the Yes, cancel button cancels the subscription renewal.', { annotation: EMAIL_BUG }, async ({ page, mailService }) => {
     test.setTimeout(900_000);
     requires(state.renewalDate, 'the active subscription (TC_BILL_017)');
     await asAdmin(page);

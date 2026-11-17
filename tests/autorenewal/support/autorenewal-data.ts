@@ -7,13 +7,17 @@ import { Config } from '../../../src/config/environment';
 import { MailService, RetrievedEmail } from '../../../src/utils/mail.service';
 import { TestCard } from '../../../src/pages/billing.page';
 import { OrganizationDetailsPage } from '../../../src/pages/settings/organization-details.page';
+import { UserDetailsPage } from '../../../src/pages/settings/user-details.page';
+import { UserRole, UsersPage } from '../../../src/pages/settings/users.page';
 
 /*
  * Test data and helpers for the Auto Renewal suite (Test Cases/Module_Wise_Test_Cases/09_Auto_Renewal.xlsx).
  *
  * Every run creates its own organization and the Admin user riverstreamautomation@gmail.com, and deletes both at
- * the end (TC_BILL_033 / 034, with an afterAll safety net). That address must not exist as a RiverStream user
- * before the run (an email can only be registered once). The suite reads the RiverStream emails in its mailbox.
+ * the end (TC_BILL_033 / 034, with an afterAll safety net). The suite reads the RiverStream emails in its mailbox.
+ * An email can only be registered once, so before the run (beforeAll) the Super Admin deletes that address if it is
+ * already a user (e.g. the Riverstonetech user of the PO-ACK email suite) and after the run (afterAll) adds it back
+ * to its organization with the same name and role.
  */
 
 const runId = (process.env.RS_RUN_ID ?? String(Date.now())).slice(-8);
@@ -260,6 +264,110 @@ export async function showPdf(page: Page, file: string, scale = 1.4): Promise<st
 /** Text run of the rendered PDF (exact text or pattern) */
 export function pdfText(page: Page, text: string | RegExp) {
   return page.locator('.rs-pdf-text').filter({ hasText: typeof text === 'string' ? new RegExp(`^\\s*${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`) : text });
+}
+
+// ---------------------------------------------------------------------------------------------
+// Pre-existing automation user (precondition of TC_BILL_001)
+// ---------------------------------------------------------------------------------------------
+
+/** The automation mailbox registered as a user before the run (e.g. the Riverstonetech user of the PO-ACK email suite) */
+export interface ExistingUser {
+  firstName: string;
+  lastName: string;
+  organization: string;
+  role: UserRole;
+}
+
+const existingUserFile = () => path.join(os.tmpdir(), `riverstream-autorenewal-existing-user-${runId}.json`);
+type ExistingUserState = { checked?: boolean; user?: ExistingUser; restored?: boolean };
+const readExistingUser = (): ExistingUserState => {
+  try {
+    return JSON.parse(fs.readFileSync(existingUserFile(), 'utf8')) as ExistingUserState;
+  } catch {
+    return {};
+  }
+};
+const writeExistingUser = (s: ExistingUserState) => fs.writeFileSync(existingUserFile(), JSON.stringify(s, null, 2));
+
+async function withSuperAdmin<T>(browser: Browser, fn: (page: Page) => Promise<T>): Promise<T> {
+  const context = await browser.newContext({ storageState: Config.adminStorageState, baseURL: Config.baseUrl, viewport: { width: 1600, height: 900 } });
+  try {
+    return await fn(await context.newPage());
+  } finally {
+    await context.close();
+  }
+}
+
+/** Whether RUN.adminEmail is a RiverStream user (Settings > Users search) */
+async function userExists(users: UsersPage): Promise<boolean> {
+  await users.goto();
+  await users.search(RUN.adminEmail);
+  return (await users.userCard(RUN.adminEmail).count()) > 0;
+}
+
+/**
+ * Precondition of the run (once per run, from beforeAll): RUN.adminEmail must not be a RiverStream user, because
+ * TC_BILL_002 registers it in the new organization. If it exists, the Super Admin records its name, organization and
+ * role and deletes it; restoreExistingAutomationUser() adds it back after the run. A leftover user of an earlier Auto
+ * Renewal run (organization AutoRenewal_*) is deleted and not restored.
+ */
+export async function removeExistingAutomationUser(browser: Browser): Promise<void> {
+  if (readExistingUser().checked) return;
+  await withSuperAdmin(browser, async (page) => {
+    const users = new UsersPage(page);
+    if (!(await userExists(users))) {
+      writeExistingUser({ checked: true });
+      return;
+    }
+    await users.openUserDetails(RUN.adminEmail);
+    const details = new UserDetailsPage(page);
+    await details.waitForUser(RUN.adminEmail);
+    const organization = (await details.organizationNameInput.inputValue()).trim();
+    const roleText = ((await details.roleField.innerText()).replace(/^\s*Role\s*/i, '') || '').trim();
+    const user: ExistingUser = {
+      firstName: (await details.firstNameInput.inputValue()).trim() || 'Automation',
+      lastName: (await details.lastNameInput.inputValue()).trim(),
+      organization,
+      role: /admin/i.test(roleText) ? 'Admin' : 'Reviewer',
+    };
+    await details.deleteWithConfirmation();
+    await users.search(RUN.adminEmail);
+    await expect(users.userCard(RUN.adminEmail)).toHaveCount(0);
+    const restore = !/^AutoRenewal_/i.test(organization);
+    writeExistingUser({ checked: true, user: restore ? user : undefined });
+    console.log(`[autorenewal] precondition: deleted the existing user ${RUN.adminEmail} (${organization}, ${user.role})${restore ? '; it is added back after the run' : ''}`);
+  });
+}
+
+/**
+ * After the run (afterAll): adds the user removed by removeExistingAutomationUser() back to its organization with
+ * its name and role. Only once the run is over (TC_BILL_034 started, or no organization was created) and the run's
+ * own user is gone, so a worker restarted after a failed step never re-adds it in the middle of the run.
+ */
+export async function restoreExistingAutomationUser(browser: Browser): Promise<void> {
+  const s = readExistingUser();
+  if (!s.user || s.restored) return;
+  if (state.orgId && !state.cleanupStarted) return;
+  try {
+    await withSuperAdmin(browser, async (page) => {
+      const users = new UsersPage(page);
+      if (await userExists(users)) {
+        console.warn(`[autorenewal] ${RUN.adminEmail} still exists, so it was not added back to ${s.user!.organization}`);
+        return;
+      }
+      const dialog = await users.openCreateUserDialog();
+      await dialog.fill({ firstName: s.user!.firstName, lastName: s.user!.lastName || undefined, email: RUN.adminEmail, organization: s.user!.organization, role: s.user!.role });
+      await dialog.submit();
+      await users.search(RUN.adminEmail);
+      await expect(users.userCard(RUN.adminEmail)).toContainText(s.user!.organization);
+      writeExistingUser({ ...s, restored: true });
+      console.log(`[autorenewal] added ${RUN.adminEmail} back to ${s.user!.organization} as ${s.user!.role}`);
+    });
+  } catch (err) {
+    console.warn(
+      `[autorenewal] could not add ${RUN.adminEmail} back to ${s.user.organization} (${s.user.role}); add it manually: ${(err as Error).message}`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------------------------

@@ -269,8 +269,30 @@ export async function ensureTestingSifOn(): Promise<void> {
   expect(await orgSifEnabled(orgId), `${TOGGLE_ORG} (${orgId}): SIF Conversion is ON`).toBe(true);
 }
 
+/**
+ * Safety check before anything is uploaded or switched: the suite's user must be in the organization Testing.
+ * (If the user was moved to another organization, the suite would upload there and TC_SIF_079 would switch that
+ * organization's SIF Conversion setting.)
+ */
+export async function assertTestingOrg(): Promise<void> {
+  const orgId = testingOrgId();
+  const api = await sifApi('superAdmin');
+  try {
+    const org = await ok(await api.get(`getOrganization/${orgId}`), 'getOrganization');
+    if (org.name !== TOGGLE_ORG) {
+      throw new Error(
+        `${ORG_USER.email} belongs to "${org.name}" (${orgId}), not "${TOGGLE_ORG}". The SIF Conversion suite only runs in ` +
+          `${TOGGLE_ORG}: move the user back to ${TOGGLE_ORG} (or set SIF_USER_EMAIL / SIF_USER_PASSWORD to a ${TOGGLE_ORG} user) and run again.`,
+      );
+    }
+  } finally {
+    await api.dispose();
+  }
+}
+
 /** Testing's SIF Conversion ON, then the suite's documents PO, QR, CONV, ACT uploaded (once per run) and CONV converted */
 export async function ensureSetup(): Promise<void> {
+  await assertTestingOrg();
   await ensureTestingSifOn();
   if (state.setupDone) return;
   const api = await sifApi();
@@ -349,6 +371,8 @@ export async function setOrgSif(page: Page, orgUrl: string, on: boolean): Promis
 // ---------------------------------------------------------------------------------------------
 
 export async function cleanup(): Promise<void> {
+  // Nothing to clean (and no setting to touch) when the user is not in Testing: assertTestingOrg stopped the run
+  if (!(await assertTestingOrg().then(() => true, () => false))) return;
   try {
     await ensureTestingSifOn();
     state.orgToggledOff = false;

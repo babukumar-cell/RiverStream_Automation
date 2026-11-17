@@ -1,0 +1,22 @@
+{
+  "TC_ERP_001": {
+    "tcId": "TC_ERP_001",
+    "module": "ERP Fail",
+    "description": "Validate ERP Estimate Insertion Failed.",
+    "preconditions": "Super Admin session. The automation mailbox (riverstreamautomation@gmail.com) is added as an Admin of the Super Admin's organization before the test and deleted after it.",
+    "steps": "1. Login as the Super Admin.\n2. Click on Upload New File button.\n3. Upload a valid SIF file (Document type Quote Request, a client).\n4. Click on Review button.\n5. Click on Customer Name edit icon and enter a customer that is not in the ERP.\n6. Click on Complete button.\n7. Click on Submit to ERP button.\n8. Wait for the email reply.\n9. Observe the email reply.",
+    "testData": "File: CDF_Carolina OS_Young Conway Furniture_SIF_260520_QA8.sif (uploaded as AUTO_ERPFAIL_<run>.sif)\nCustomer Name: AUTO Invalid Customer ERPFAIL <run>\nMailbox: riverstreamautomation@gmail.com",
+    "expectedResult": "The ERP failure popup should be displayed in the UI, and a reply email should be received (Inbox or Spam folder; both folders are checked).",
+    "actualResult": ""
+  },
+  "TC_ERP_002": {
+    "tcId": "TC_ERP_002",
+    "module": "ERP Fail",
+    "description": "Verify ERP Estimate Insertion Failed reply.",
+    "preconditions": "TC_ERP_001 received the ERP Insertion Failed email.",
+    "steps": "1. Login as the Super Admin.\n2. Click on Upload New File button.\n3. Upload a valid SIF file.\n4. Click on Review button.\n5. Click on Customer Name edit icon.\n6. Click on Complete button.\n7. Click on Submit to ERP button.\n8. Wait for the email reply.\n9. Observe the email reply.",
+    "testData": "Email: RiverStream Alert: ERP Quotation Insertion Failed (<ERP>) — <organization> — AUTO_ERPFAIL_<run>.sif",
+    "expectedResult": "The email should include the user name, organization name, file name, upload date and time, and the reason for the ERP insertion failure.",
+    "actualResult": ""
+  }
+}

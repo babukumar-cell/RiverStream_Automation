@@ -3,7 +3,7 @@
     "tcId": "TC_BILL_001",
     "module": "Billing - Org & Admin Setup",
     "description": "Verify that the Super Admin can create a new organization.",
-    "preconditions": "User on the Sign-In page",
+    "preconditions": "User on the Sign-In page.\nriverstreamautomation@gmail.com must not be a RiverStream user: if it exists (e.g. the Riverstonetech user of the PO-ACK email suite), the Super Admin deletes it before the run (Settings > Users > the user > Delete) and adds it back to its organization with the same name and role after the run.",
     "steps": "1. Log in as Super Admin.\n2. Click on Settings > Organizations.\n3. Click on Add Organization.\n4. Enter the Organization Name and Domain.\n5. Keep the default Document Types.\n6. Select the Free Trial plan.\n7. Click on Create Organization.",
     "testData": "Super Admin: admin@riverstonetech.com / River@123\nOrganization: AutoRenewal_<run id>\nDomain: autorenewal<run id>.com\nPlan: Free Trial",
     "expectedResult": "The organization should be created successfully and displayed in the Organizations list with Active status.",
@@ -334,7 +334,7 @@
     "module": "Billing - Cleanup",
     "description": "Verify that the Super Admin can delete the new organization.",
     "preconditions": "Logged in as Super Admin; Admin user deleted",
-    "steps": "1. Open the new organization's details page (View / eye icon).\n2. Click on the Delete button.\n3. Confirm the deletion in the popup.\n4. Search the organization in Settings > Organizations.",
+    "steps": "1. Open the new organization's details page (View / eye icon).\n2. Click on the Delete button.\n3. Confirm the deletion in the popup.\n4. Search the organization in Settings > Organizations.\n\nAfter the run: riverstreamautomation@gmail.com is added back to the organization it belonged to before the run (same name and role), if the precondition of TC_BILL_001 deleted it.",
     "testData": "Super Admin: admin@riverstonetech.com / River@123\nOrganization: AutoRenewal_<run id>",
     "expectedResult": "The organization should be deleted successfully and should not be displayed in the Organizations list.",
     "actualResult": ""

@@ -301,6 +301,8 @@ export const MODULES: ModuleDef[] = [
   { key: 'email', order: 10, name: 'Email Order Ingestion', shortName: 'Email', icon: '✉️', idPrefixes: ['EM', 'RS_EM'], pathHints: ['email'] },
   { key: 'sif', order: 11, name: 'SIF Conversion', shortName: 'SIF Conversion', icon: '🔄', idPrefixes: ['SIF'], pathHints: ['sif-conversion'] },
   { key: 'billing', order: 12, name: 'Auto Renewal & Billing', shortName: 'Auto Renewal', icon: '💳', idPrefixes: ['BILL'], pathHints: ['autorenewal'] },
+  { key: 'erp', order: 13, name: 'ERP Fail', shortName: 'ERP Fail', icon: '⚠️', idPrefixes: ['ERP'], pathHints: ['erp-fail'] },
+  { key: 'smoke', order: 14, name: 'Smoke Test', shortName: 'Smoke', icon: '💨', idPrefixes: ['SMOKE'], pathHints: ['smoke'] },
 ];
 
 export const GENERAL_MODULE: ModuleDef = {

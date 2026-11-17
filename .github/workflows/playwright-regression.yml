@@ -10,9 +10,12 @@ on:
         default: 'test:main'
         type: choice
         options:
-          - 'test:main'          # Complete Automation Suite (221 tests)
-          - 'test:po-quote'      # PO & Quote Request Suite (152 tests)
-          - 'test:po-ack'        # PO-ACK Recon Suite (69 tests)
+          - 'test:main'          # Complete Automation Suite (368 tests: PO & Quote, PO-ACK, SIF Conversion, Auto Renewal, ERP Fail)
+          - 'test:po-quote'      # PO & Quote Request Suite (157 tests)
+          - 'test:po-ack'        # PO-ACK Suite (94 tests incl. PO-ACK email flow)
+          - 'test:sif'           # SIF Conversion Suite (81 tests)
+          - 'test:autorenewal'   # Auto Renewal Suite (34 tests)
+          - 'test:erp-fail'      # ERP Fail Suite (2 tests)
           - 'test:upload'
           - 'test:documents'
           - 'test:recon'
@@ -84,6 +87,8 @@ jobs:
           SMTP_PORT: 465
           IMAP_HOST: imap.gmail.com
           IMAP_PORT: 993
+          SIF_USER_EMAIL: ${{ secrets.SIF_USER_EMAIL }}
+          SIF_USER_PASSWORD: ${{ secrets.SIF_USER_PASSWORD }}
         run: |
           SUITE="${{ github.event.inputs.test_suite }}"
           if [ -z "$SUITE" ]; then
