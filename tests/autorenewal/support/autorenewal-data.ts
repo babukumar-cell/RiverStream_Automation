@@ -144,10 +144,15 @@ export const SUBJECTS = {
   renewalCancelled: `RiverStream: Auto-renewal cancelled for your ${PLAN.name} plan`,
 } as const;
 
-/** Waits for the RiverStream email with this subject sent to the run's Admin after `since` */
-/** Waits for the email (default 4 min; the "Auto-renewal cancelled" email can take 5-6 min to arrive) */
+/**
+ * Waits for the RiverStream email with this subject sent to the run's Admin after `since` (default 4 min; the
+ * "Auto-renewal cancelled" email can take 5-6 min to arrive). Both folders are checked: Inbox first, then Spam;
+ * the folder is noted in the report and shown on the email screenshot.
+ */
 export async function waitForMail(mail: MailService, subject: string, since: Date, timeoutMs = 240_000): Promise<RetrievedEmail> {
-  return mail.waitForReply({ token: subject, from: MAIL_FROM, to: RUN.adminEmail, since: new Date(since.getTime() - 60_000), timeoutMs });
+  const received = await mail.waitForReply({ token: subject, from: MAIL_FROM, to: RUN.adminEmail, since: new Date(since.getTime() - 60_000), timeoutMs });
+  test.info().annotations.push({ type: 'note', description: `"${received.subject}" email received in the ${received.mailbox} folder` });
+  return received;
 }
 
 /** First link in the email whose URL matches `pattern` */
@@ -165,6 +170,7 @@ export async function showEmail(page: Page, mail: RetrievedEmail): Promise<void>
   await page.setContent(mail.html || `<pre style="white-space:pre-wrap;font:13px Arial">${escapeHtml(mail.text)}</pre>`, { waitUntil: 'domcontentloaded' });
   const meta =
     `<div id="rs-mail-meta" style="font:13px Arial,sans-serif;background:#f3f4f6;border-bottom:1px solid #d1d5db;padding:10px 16px;line-height:1.6">` +
+    `<div><b>Folder:</b> <span id="rs-mail-folder">${escapeHtml(mail.mailbox)}</span></div>` +
     `<div><b>From:</b> ${escapeHtml(mail.from)} &nbsp; <b>To:</b> ${escapeHtml(mail.to.join(', '))} &nbsp; <b>Received:</b> ${mail.receivedAt.toISOString()}</div>` +
     `<div><b>Subject:</b> <span id="rs-mail-subject">${escapeHtml(mail.subject)}</span></div>` +
     (mail.attachments.length ? `<div><b>Attachments:</b> <span id="rs-mail-attachments">${mail.attachments.map((a) => escapeHtml(a.filename)).join(', ')}</span></div>` : '') +
@@ -319,10 +325,28 @@ export async function removeExistingAutomationUser(browser: Browser): Promise<vo
       writeExistingUser({ checked: true });
       return;
     }
-    await users.openUserDetails(RUN.adminEmail);
+    // the card's eye button (searching the same text again would send no new request)
+    const card = users.userCard(RUN.adminEmail);
+    await expect(card).toHaveCount(1);
+    await users.viewButton(card).click();
+    await page.waitForURL(/\/users\/[^/]+$/);
     const details = new UserDetailsPage(page);
     await details.waitForUser(RUN.adminEmail);
-    const organization = (await details.organizationNameInput.inputValue()).trim();
+    await expect(details.organizationIdInput).not.toHaveValue('', { timeout: 30000 });
+    const orgId = (await details.organizationIdInput.inputValue()).trim();
+    // the organization's name as listed in the Create User dialog (read on the organization page)
+    let organization = (await details.organizationNameInput.inputValue().catch(() => '')).trim();
+    if (!organization) {
+      const orgPage = await page.context().newPage();
+      try {
+        const org = new OrganizationDetailsPage(orgPage);
+        await org.goto(orgId);
+        await expect(org.nameInput).not.toHaveValue('', { timeout: 30000 });
+        organization = (await org.nameInput.inputValue()).trim();
+      } finally {
+        await orgPage.close();
+      }
+    }
     const roleText = ((await details.roleField.innerText()).replace(/^\s*Role\s*/i, '') || '').trim();
     const user: ExistingUser = {
       firstName: (await details.firstNameInput.inputValue()).trim() || 'Automation',
@@ -359,7 +383,8 @@ export async function restoreExistingAutomationUser(browser: Browser): Promise<v
       await dialog.fill({ firstName: s.user!.firstName, lastName: s.user!.lastName || undefined, email: RUN.adminEmail, organization: s.user!.organization, role: s.user!.role });
       await dialog.submit();
       await users.search(RUN.adminEmail);
-      await expect(users.userCard(RUN.adminEmail)).toContainText(s.user!.organization);
+      // the card shows the name, email and role (not the organization, which the Create User dialog set)
+      await expect(users.userCard(RUN.adminEmail)).toContainText(new RegExp(s.user!.role, 'i'));
       writeExistingUser({ ...s, restored: true });
       console.log(`[autorenewal] added ${RUN.adminEmail} back to ${s.user!.organization} as ${s.user!.role}`);
     });
