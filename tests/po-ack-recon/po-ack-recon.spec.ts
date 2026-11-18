@@ -896,17 +896,6 @@ test.describe('River Stream - PO-ACK Recon Suite (TC_RECON_017 - TC_RECON_083)',
     await expect(recon.fieldValue(recon.poDataCard, 'City').first()).not.toHaveText('');
   });
 
-  test('TC_RECON_066: Verify extracted PO values are read-only and cannot be directly edited', async ({ poAckReconPage: recon }, testInfo) => {
-    test.skip(true, 'Skipped on request (not executed in this suite).');
-    test.setTimeout(LONG);
-    await openSuiteReview(recon, 'pair', testInfo);
-    const po = recon.fieldValue(recon.poDataCard, 'Po Number');
-    await expect(po).toBeVisible();
-    expect(await po.evaluate((el) => el.tagName), 'shown as text').toBe('P');
-    expect(await po.evaluate((el) => (el as HTMLElement).isContentEditable), 'not editable in place').toBe(false);
-    await expect(recon.poDataCard.locator('input, textarea'), 'no input fields until the edit icon is used').toHaveCount(0);
-  });
-
   test('TC_RECON_067: Verify ACK section displays "ACK yet to add" when reviewing document without ACK', async ({ poAckReconPage: recon, page }, testInfo) => {
     test.setTimeout(LONG);
     await ensureUploaded(recon, 'poOnly', testInfo);
@@ -1045,17 +1034,35 @@ test.describe('River Stream - PO-ACK Recon Suite (TC_RECON_017 - TC_RECON_083)',
     await expect(recon.previewModal.getByText(/has discrepancy/).first()).toBeVisible();
   });
 
-  test('TC_RECON_077: Verify selected discrepancy fields can be copied to clipboard', async ({ poAckReconPage: recon, page, context }, testInfo) => {
+  test('TC_RECON_077: Verify selected discrepancy fields can be copied from clipboard', async ({ poAckReconPage: recon, page, context }, testInfo) => {
     test.setTimeout(LONG);
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await openSuiteReview(recon, 'pair', testInfo);
     test.skip((await recon.selectedCount()) === 0, 'No discrepancy fields are selected on this document');
     await recon.emailPreviewButton.click();
-    await expect(recon.previewModal).toBeVisible();
+    await recon.previewModal.waitFor({ state: 'visible' });
     await recon.previewModal.getByRole('button', { name: 'Copy', exact: true }).click();
-    await expect(page.locator('[data-sonner-toast]').filter({ hasText: /copied/i }).first(), 'copy confirmation').toBeVisible();
-    const clipboard = await page.evaluate(() => navigator.clipboard.readText());
-    expect(clipboard, 'discrepancy details on the clipboard').toMatch(/discrepanc/i);
+    // The confirmation message: caught as soon as it appears and kept open (hovered) for the screenshot
+    const copied = page.locator('[data-sonner-toast]').filter({ hasText: /copied/i }).first();
+    await copied.waitFor({ state: 'visible' });
+    await copied.hover().catch(() => {});
+    // The clipboard holds the selected discrepancies as plain text and/or formatted (HTML) email content
+    const clip = await page.evaluate(async () => {
+      const out: Record<string, string> = {};
+      try {
+        for (const item of await navigator.clipboard.read()) {
+          for (const type of item.types) out[type] = await (await item.getType(type)).text();
+        }
+      } catch (err) {
+        out.error = String(err);
+      }
+      return out;
+    });
+    const text = [clip['text/plain'] ?? '', (clip['text/html'] ?? '').replace(/<[^>]+>/g, ' ')].join(' ').replace(/\s+/g, ' ').trim();
+    testInfo.annotations.push({ type: 'note', description: `Clipboard (${Object.keys(clip).join(', ') || 'empty'}): ${text.slice(0, 300)}` });
+    expect(text, 'selected discrepancy details on the clipboard').toMatch(/discrepanc/i);
+    // the validation message (highlighted in the screenshot)
+    await expect(copied, 'copy confirmation message').toBeVisible();
   });
 
   test('TC_RECON_078: Verify hovering over discrepancy field displays flag icon', async ({ poAckReconPage: recon }, testInfo) => {
@@ -1067,14 +1074,6 @@ test.describe('River Stream - PO-ACK Recon Suite (TC_RECON_017 - TC_RECON_083)',
     const flag = field.getByRole('button', { name: /^Select / });
     await expect(flag, 'flag icon on the discrepancy field').toBeVisible();
     await expect(flag.locator('svg')).toBeVisible();
-  });
-
-  test('TC_RECON_079: Verify user can change discrepancy flag severity', async () => {
-    test.fixme(
-      true,
-      'The review page has no control to change a discrepancy\'s severity: the Critical/Medium/Low badges are static and the ' +
-        'flag only selects the field for the email preview. Please confirm the manual steps for this case.',
-    );
   });
 
   test('TC_RECON_080: Verify Edit All button enables editing of line-item fields', async ({ poAckReconPage: recon, page }, testInfo) => {

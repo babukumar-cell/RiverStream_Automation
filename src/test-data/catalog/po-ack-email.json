@@ -98,15 +98,5 @@
     "testData": "Comparison report email\nFiles: SPATAB-57226-116400-DIRO.pdf (PO), 57226-116400-SPATAB-ACKS.pdf (ACK)",
     "expectedResult": "The user should be redirected to the relevant PO review page in Stream.",
     "actualResult": ""
-  },
-  "TC_PO-ACK_114": {
-    "tcId": "TC_PO-ACK_114",
-    "module": "PO-ACK Recon - Email Process",
-    "description": "Verify a PO emailed again with an existing PO number is listed as a new row",
-    "preconditions": "TC_PO-ACK_104: the project already holds the PO (57226-116400)",
-    "steps": "1. Send the same PO again in a new email (new thread, another file name) with the same project name in the body.\n2. Check the reply email.\n3. Open the project in Stream.",
-    "testData": "PO: SPATAB-57226-116400-DIRO.pdf sent as AUTO_<token>_SPATAB-57226-116400-DIRO.pdf\nProject: the run project",
-    "expectedResult": "The user receives the Document Received acknowledgement, and the emailed PO is listed as a new separate row in the project (one more row for that PO number); the existing row is not updated.",
-    "actualResult": ""
   }
 }

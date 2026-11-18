@@ -820,7 +820,42 @@ function buildRun(
 ): ReportRun {
   // A passing auth setup is plumbing, not a test case; keep it only when it breaks the run.
   const visible = raws.filter((r) => !SETUP_PROJECTS.has(r.projectName) || r.status === 'failed');
-  return { ...meta, cases: visible.map((r) => enrichCase(r, catalog)) };
+  return { ...meta, cases: orderCases(visible.map((r) => enrichCase(r, catalog))) };
+}
+
+/**
+ * Report order (the execution order differs: spec files run alphabetically, retries are re-queued): by module, then
+ * by test case ID. IDs with the same prefix stay together in number order ("TC_RECON_001", "TC_RECON_002", ...);
+ * prefix groups are ordered by their lowest number ("TC_RECON_001-083" before "TC_PO-ACK_104-113"), then by the order
+ * they ran. Cases without a numbered ID keep their run order at the end of their module.
+ */
+function orderCases(cases: ReportCase[]): ReportCase[] {
+  const parse = (id: string) => {
+    const m = /^(.*?)(\d+)\s*$/.exec(id ?? '');
+    return m ? { prefix: m[1].trim().toLowerCase(), num: Number(m[2]) } : { prefix: `~${(id ?? '').toLowerCase()}`, num: Number.MAX_SAFE_INTEGER };
+  };
+  const groups = new Map<string, { min: number; first: number }>();
+  const items = cases.map((c, index) => {
+    const id = parse(c.tcId === 'NO_ID' ? '' : c.tcId);
+    const key = `${c.module.key}|${id.prefix}`;
+    const g = groups.get(key);
+    if (!g) groups.set(key, { min: id.num, first: index });
+    else g.min = Math.min(g.min, id.num);
+    return { c, index, id, key };
+  });
+  return items
+    .sort((a, b) => {
+      const ga = groups.get(a.key)!;
+      const gb = groups.get(b.key)!;
+      return (
+        a.c.module.order - b.c.module.order ||
+        ga.min - gb.min ||
+        ga.first - gb.first ||
+        a.id.num - b.id.num ||
+        a.index - b.index
+      );
+    })
+    .map((x) => x.c);
 }
 
 /** Builds the run from the in-memory objects handed to a reporter's onEnd. */

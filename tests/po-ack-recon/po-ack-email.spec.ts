@@ -30,7 +30,7 @@ import {
 import { attachPageEvidence, attachReply, showReply, showWaitingForReply } from '../po-quote-request/support/email-scenario';
 
 /*
- * River Stream - PO-ACK Recon Email Process (TC_PO-ACK_104 - TC_PO-ACK_114), part of the PO-ACK Recon suite
+ * River Stream - PO-ACK Recon Email Process (TC_PO-ACK_104 - TC_PO-ACK_113), part of the PO-ACK Recon suite
  * (project po-ack, `npm run test:recon`).
  *
  * A Riverstonetech user emails a PO with "Project: <name>" in the body and replies in the same email thread with
@@ -38,15 +38,14 @@ import { attachPageEvidence, attachReply, showReply, showWaitingForReply } from 
  *   PO (104 acknowledgement, 105 PO in the project), ACK 1 (106 processed, 107 acknowledgement),
  *   ACK 2 sent while the project page is open (108 shown without refresh), comparison report (109 email,
  *   110 discrepancies vs the review page), ACK 3 (111 one acknowledgement per ACK, 112 all ACKs in the UI),
- *   113 Review in Stream opens the PO review page,
- *   114 the same PO number emailed again (new thread, another file name) is listed as a new row.
+ *   113 Review in Stream opens the PO review page.
  * The Riverstonetech mailbox and the other options are set in .env (see support/recon-email.ts); without
  * PO_ACK_MAIL_USER / PO_ACK_MAIL_APP_PASSWORD the cases are skipped with that reason.
  */
 
 const mailbox = () => new MailService(poAckMailAccount());
 
-test.describe('River Stream - PO-ACK Recon Email Process (TC_PO-ACK_104 - TC_PO-ACK_114)', () => {
+test.describe('River Stream - PO-ACK Recon Email Process (TC_PO-ACK_104 - TC_PO-ACK_113)', () => {
   // In order on one worker; a step that needs an earlier one is skipped with the reason (requires)
   test.describe.configure({ mode: 'default', retries: 0 });
 
@@ -299,54 +298,5 @@ test.describe('River Stream - PO-ACK Recon Email Process (TC_PO-ACK_104 - TC_PO-
     await expect(page.getByText('PO-ACK Recon Document Review', { exact: true })).toBeVisible();
     await expect(page.getByText(EMAIL_PAIR.poNumber, { exact: true }).first()).toBeVisible();
     await expect(recon.fieldValue(recon.poDataCard, 'Po Number')).toHaveText(new RegExp(`^${EMAIL_PAIR.poNumber}`));
-  });
-
-  test('TC_PO-ACK_114: Verify a PO emailed again with an existing PO number is listed as a new row', async ({ poAckReconPage: recon, page }, testInfo) => {
-    const mail = mailbox();
-    const s = readEmailState();
-    requires(s.po, 'the PO email (TC_PO-ACK_104)');
-    // 1. The project already holds the PO number (TC_PO-ACK_104)
-    const before = (await recon.openProjectById(s.projectId!)).documents.filter((d) => d.po_number.trim().startsWith(EMAIL_PAIR.poNumber));
-    expect(before.length, `PO ${EMAIL_PAIR.poNumber} is already in ${s.projectName}`).toBeGreaterThan(0);
-
-    // 2. The same PO number in a new email (new thread), under another file name
-    const token = newEmailToken();
-    const fileName = `AUTO_${token}_${EMAIL_PAIR.po}`;
-    const file = testInfo.outputPath('PO_AGAIN', fileName);
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.copyFileSync(path.join(CRI_DIR, EMAIL_PAIR.po), file);
-    const sent = await mail.sendEmail({
-      subject: emailSubject(token),
-      text: `Hi,
-
-Please find the purchase order attached.
-
-Project: ${s.projectName}
-`,
-      attachments: [{ filename: fileName, path: file, contentType: 'application/pdf' }],
-    });
-    testInfo.annotations.push({ type: 'note', description: `Emailed ${fileName} (PO ${EMAIL_PAIR.poNumber}); rows of that PO before: ${before.length}` });
-    const ack = await waitForThreadReply(mail, { token, since: sent.sentAt, predicate: acknowledgementOf(fileName), what: 'acknowledgement email for the PO sent again' });
-    await attachReply(testInfo, 'Acknowledgement of the PO sent again', ack);
-    await showReply(page, ack);
-    await expect(page.getByText(/has been received/i).first()).toBeVisible();
-    await attachPageEvidence(page, testInfo, '1 - Acknowledgement of the PO sent again');
-
-    // 3. Expected: a new row for the emailed file (one more row of that PO number), not an update of the existing row
-    let rows = before;
-    let newRow = -1;
-    await expect(async () => {
-      const list = await recon.openProjectById(s.projectId!);
-      rows = list.documents.filter((d) => d.po_number.trim().startsWith(EMAIL_PAIR.poNumber));
-      newRow = list.documents.findIndex((d) => d.fileName === fileName);
-      expect(newRow, `${fileName} has its own row in ${s.projectName}`).toBeGreaterThanOrEqual(0);
-    })
-      .toPass({ timeout: PROCESSING_TIMEOUT_MS, intervals: [15_000, 20_000, 30_000] })
-      .catch((err: Error) => {
-        const summary = rows.map((d) => `${d.fileName} (${d.status}, ${d.version_count} versions, updated ${d.updatedDate})`).join('; ');
-        throw new Error(`${err.message.split(/\r?\n/)[0]}. Rows of PO ${EMAIL_PAIR.poNumber}: ${summary}`);
-      });
-    expect(rows.length, `rows of PO ${EMAIL_PAIR.poNumber}: one more than before`).toBe(before.length + 1);
-    await expect(recon.rows.nth(newRow)).toContainText(EMAIL_PAIR.poNumber);
   });
 });

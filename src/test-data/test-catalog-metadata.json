@@ -1520,15 +1520,6 @@
     "expectedResult": "PO Data card displays submitted PO values matching original uploaded document.",
     "actualResult": ""
   },
-  "TC_RECON_066": {
-    "tcId": "TC_RECON_066",
-    "module": "PO-ACK Recon",
-    "description": "Verify extracted PO values are read-only and cannot be directly edited",
-    "steps": "1. Attempt to edit PO Number and PO header values.\n2. Check input element type.",
-    "testData": "PO Data Card",
-    "expectedResult": "PO data fields are rendered as static read-only text, preventing direct inline editing.",
-    "actualResult": ""
-  },
   "TC_RECON_067": {
     "tcId": "TC_RECON_067",
     "module": "PO-ACK Recon",
@@ -1622,7 +1613,7 @@
   "TC_RECON_077": {
     "tcId": "TC_RECON_077",
     "module": "PO-ACK Recon",
-    "description": "Verify selected discrepancy fields can be copied to clipboard",
+    "description": "Verify selected discrepancy fields can be copied from clipboard",
     "steps": "1. Click 'Copy' button inside popup.\n2. Verify copy confirmation toast.",
     "testData": "Preview Selected Discrepancies",
     "expectedResult": "Selected discrepancy details are copied to clipboard; toast confirms successful copy.",
@@ -1635,15 +1626,6 @@
     "steps": "1. Hover over a highlighted discrepancy field.\n2. Observe flag action.",
     "testData": "Discrepancy Cell",
     "expectedResult": "Flag icon is displayed on hover, indicating discrepancy severity classification control.",
-    "actualResult": ""
-  },
-  "TC_RECON_079": {
-    "tcId": "TC_RECON_079",
-    "module": "PO-ACK Recon",
-    "description": "Verify user can change discrepancy flag severity (Critical, Medium, Minor, Matched)",
-    "steps": "1. Click flag icon on discrepancy field.\n2. Select severity from dropdown (e.g. Critical -> Medium).",
-    "testData": "Discrepancy Flag Dropdown",
-    "expectedResult": "Flag severity is updated, and flag icon color updates to match new severity (Red for Critical, Orange for Medium, Yellow for Minor, Green for Matched).",
     "actualResult": ""
   },
   "TC_RECON_080": {

@@ -10,9 +10,9 @@ on:
         default: 'test:po-ack'
         type: choice
         options:
-          - 'test:po-ack'            # Complete PO-ACK Suite (94 tests: 83 recon + 11 PO-ACK email flow)
-          - 'test:recon'             # PO-ACK Recon Test Cases (83 tests)
-          - 'test:po-ack:email-flow' # PO-ACK Email Flow (11 tests: TC_PO-ACK_104 - TC_PO-ACK_114)
+          - 'test:po-ack'            # Complete PO-ACK Suite (91 tests: 81 recon + 10 PO-ACK email flow)
+          - 'test:recon'             # PO-ACK Recon Test Cases (81 tests)
+          - 'test:po-ack:email-flow' # PO-ACK Email Flow (10 tests: TC_PO-ACK_104 - TC_PO-ACK_113)
       report_recipients:
         description: 'Override Email Recipients (comma-separated, optional)'
         required: false

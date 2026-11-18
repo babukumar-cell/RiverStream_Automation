@@ -12,7 +12,7 @@ on:
         options:
           - 'test:main'          # Complete Automation Suite (368 tests: PO & Quote, PO-ACK, SIF Conversion, Auto Renewal, ERP Fail)
           - 'test:po-quote'      # PO & Quote Request Suite (148 tests, ERP Fail last)
-          - 'test:po-ack'        # PO-ACK Suite (94 tests incl. PO-ACK email flow)
+          - 'test:po-ack'        # PO-ACK Suite (91 tests incl. PO-ACK email flow)
           - 'test:sif'           # SIF Conversion Suite (83 tests)
           - 'test:autorenewal'   # Auto Renewal Suite (34 tests)
           - 'test:erp-fail'      # ERP Fail Suite (2 tests)
