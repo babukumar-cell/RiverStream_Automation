@@ -120,7 +120,9 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./playwright-report
-          keep_files: false
+          # one folder per run: a later run (of any suite) does not replace this report
+          destination_dir: runs/${{ github.run_id }}
+          keep_files: true
 
       - name: Send PO & Quote Execution Email Report
         if: always()
@@ -135,7 +137,7 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          REPORT_WEB_URL: https://babukumar-cell.github.io/RiverStream_Automation/
+          REPORT_WEB_URL: https://babukumar-cell.github.io/RiverStream_Automation/runs/${{ github.run_id }}/
         run: |
           npm run report:email
 

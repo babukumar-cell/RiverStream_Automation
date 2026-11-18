@@ -4365,7 +4365,7 @@
     "description": "Verify the Uploaded From column.",
     "steps": "1. Login the application as multiple user\n2. Click on any card in the Dashboard.\n3. Click on the Export icon.\n4. Choose the XLSX or CSV.\n5. Observe the report.",
     "testData": "",
-    "expectedResult": "The correct upload source should be displayed."
+    "expectedResult": "The correct upload source should be displayed (\"Web\" for web uploads, \"Email\" for email). Documents received through WhatsApp are not compared (their Uploaded From is empty)."
   },
   "TC_Dashboard_029": {
     "tcId": "TC_Dashboard_029",

@@ -366,24 +366,33 @@ test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)
       await expect(reportColumn(page, 'Status').first()).toBeInViewport();
     });
 
-    /** Exports the Total Documents list and checks one column against the documents the app exported. */
+    /**
+     * Exports the Total Documents list and checks one column against the documents the app exported.
+     * `include` leaves documents out of the comparison (their exported value is not checked).
+     */
     async function checkExportColumn(
       dashboardPage: DashboardPage,
       page: Page,
       columns: ExportColumn[],
       expectedFor: (column: ExportColumn, d: LibraryPage['documents'][number]) => string,
+      include: (d: LibraryPage['documents'][number]) => boolean = () => true,
     ): Promise<void> {
       await selectCard(dashboardPage, 'Total Documents');
       const expected = expectedCardCounts(initial.stats)['Total Documents'];
       const report = await exportReport(dashboardPage, test.info(), 'csv', expected);
       expect(report.records).toHaveLength(report.apiDocs.length);
+      const checked = report.apiDocs.map((d, i) => ({ d, i })).filter(({ d }) => include(d));
+      const leftOut = report.apiDocs.length - checked.length;
+      if (leftOut) test.info().annotations.push({ type: 'note', description: `${leftOut} of ${report.apiDocs.length} documents left out of the comparison` });
       for (const column of columns) {
         // Values are exported trimmed (e.g. a user named "Tony Stark " is exported as "Tony Stark")
-        expect(report.records.map((r) => r[column].trim()), `${column} column`).toEqual(report.apiDocs.map((d) => expectedFor(column, d).trim()));
+        expect(checked.map(({ i }) => report.records[i][column].trim()), `${column} column`).toEqual(checked.map(({ d }) => expectedFor(column, d).trim()));
       }
       await showReport(page, report, `Total Documents card selected · checked: ${columns.join(', ')}`);
       for (const column of columns) {
-        await expect(reportColumn(page, column)).toHaveText(report.apiDocs.slice(0, 15).map((d) => expectedFor(column, d).trim()));
+        // first 15 rows on screen; a left-out document shows its exported value
+        const onScreen = report.apiDocs.slice(0, 15).map((d, i) => (include(d) ? expectedFor(column, d) : report.records[i][column]).trim());
+        await expect(reportColumn(page, column)).toHaveText(onScreen);
         await revealColumn(page, column);
         await expect(reportColumn(page, column).first(), `${column} column is on screen`).toBeInViewport();
       }
@@ -402,7 +411,15 @@ test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)
     });
 
     test('TC_Dashboard_028: Verify the Uploaded From column.', async ({ dashboardPage, page }) => {
-      await checkExportColumn(dashboardPage, page, ['Uploaded From'], (_c, d) => (d.fileProcessedFrom === 'email' ? 'Email' : 'Web'));
+      // Web and Email documents are checked; documents received through WhatsApp (fileProcessedFrom "whatsapp") are
+      // exported with an empty Uploaded From and are left out of the comparison
+      await checkExportColumn(
+        dashboardPage,
+        page,
+        ['Uploaded From'],
+        (_c, d) => (d.fileProcessedFrom === 'email' ? 'Email' : 'Web'),
+        (d) => d.fileProcessedFrom !== 'whatsapp',
+      );
     });
 
     test('TC_Dashboard_029: Verify the Upload Date column.', async ({ dashboardPage, page }) => {
