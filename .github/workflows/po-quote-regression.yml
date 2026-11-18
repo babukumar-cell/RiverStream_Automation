@@ -10,12 +10,12 @@ on:
         default: 'test:po-quote'
         type: choice
         options:
-          - 'test:po-quote'          # Complete PO & Quote Suite (157 tests)
+          - 'test:po-quote'          # Complete PO & Quote Suite (148 tests: 146 + ERP Fail 2, last)
           - 'test:left-side'         # Left Side: Dashboard (40 tests)
           - 'test:documents'         # Left Side: Documents Library (32 tests)
           - 'test:upload'            # Upload Module (31 tests)
-          - 'test:review'            # Review & Line Items (33 tests)
-          - 'test:email'             # Email Ingestion Flow (16 tests)
+          - 'test:review'            # Review & Line Items (28 tests)
+          - 'test:email'             # PO/Quote Request folder: email flow (10) + ERP Fail (2, last)
           - 'test:auth'              # Authentication (5 tests)
       report_recipients:
         description: 'Override Email Recipients (comma-separated, optional)'

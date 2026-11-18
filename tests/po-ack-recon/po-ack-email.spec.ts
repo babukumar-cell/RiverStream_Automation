@@ -27,7 +27,7 @@ import {
   waitForPoDocument,
   waitForThreadReply,
 } from './support/recon-email';
-import { attachPageEvidence, attachReply, showReply, showWaitingForReply } from '../email/support/email-scenario';
+import { attachPageEvidence, attachReply, showReply, showWaitingForReply } from '../po-quote-request/support/email-scenario';
 
 /*
  * River Stream - PO-ACK Recon Email Process (TC_PO-ACK_104 - TC_PO-ACK_114), part of the PO-ACK Recon suite

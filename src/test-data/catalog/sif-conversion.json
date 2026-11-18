@@ -808,5 +808,25 @@
     "testData": "AUTO_SIF_<run>_BAD.pdf (failed)",
     "expectedResult": "The failed file shows a \"Retry\" button and the reason \"This PDF could not be read. It may be password-protected, damaged, or too large (max 100 pages).\"",
     "actualResult": ""
+  },
+  "TC_SIF_082": {
+    "tcId": "TC_SIF_082",
+    "module": "SIF - Upload Downloaded SIF",
+    "description": "Verify that a downloaded SIF file uploaded through the website is submitted to the ERP.",
+    "preconditions": "Logged in as riverstreamautomation@gmail.com (organization riverstonetech); a Quote Request file converted to SIF on the SIF Conversion page",
+    "steps": "1. On the SIF Conversion page, click \"Download SIF\" on the converted file.\n2. Go to the Dashboard and click \"Upload New File\".\n3. Select the document type \"Quote Request\", choose the downloaded SIF file and select the client.\n4. Click \"Upload and Process\".\n5. In the Documents library, click \"Review\" on the file once it is processed.\n6. Edit the Customer Name to \"Corp Design\".\n7. Click \"Complete\" and then \"Submit to ERP\".",
+    "testData": "AUTO_SIF_<run>_QRW.sif (downloaded SIF)\nDocument type: Quote Request\nClient: Riverstone Corp\nCustomer Name: Corp Design",
+    "expectedResult": "The SIF file is uploaded and processed; after Complete and Submit to ERP the quotation is created in the ERP: \"Quotation is submitted in ERP\" with the order number (SAL-QTN-...), status \"Success\", and Submit to ERP is disabled.",
+    "actualResult": ""
+  },
+  "TC_SIF_083": {
+    "tcId": "TC_SIF_083",
+    "module": "SIF - Upload Downloaded SIF",
+    "description": "Verify that a downloaded SIF file sent by email is submitted to the ERP.",
+    "preconditions": "Logged in as riverstreamautomation@gmail.com (organization riverstonetech); a Quote Request file converted to SIF on the SIF Conversion page",
+    "steps": "1. On the SIF Conversion page, click \"Download SIF\" on the converted file.\n2. Send an email from riverstreamautomation@gmail.com to the RiverStream mailbox with the subject \"Quotation/Estimation <token>\" and the downloaded SIF file attached.\n3. Wait for the RiverStream reply and observe it.",
+    "testData": "AUTO_SIF_<run>_QRE.sif (downloaded SIF)\nSubject: Quotation/Estimation <token>\nTo: riverstream.qa@riverstonetech.in",
+    "expectedResult": "The reply \"ERP Quotation Processing Summary\" shows the quotation created successfully in the ERP.\nKnown bug: a SIF file sent by email is not submitted to the ERP (reply \"Quote Request Processing Summary\", status Failed).",
+    "actualResult": ""
   }
 }

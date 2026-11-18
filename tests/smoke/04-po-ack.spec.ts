@@ -16,7 +16,7 @@ import {
   sendAckReply,
   waitForThreadReply,
 } from '../po-ack-recon/support/recon-email';
-import { attachReply, showReply } from '../email/support/email-scenario';
+import { attachReply, showReply } from '../po-quote-request/support/email-scenario';
 import { attachEvidence, readSmokeState, requireMailbox, requires, trackErrors, uniqueCopy, updateSmokeState } from './support/smoke';
 
 /*

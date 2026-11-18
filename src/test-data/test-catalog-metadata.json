@@ -2834,46 +2834,6 @@
     "expectedResult": "The system should recognize all supported variations of the Client field and process the email successfully without requiring a strict format.",
     "actualResult": ""
   },
-  "TC_001": {
-    "tcId": "TC_001",
-    "module": "email",
-    "description": "Verify system handles Purchase Order email when Purchase Order document type is not enabled",
-    "steps": "1. Disable Purchase Order document type for the organization.\n2. Send an email with a valid Purchase Order attachment.\n3. Check the reply email and system processing status.",
-    "testData": "Valid Purchase Order PDF",
-    "expectedResult": "System should not process the document. A relevant reply email should be sent informing the user that the Purchase Order document type is not enabled/configured for the organization."
-  },
-  "TC_002": {
-    "tcId": "TC_002",
-    "module": "email",
-    "description": "Verify system handles Quotation email when Quotation document type is not enabled",
-    "steps": "1. Disable Quotation document type for the organization.\n2. Send an email with a valid Quotation attachment.\n3. Check the reply email and system processing status.",
-    "testData": "Valid Quotation PDF",
-    "expectedResult": "System should not process the document. A relevant reply email should be sent informing the user that the Quotation document type is not enabled/configured for the organization."
-  },
-  "TC_003": {
-    "tcId": "TC_003",
-    "module": "email",
-    "description": "Verify system handles PO-ACK Recon email when PO-ACK Recon document type is not enabled",
-    "steps": "1. Disable PO-ACK Recon document type for the organization.\n2. Send an email with valid PO-ACK Recon documents.\n3. Check the reply email and system processing status.",
-    "testData": "Valid PO and ACK files",
-    "expectedResult": "System should not process the documents. A relevant reply email should be sent informing the user that the PO-ACK Recon document type is not enabled/configured for the organization."
-  },
-  "TC_004": {
-    "tcId": "TC_004",
-    "module": "email",
-    "description": "Verify correct reply email content for unsupported document type submission",
-    "steps": "1. Disable a document type.\n2. Send a valid document belonging to the disabled document type.\n3. Review the reply email content.",
-    "testData": "Any valid disabled document type",
-    "expectedResult": "Reply email should clearly mention that the submitted document type is not enabled for the organization and provide appropriate guidance to the user."
-  },
-  "TC_005": {
-    "tcId": "TC_005",
-    "module": "email",
-    "description": "Verify document is not extracted or inserted into ERP when document type is disabled",
-    "steps": "1. Disable a document type.\n2. Send a valid document of that type.\n3. Monitor processing logs, extraction status, and ERP records.",
-    "testData": "Valid Purchase Order / Quotation / PO-ACK Recon file",
-    "expectedResult": "Document should not proceed to extraction, review, or ERP insertion. Only the appropriate notification email should be sent to the user."
-  },
   "TC_006": {
     "tcId": "TC_006",
     "module": "email",
@@ -2929,14 +2889,6 @@
     "steps": "1. Sent a rmail with valid attachment.\n2. Observe the reply mail.\n3. Click on Review in Stream button.",
     "testData": "",
     "expectedResult": "The button should be clickable and should redirect to the particular file review page."
-  },
-  "TC_013": {
-    "tcId": "TC_013",
-    "module": "email",
-    "description": "Verify \"Too Many Attachments\" reply when more than two attachments are sent",
-    "steps": "1. Send an email from a registered (known) user.\n2. Attach more than two files to the email.\n3. Submit the email.\n4. Check the reply email.",
-    "testData": "Known user account, email with 3 or more attachments",
-    "expectedResult": "System should not process the email and should send a reply email with the message \"Too Many Attachments\"."
   },
   "TC_014": {
     "tcId": "TC_014",
@@ -5078,47 +5030,6 @@
     "steps": "1. Open and review a document.",
     "testData": "Valid document",
     "expectedResult": "No UI errors, data loading issues, or console errors should occur."
-  },
-  "TC_Review page_019": {
-    "tcId": "TC_Review page_019",
-    "module": "review",
-    "description": "Verify Client and Billing Address auto-replacement when Customer Name partially matches client JSON",
-    "steps": "1. Upload a document.\n2. Ensure the extracted Customer Name partially matches a Client Name available in the client JSON configuration.\n3. Process the document.",
-    "testData": "Customer Name: \"Office Interiors Inc\"Client JSON Name: \"Office Interiors\"",
-    "expectedResult": "System should identify the partial match and automatically replace the Client and Billing Address details with the values from the client JSON configuration."
-  },
-  "TC_Review page_020": {
-    "tcId": "TC_Review page_020",
-    "module": "review",
-    "description": "Verify no replacement when Customer Name does not match client JSON",
-    "steps": "1. Upload a document.\n2. Ensure the extracted Customer Name does not match any Client Name in the JSON configuration.\n3. Process the document.",
-    "testData": "Customer Name: \"ABC Furniture\"",
-    "expectedResult": "Client and Billing Address details should remain unchanged.",
-    "actualResult": ""
-  },
-  "TC_Review page_021": {
-    "tcId": "TC_Review page_021",
-    "module": "review",
-    "description": "Verify Shipping Address auto-replacement when match is greater than 75%",
-    "steps": "1. Upload a document.\n2. Ensure the extracted Shipping Address matches more than 75% of a Shipping Address in the client JSON configuration.\n3. Process the document.",
-    "testData": "Extracted Address: 80% match with JSON address",
-    "expectedResult": "Shipping Address should be automatically replaced with the address from the client JSON configuration."
-  },
-  "TC_Review page_022": {
-    "tcId": "TC_Review page_022",
-    "module": "review",
-    "description": "Verify no Shipping Address replacement when match is less than 75%",
-    "steps": "1. Upload a document.\n2. Ensure the extracted Shipping Address matches less than 75% of a Shipping Address in the client JSON configuration.\n3. Process the document.",
-    "testData": "Extracted Address: 70% match with JSON address",
-    "expectedResult": "Shipping Address should remain unchanged."
-  },
-  "TC_Review page_023": {
-    "tcId": "TC_Review page_023",
-    "module": "review",
-    "description": "Verify correct JSON values are applied after replacement",
-    "steps": "1. Upload and process a document that meets the matching criteria.\n2. Review the extracted data.",
-    "testData": "Valid matching Customer Name and Address",
-    "expectedResult": "The displayed Client, Billing Address, and Shipping Address should exactly match the values stored in the JSON configuration."
   },
   "TC_Review page_024": {
     "tcId": "TC_Review page_024",

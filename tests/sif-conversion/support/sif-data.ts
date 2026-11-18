@@ -54,7 +54,8 @@ const QR_LINES: SifLine[] = [
 ];
 
 export function doc(key: string): SifDoc {
-  const isQuote = key === 'QR' || key === 'BAD';
+  // QR, BAD and the quote requests converted for the SIF upload cases (QRW web, QRE email) are Quote Requests
+  const isQuote = key === 'QR' || key === 'BAD' || key === 'QRW' || key === 'QRE';
   return {
     key,
     fileName: `${TOKEN}_${key}.pdf`,
@@ -85,7 +86,7 @@ table{border-collapse:collapse;width:100%;margin-top:14px}th,td{border:1px solid
 <table><tr><th>Line</th><th>Part Number</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr>${rows}</table></body></html>`;
 }
 
-const RENDER_WORKER = path.resolve(__dirname, '../../email/support/render-worker.cjs');
+const RENDER_WORKER = path.resolve(__dirname, '../../po-quote-request/support/render-worker.cjs');
 const execFileAsync = promisify(execFile);
 const FILES_DIR = path.join(os.tmpdir(), `riverstream-sif-${runId}`);
 
@@ -326,6 +327,30 @@ export async function ensureSetup(): Promise<void> {
     if ((await apiStatus(api, ids.CONV)) !== 'converted') await ok(await api.post(`convertToSif/${ids.CONV}`, { data: {} }), 'convertToSif');
     expect(await apiStatus(api, ids.CONV)).toBe('converted');
     state.setupDone = true;
+  } finally {
+    await api.dispose();
+  }
+}
+
+/**
+ * A quote request of the suite converted to SIF (QRW: web upload case, QRE: email upload case): uploaded and converted
+ * through the API once per run, so each SIF upload case has its own SIF file (the same file sent twice would be
+ * answered "Document Already Processed"). The case downloads the SIF from the list itself.
+ */
+export async function ensureConvertedQuote(key: 'QRW' | 'QRE'): Promise<SifDoc> {
+  const api = await sifApi();
+  try {
+    const ids = { ...(state.ids ?? {}) };
+    if (!ids[key]) {
+      ids[key] = await apiUpload(api, key);
+      state.ids = ids;
+    }
+    await expect
+      .poll(() => apiStatus(api, ids[key]), { message: `${doc(key).fileName} extracted`, timeout: 240_000, intervals: [3000, 5000] })
+      .toMatch(/^(ready_for_review|converted)$/);
+    if ((await apiStatus(api, ids[key])) !== 'converted') await ok(await api.post(`convertToSif/${ids[key]}`, { data: {} }), 'convertToSif');
+    expect(await apiStatus(api, ids[key])).toBe('converted');
+    return doc(key);
   } finally {
     await api.dispose();
   }

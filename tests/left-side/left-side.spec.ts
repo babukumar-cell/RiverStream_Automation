@@ -140,8 +140,11 @@ test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)
         if (o && typeof o === 'object') for (const v of Object.values(o)) { const f = findArray(v); if (f) return f; }
         return undefined;
       };
+      // The dropdown shows names formatted for display ("inv_test" as "inv test", "inv2" as "inv 2"): names are
+      // compared ignoring case, spaces and underscores
+      const norm = (s: string) => s.toLowerCase().replace(/[\s_]+/g, '');
       const apiOrgs = (findArray(json) ?? [])
-        .map((o) => String(o.organizationName ?? o.name ?? o.displayName ?? '').trim().toLowerCase())
+        .map((o) => norm(String(o.organizationName ?? o.name ?? o.displayName ?? '').trim()))
         .filter(Boolean)
         .sort();
       await dashboardPage.expectLoaded();
@@ -150,7 +153,7 @@ test.describe('River Stream - Left Side Fields & Dashboard Suite (40 Test Cases)
       await expect(dashboardPage.orgOptions.first()).toHaveText('All Organizations');
       const options = (await dashboardPage.orgOptions.allInnerTexts()).map((o) => o.trim());
       expect(new Set(options).size, 'no duplicate organizations').toBe(options.length);
-      expect(options.slice(1).map((o) => o.toLowerCase()).sort(), 'every organization is listed').toEqual(apiOrgs);
+      expect(options.slice(1).map(norm).sort(), 'every organization is listed').toEqual(apiOrgs);
       await expect(dashboardPage.orgOptions).toHaveCount(apiOrgs.length + 1);
     });
 

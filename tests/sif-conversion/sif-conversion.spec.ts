@@ -1,5 +1,17 @@
 import fs from 'fs';
+import path from 'path';
+import { Page, TestInfo } from '@playwright/test';
 import { test, expect } from '../../src/fixtures/test.fixture';
+import { DocumentsPage } from '../../src/pages/documents.page';
+import {
+  HEADERS,
+  REPLY_WAIT_MS,
+  attachReply,
+  newToken,
+  showReply,
+  showWaitingForReply,
+  waitForResultReply,
+} from '../po-quote-request/support/email-scenario';
 // plain Playwright expect: waits without highlighting (keeps the evidence focused on the checked element)
 import { expect as plainExpect } from '@playwright/test';
 import { Config } from '../../src/config/environment';
@@ -15,6 +27,8 @@ import {
   cleanup,
   doc,
   ensureSetup,
+  ensureConvertedQuote,
+  SifDoc,
   invalidFile,
   outlineBox,
   parseSif,
@@ -33,7 +47,7 @@ import {
 } from './support/sif-data';
 
 /*
- * Source: Test Cases/Module_Wise_Test_Cases/10_SIF_Conversion.xlsx (TC_SIF_001 - TC_SIF_081).
+ * Source: Test Cases/Module_Wise_Test_Cases/10_SIF_Conversion.xlsx (TC_SIF_001 - TC_SIF_083).
  * Runs in sheet order as riverstreamautomation@gmail.com in its organization (prepared by sif-user.setup.ts: an
  * organization is created with the user if it does not exist; SIF Conversion switched ON) on the suite's own PDFs
  * (AUTO_SIF_<run>_*, uploaded in beforeAll, deleted after the last case). TC_SIF_079 switches the SIF
@@ -72,7 +86,7 @@ async function expectTabRows(list: SifListPage, tab: SifTab): Promise<void> {
   await expect(list.tab(tab)).toBeVisible();
 }
 
-test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
+test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_083)', () => {
   // In order on one worker; a step that needs an earlier one checks for its result (requires)
   test.describe.configure({ mode: 'default', retries: 0 });
   test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
@@ -1223,4 +1237,136 @@ test.describe('River Stream - SIF Conversion (TC_SIF_001 - TC_SIF_081)', () => {
     await list.statusBadge(row).hover();
     await expect(row.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
+
+  // =========================================================================================
+  // Downloaded SIF file uploaded to RiverStream (website and email)
+  // =========================================================================================
+
+  /** Customer entered on the review page of the uploaded SIF before Submit to ERP (a customer of the ERP) */
+  const SIF_ERP_CUSTOMER = 'Corp Design';
+
+  /** Downloads the SIF of a converted file from the list (Download SIF button); returns the saved file */
+  async function downloadSif(page: Page, testInfo: TestInfo, d: SifDoc): Promise<string> {
+    const list = new SifListPage(page);
+    await list.goto();
+    await list.search(d.fileName);
+    const row = list.row(d.fileName);
+    await expect(list.statusBadge(row)).toHaveText('Converted');
+    const downloading = page.waitForEvent('download');
+    await row.getByRole('button', { name: 'Download SIF' }).click();
+    const download = await downloading;
+    expect(download.suggestedFilename()).toBe(d.fileName.replace(/\.pdf$/, '.sif'));
+    const file = testInfo.outputPath(download.suggestedFilename());
+    await download.saveAs(file);
+    await testInfo.attach(download.suggestedFilename(), { path: file, contentType: 'text/plain' });
+    await expect(row.getByRole('button', { name: 'Download SIF' })).toBeVisible();
+    await attachEvidence(page, testInfo, '1 - Download SIF of the converted file');
+    // the SIF holds the converted file's line items (one PN per line)
+    const sif = parseSif(fs.readFileSync(file, 'utf8'));
+    expect(sif.filter(([k]) => k === 'PN').map(([, v]) => v), 'one PN per line item').toEqual(d.lines.map((l) => l.partNumber));
+    return file;
+  }
+
+  test('TC_SIF_082: Verify that a downloaded SIF file uploaded through the website is submitted to the ERP.', async ({ page, uploadPage, reviewPage }, testInfo) => {
+    test.setTimeout(20 * 60_000);
+    // 1. A quote request converted to SIF, downloaded from the SIF Conversion list
+    const d = await ensureConvertedQuote('QRW');
+    const sifFile = await downloadSif(page, testInfo, d);
+    const sifName = path.basename(sifFile);
+
+    // 2. Upload New File: the SIF file as a Quote Request (Client Name is required for SIF files)
+    await page.goto('/dashboard');
+    await page.getByRole('button', { name: 'Upload New File', exact: true }).click();
+    await page.waitForURL(/\/upload\?from=dashboard/);
+    await uploadPage.waitForReady();
+    await uploadPage.selectDocumentType('Quote Request');
+    await uploadPage.attachFile(sifFile);
+    await expect(uploadPage.selectedFileName(sifName)).toBeVisible();
+    const client = await uploadPage.selectClient('Riverstone Corp');
+    const upload = await uploadPage.submitUpload();
+    expect(upload.status, `uploadDocument: ${JSON.stringify(upload.body).slice(0, 300)}`).toBe(202);
+    expect(upload.requestBody.selectedDocType).toBe('QUOTE_REQUEST');
+    testInfo.annotations.push({ type: 'note', description: `Uploaded ${sifName} (Quote Request, client ${client})` });
+
+    // 3. Documents library: the file once processed, then Review
+    const documents = new DocumentsPage(page);
+    const row = documents.rowByName(sifName);
+    await expect(async () => {
+      await documents.navigate();
+      await documents.searchDocument(sifName);
+      await plainExpect(documents.statusBadge(row)).toHaveText(/^(Extracted|Reviewed|Success|Partially Success|Failed)$/i, { timeout: 5000 });
+    }).toPass({ timeout: 300_000, intervals: [10_000, 15_000, 20_000] });
+    const listed = (await documents.statusBadge(row).innerText()).trim();
+    testInfo.annotations.push({ type: 'note', description: `Status after the upload: ${listed}` });
+    await documents.reviewButton(row).click();
+    await page.waitForURL(/\/review\//);
+    await reviewPage.waitForReviewLoaded();
+    await expect(reviewPage.fileHeading(sifName)).toBeVisible();
+
+    // 4. Customer Name: Corp Design, a customer of the ERP (the only SIF client, "Riverstone Corp", is not an ERP customer:
+    //    "Customer 'Riverstone Corp' not found in ERP."), then Complete and Submit to ERP
+    let doc = await reviewPage.reload();
+    if (doc.status === 'extracted') {
+      await reviewPage.fieldEditButton('Customer Name').click();
+      await reviewPage.fieldInput('Customer Name').fill(SIF_ERP_CUSTOMER);
+      await reviewPage.fieldSaveButton('Customer Name').click();
+      await expect(reviewPage.fieldCard('Customer Name')).toContainText(SIF_ERP_CUSTOMER);
+      const saved = page.waitForResponse((r) => r.url().includes('/api/updateDocument') && r.request().method() === 'POST');
+      await reviewPage.completeButton.click();
+      expect((await saved).status(), 'review saved').toBe(200);
+      await expect(reviewPage.toast).toContainText('Document review completed and saved!');
+      doc = await reviewPage.reload();
+    }
+    if (doc.status === 'reviewed') {
+      await expect(reviewPage.submitToErpButton).toBeEnabled();
+      const submitted = page.waitForResponse((r) => r.url().includes('/api/submitToErp'), { timeout: 120_000 });
+      await reviewPage.submitToErpButton.click();
+      const response = await submitted;
+      const body = await response.json().catch(() => ({}));
+      testInfo.annotations.push({ type: 'note', description: `submitToErp HTTP ${response.status()}: ${JSON.stringify(body).slice(0, 300)}` });
+      expect(response.status(), `submitToErp: ${JSON.stringify(body).slice(0, 300)}`).toBe(200);
+      doc = await reviewPage.reload();
+    }
+    testInfo.annotations.push({ type: 'note', description: `Document status: ${doc.status}` });
+
+    // 5. Submitted to the ERP: status Success, the ERP number shown, Submit to ERP no longer available
+    await expect(page.getByText(/SAL-(QTN|ORD)-\d{4}-\d+/).first(), 'ERP number').toBeVisible({ timeout: 60_000 });
+    await expect(reviewPage.statusBadge('Success')).toBeVisible();
+    await expect(reviewPage.submitToErpButton).toBeDisabled();
+  });
+
+  test(
+    'TC_SIF_083: Verify that a downloaded SIF file sent by email is submitted to the ERP.',
+    { annotation: { type: 'issue', description: 'Known bug: a SIF file sent by email is not submitted to the ERP.' } },
+    async ({ page, mailService }, testInfo) => {
+      state.finishing = true; // last case: afterAll deletes the suite's files
+      test.setTimeout(30 * 60_000);
+      // 1. A quote request converted to SIF, downloaded from the SIF Conversion list
+      const d = await ensureConvertedQuote('QRE');
+      const sifFile = await downloadSif(page, testInfo, d);
+      const sifName = path.basename(sifFile);
+
+      // 2. Email it to RiverStream as a quotation (sender: the suite's user, riverstreamautomation@gmail.com)
+      const token = newToken('SIFE');
+      const sent = await mailService.sendEmail({
+        subject: `Quotation/Estimation ${token}`,
+        text: 'Type: Quotation/Estimation',
+        attachments: [{ filename: sifName, path: sifFile, contentType: 'application/octet-stream' }],
+      });
+      await showWaitingForReply(page, [sent]);
+      const reply = await waitForResultReply(mailService, { token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
+      await attachReply(testInfo, 'reply', reply);
+      testInfo.annotations.push({
+        type: 'note',
+        description: `Reply: ${reply.fields.header ?? reply.subject} | status ${reply.fields.status ?? '-'} | ${reply.fields.message ?? ''}`,
+      });
+
+      // 3. The reply: the file was processed and the quotation created in the ERP
+      await showReply(page, reply);
+      expect(reply.fields.fileName, 'File in the reply').toBe(sifName);
+      expect(reply.fields.header, 'the SIF is submitted to the ERP (quotation created)').toMatch(/ERP Quotation Processing Summary/i);
+      await expect(page.getByRole('heading', { name: HEADERS.quoteSummary })).toBeVisible();
+      await expect(page.getByText(/created successfully in ERP/i).first()).toBeVisible();
+    },
+  );
 });

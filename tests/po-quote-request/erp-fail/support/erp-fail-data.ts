@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { Browser, Locator, Page, TestInfo, expect, test } from '@playwright/test';
-import { Config } from '../../../src/config/environment';
-import { OrganizationDetailsPage } from '../../../src/pages/settings/organization-details.page';
-import { MailService, RetrievedEmail } from '../../../src/utils/mail.service';
+import { Config } from '../../../../src/config/environment';
+import { OrganizationDetailsPage } from '../../../../src/pages/settings/organization-details.page';
+import { MailService, RetrievedEmail } from '../../../../src/utils/mail.service';
 
 /*
  * Test data for the ERP fail suite (TC_ERP_001 - TC_ERP_002).
@@ -28,7 +28,7 @@ export const RUN = {
 } as const;
 
 /** Valid SIF file uploaded by the suite (a copy named RUN.fileName is uploaded) */
-export const SIF_SOURCE = path.resolve(__dirname, '../../../Riverstone test SIF Files/CDF_Carolina OS_Young Conway Furniture_SIF_260520_QA8.sif');
+export const SIF_SOURCE = path.resolve(__dirname, '../../../../Riverstone test SIF Files/CDF_Carolina OS_Young Conway Furniture_SIF_260520_QA8.sif');
 
 /** Admin added to the organization for the run, so the failure email reaches a mailbox the suite can read */
 export const AUTOMATION_USER = {

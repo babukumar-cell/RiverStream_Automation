@@ -298,7 +298,7 @@ export const MODULES: ModuleDef[] = [
   { key: 'recon', order: 7, name: 'PO-ACK Reconciliation', shortName: 'PO-ACK Recon', icon: '⚖️', idPrefixes: ['RECON'], pathHints: ['po-ack-recon', 'recon'] },
   { key: 'review', order: 8, name: 'Document Review', shortName: 'Review', icon: '🔍', idPrefixes: ['REV', 'REVIEW_PAGE'], pathHints: ['review'] },
   { key: 'settings', order: 9, name: 'Settings & Organizations', shortName: 'Settings', icon: '⚙️', idPrefixes: ['SETT'], pathHints: ['settings'] },
-  { key: 'email', order: 10, name: 'Email Order Ingestion', shortName: 'Email', icon: '✉️', idPrefixes: ['EM', 'RS_EM'], pathHints: ['email'] },
+  { key: 'email', order: 10, name: 'Email Order Ingestion', shortName: 'Email', icon: '✉️', idPrefixes: ['EM', 'RS_EM'], pathHints: ['po-quote-request', 'email'] },
   { key: 'sif', order: 11, name: 'SIF Conversion', shortName: 'SIF Conversion', icon: '🔄', idPrefixes: ['SIF'], pathHints: ['sif-conversion'] },
   { key: 'billing', order: 12, name: 'Auto Renewal & Billing', shortName: 'Auto Renewal', icon: '💳', idPrefixes: ['BILL'], pathHints: ['autorenewal'] },
   { key: 'erp', order: 13, name: 'ERP Fail', shortName: 'ERP Fail', icon: '⚠️', idPrefixes: ['ERP'], pathHints: ['erp-fail'] },

@@ -1,7 +1,7 @@
 import path from 'path';
 import { test, expect } from '../../src/fixtures/test.fixture';
 import { DocumentsPage } from '../../src/pages/documents.page';
-import { buildPurchaseOrderPdf, newToken } from '../email/support/email-scenario';
+import { buildPurchaseOrderPdf, newToken } from '../po-quote-request/support/email-scenario';
 import { readSmokeState, requires, successToast, uniqueCopy, updateSmokeState, uploadFromDashboard } from './support/smoke';
 
 /*

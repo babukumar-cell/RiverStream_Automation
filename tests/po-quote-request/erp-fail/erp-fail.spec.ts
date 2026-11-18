@@ -1,7 +1,7 @@
-import { test, expect } from '../../src/fixtures/test.fixture';
-import { Config } from '../../src/config/environment';
-import { DocumentsPage } from '../../src/pages/documents.page';
-import { createNamedCopy } from '../../src/utils/file-utils';
+import { test, expect } from '../../../src/fixtures/test.fixture';
+import { Config } from '../../../src/config/environment';
+import { DocumentsPage } from '../../../src/pages/documents.page';
+import { createNamedCopy } from '../../../src/utils/file-utils';
 import {
   AUTOMATION_USER,
   RUN,
@@ -107,7 +107,8 @@ test.describe('River Stream - ERP fail (TC_ERP_001 - TC_ERP_002)', () => {
     const response = await submitted;
     testInfo.annotations.push({ type: 'note', description: `submitToErp HTTP ${response.status()}: ${(await response.text().catch(() => '')).slice(0, 300)}` });
     await expect(reviewPage.erpErrorDialog).toBeVisible({ timeout: 60_000 });
-    await expect(reviewPage.erpErrorDialog.getByText('ERP Insertion Failed', { exact: true })).toBeVisible();
+    // the visible heading (the dialog also has a hidden title for screen readers with the same text)
+    await expect(reviewPage.erpErrorDialog.locator('h2:not([data-slot="dialog-title"])', { hasText: /^ERP Insertion Failed$/ })).toBeVisible();
     await expect(reviewPage.erpErrorDialog.getByText(reasonText(), { exact: true })).toBeVisible();
     state.failurePopupShown = true;
     await attachEvidence(page, testInfo, '2 - ERP Insertion Failed popup');

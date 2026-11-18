@@ -102,9 +102,14 @@ async function uploadValid(uploadPage: UploadPage, file: string, type: UploadDoc
   await expect(uploadPage.processButton).toBeEnabled();
   const result = await uploadPage.submitUpload();
   expectAccepted(result, fileName, type);
-  // The app returns to the Dashboard (opened from there) and shows the notification
+  // The app returns to the Dashboard (opened from there) and shows the notification. The notification closes after a
+  // few seconds and the Dashboard can take longer to load: it is caught as soon as it appears and kept open by
+  // hovering it (the notification stays while the mouse is over it), then checked on the loaded Dashboard.
+  const toast = successToast(uploadPage.page, fileName);
+  await toast.waitFor({ state: 'visible', timeout: 30000 });
+  await toast.hover().catch(() => {});
   await waitForDashboardLoaded(uploadPage.page);
-  await expect(successToast(uploadPage.page, fileName)).toBeVisible({ timeout: 15000 });
+  await expect(toast).toBeVisible({ timeout: 15000 });
   return fileName;
 }
 

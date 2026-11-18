@@ -14,8 +14,7 @@ import { ReviewDocument, ReviewPage } from '../../../src/pages/review.page';
  *   main     - 2-page PO, 3 line items, billing and shipping addresses (viewer, fields, line items)
  *   single   - same PO with a single line item (deleting the only row)
  *   erp      - 2-page PO for an ERP customer; Complete + Submit to ERP are only done on this one
- *   nomatch  - PO for a customer that is not a configured client ("ABC Furniture")
- * The POs are generated as PDFs (HTML rendered by tests/email/support/render-worker.cjs) so every value is known.
+ * The POs are generated as PDFs (HTML rendered by tests/po-quote-request/support/render-worker.cjs) so every value is known.
  * Edits made on the review page stay in the browser until "Complete", so only the erp document is ever changed.
  */
 
@@ -56,7 +55,6 @@ export const DOCS = {
   main: { lines: 3, customer: ERP_CUSTOMER },
   single: { lines: 1, customer: ERP_CUSTOMER },
   erp: { lines: 3, customer: ERP_CUSTOMER },
-  nomatch: { lines: 2, customer: 'ABC Furniture' },
 } as const;
 export type DocKey = keyof typeof DOCS;
 
@@ -120,7 +118,7 @@ table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid
 }
 
 // Rendering runs in a separate process: a browser opened in the test worker would add its page to the report
-const RENDER_WORKER = path.resolve(__dirname, '../../email/support/render-worker.cjs');
+const RENDER_WORKER = path.resolve(__dirname, '../../po-quote-request/support/render-worker.cjs');
 const execFileAsync = promisify(execFile);
 
 async function renderPdf(html: string, out: string): Promise<void> {

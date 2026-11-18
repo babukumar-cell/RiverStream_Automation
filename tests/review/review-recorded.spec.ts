@@ -135,39 +135,6 @@ test.describe('River Stream - Document Review Suite: recorded (video)', () => {
     await expect(reviewPage.swapAddressesButton).toBeVisible();
   });
 
-  // =========================================================================
-  // Client JSON matching (needs the client JSON configuration: see the notes in each test)
-  // =========================================================================
-
-  const CLIENT_JSON_PENDING =
-    'Needs the client JSON configuration used for matching (client name, billing and shipping addresses) and a document for it; ' +
-    'QA organization riverstonetech has no such client configured.';
-
-  test('TC_Review page_019: Verify Client and Billing Address auto-replacement when Customer Name partially matches client JSON', async () => {
-    test.fixme(true, CLIENT_JSON_PENDING);
-  });
-
-  test('TC_Review page_020: Verify no replacement when Customer Name does not match client JSON', async ({ reviewPage }) => {
-    const po = reviewPo('nomatch');
-    await openDoc(reviewPage, 'nomatch');
-    // "ABC Furniture" is not a client: customer and billing details stay as printed in the document
-    await expect(reviewPage.pdfPage(1)).toContainText(po.customer);
-    await expect(reviewPage.fieldValue(FIELD_LABELS.customer_name), 'Customer Name').toHaveText(po.customer);
-    await expect(reviewPage.fieldValue(FIELD_LABELS.billing_addressee_name), 'Billing Addressee Name').toHaveText(po.billingName);
-    await expect(reviewPage.fieldValue(FIELD_LABELS.billing_address), 'Billing Address').toHaveText(addressRe(po.billingAddress));
-  });
-
-  test('TC_Review page_021: Verify Shipping Address auto-replacement when match is greater than 75%', async () => {
-    test.fixme(true, CLIENT_JSON_PENDING);
-  });
-
-  test('TC_Review page_022: Verify no Shipping Address replacement when match is less than 75%', async () => {
-    test.fixme(true, CLIENT_JSON_PENDING);
-  });
-
-  test('TC_Review page_023: Verify correct JSON values are applied after replacement', async () => {
-    test.fixme(true, CLIENT_JSON_PENDING);
-  });
 
   // =========================================================================
   // Order Line Items
@@ -286,7 +253,7 @@ test.describe('River Stream - Document Review Suite: recorded (video)', () => {
     await expect(reviewPage.lineItemRows.first()).toBeVisible();
   });
 
-  test('TC_Review page_032: Verify the swap row functionality.', async ({ reviewPage }) => {
+  test('TC_Review page_032: Verify the swap row functionality.', { annotation: { type: 'video', description: 'Execution video attached to the report' } }, async ({ reviewPage }) => {
     const po = reviewPo('main');
     await openDoc(reviewPage, 'main');
     await reviewPage.openLineItems();

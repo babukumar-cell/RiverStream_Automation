@@ -10,7 +10,7 @@ on:
         default: 'test:sif'
         type: choice
         options:
-          - 'test:sif'               # SIF Conversion Suite (81 tests, riverstreamautomation@gmail.com in its organization)
+          - 'test:sif'               # SIF Conversion Suite (83 tests, riverstreamautomation@gmail.com in its organization)
       report_recipients:
         description: 'Override Email Recipients (comma-separated, optional)'
         required: false

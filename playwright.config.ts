@@ -51,11 +51,16 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
-      name: 'po-quote',
+      // PO/Quote Request precondition: the automation user (riverstreamautomation@gmail.com) is a user of the
+      // Riverstone organization (created there if missing) and Direct Estimate Creation is ON
+      name: 'po-quote-user',
       dependencies: ['setup'],
-      testMatch: [
-        /(auth|left-side|upload|documents|review|email)[/\\][^/\\]+\.spec\.ts/,
-      ],
+      testMatch: /po-quote-request[/\\]automation-user\.setup\.ts/,
+    },
+    {
+      name: 'po-quote',
+      dependencies: ['setup', 'po-quote-user'],
+      testMatch: [/(auth|left-side|upload|documents|review|po-quote-request)[/\\][^/\\]+\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         channel: process.env.BROWSER_CHANNEL || undefined,
@@ -112,11 +117,14 @@ export default defineConfig({
       },
     },
     {
-      // ERP fail: Super Admin uploads a SIF, submits it with a customer that is not in the ERP, checks the popup and
-      // the alert email (adds and deletes the automation mailbox as an Admin of its organization)
+      // ERP fail (tests/po-quote-request/erp-fail), the last part of the PO/Quote Request suite. It is listed after
+      // po-quote and has the same dependencies, so with one worker it runs after every po-quote test (retries
+      // included: Playwright re-queues a retry at the front), and it still runs when po-quote tests fail.
+      // The Super Admin uploads a SIF, submits it with a customer that is not in the ERP, checks the popup and the
+      // alert email.
       name: 'erp-fail',
-      dependencies: ['setup'],
-      testMatch: [/erp-fail[/\\][^/\\]+\.spec\.ts/],
+      dependencies: ['setup', 'po-quote-user'],
+      testMatch: [/po-quote-request[/\\]erp-fail[/\\][^/\\]+\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         channel: process.env.BROWSER_CHANNEL || undefined,

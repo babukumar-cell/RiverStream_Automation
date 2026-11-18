@@ -25,6 +25,11 @@ async function attachEvidence(page: Page, name: string): Promise<void> {
   await test.info().attach(name, { path: file, contentType: 'image/png' });
 }
 
+// Every test is recorded (Playwright only accepts the video option at the top level of a spec file); the report
+// keeps the video of a passed test only when it is annotated 'video' (VIDEO below)
+test.use({ video: { mode: 'on', size: { width: 1280, height: 720 } } });
+const VIDEO = { annotation: { type: 'video', description: 'Execution video attached to the report' } };
+
 test.describe('Documents Library Suite (32 Test Cases)', () => {
 
   test('TC_Document_042: Verify Document Library page is displayed', async ({ documentsPage, page }) => {
@@ -191,7 +196,7 @@ test.describe('Documents Library Suite (32 Test Cases)', () => {
     await expect(documentsPage.allFormatsFilterBtn).toHaveClass(/bg-blue-600/);
   });
 
-  test('TC_Document_056: Verify the Apply Active Filters button.', async ({ documentsPage }) => {
+  test('TC_Document_056: Verify the Apply Active Filters button.', VIDEO, async ({ documentsPage }) => {
     await documentsPage.navigate();
     await documentsPage.expandFilters();
     // Apply stays disabled until a filter selection is changed

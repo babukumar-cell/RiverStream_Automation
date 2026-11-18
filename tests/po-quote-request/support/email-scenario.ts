@@ -17,6 +17,25 @@ import { MailService, RetrievedEmail, SentEmail, EmailAttachment } from '../../.
 export const REPLY_SLA_MS = Config.email.pollTimeoutMs;
 /** We keep waiting a little past the SLA so one slow reply does not fail the test outright. */
 export const REPLY_WAIT_MS = REPLY_SLA_MS + 120_000;
+
+/** RiverStream's immediate acknowledgement ("Document Received: Your file '…' has been received and is being processed.") */
+export function isAcknowledgement(reply: RetrievedEmail): boolean {
+  return /^\s*Document Received\b/i.test(reply.fields.header ?? '') || /^\s*Document Received\b/i.test(reply.text) || /has been received and is being processed/i.test(reply.text);
+}
+
+/**
+ * The result reply to an email (processing summary, "No Attachment Found", ...): RiverStream first acknowledges an
+ * email with "Document Received", then sends the result; acknowledgements are skipped (same wait, Inbox then Spam).
+ */
+export async function waitForResultReply(mail: MailService, query: Parameters<MailService['waitForReply']>[0]): Promise<RetrievedEmail> {
+  const deadline = Date.now() + (query.timeoutMs ?? REPLY_WAIT_MS);
+  const exclude = [...(query.excludeMessageIds ?? [])];
+  for (;;) {
+    const reply = await mail.waitForReply({ ...query, excludeMessageIds: exclude, timeoutMs: Math.max(deadline - Date.now(), 5_000) });
+    if (!isAcknowledgement(reply)) return reply;
+    exclude.push(reply.messageId);
+  }
+}
 /** One RiverStream mailbox polling cycle (observed 50-165 s); used to detect duplicate replies. */
 export const DUPLICATE_GRACE_MS = 150_000;
 /** Test timeout for a scenario with `waits` sequential reply waits. */
@@ -347,7 +366,7 @@ export async function getBaselineSubmission(
       const po = await buildPurchaseOrderPdf(testInfo, token);
       const sent = await mail.sendEmail({ subject, attachments: [asAttachment(po, 'application/pdf')] });
       await onSent?.(sent);
-      const reply = await mail.waitForReply({ token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
+      const reply = await waitForResultReply(mail, { token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
       const value: BaselineSubmission = { token, subject, po, sent, reply };
       fs.writeFileSync(file, JSON.stringify({ state: 'done', startedAt: Date.now(), value } satisfies BaselineRecord));
       return value;

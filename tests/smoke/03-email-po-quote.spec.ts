@@ -14,7 +14,7 @@ import {
   scenarioTimeout,
   showReply,
   showWaitingForReply,
-} from '../email/support/email-scenario';
+} from '../po-quote-request/support/email-scenario';
 import { readSmokeState, requireMailbox, requires, updateSmokeState } from './support/smoke';
 
 /*

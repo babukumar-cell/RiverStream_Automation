@@ -22,6 +22,7 @@ import {
   scenarioTimeout,
   showReply,
   showWaitingForReply,
+  waitForResultReply,
 } from './support/email-scenario';
 
 // No retries: every attempt sends real emails and uses the QA organisation's monthly document quota.
@@ -97,35 +98,11 @@ async function sendAndShow(mail: MailService, page: Page, options: Parameters<Ma
   return sent;
 }
 
-test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)', () => {
+test.describe('River Stream - Email Flow Suite (10 Test Cases - Riverstone Org)', () => {
   test.beforeAll(async () => {
     const mail = new MailService();
     await mail.verifySmtp();
     await mail.verifyImap();
-  });
-
-  const disabledTypeReason =
-    'Manual: requires disabling a document type on the shared Riverstonetech org in Settings. ' +
-    'The sender mailbox is mapped to an active organization user; toggling settings on the shared org would impact parallel suites.';
-
-  test('TC_001: Verify system handles Purchase Order email when Purchase Order document type is not enabled', async () => {
-    test.skip(true, disabledTypeReason);
-  });
-
-  test('TC_002: Verify system handles Quotation email when Quotation document type is not enabled', async () => {
-    test.skip(true, disabledTypeReason);
-  });
-
-  test('TC_003: Verify system handles PO-ACK Recon email when PO-ACK Recon document type is not enabled', async () => {
-    test.skip(true, disabledTypeReason);
-  });
-
-  test('TC_004: Verify correct reply email content for unsupported document type submission', async () => {
-    test.skip(true, disabledTypeReason);
-  });
-
-  test('TC_005: Verify document is not extracted or inserted into ERP when document type is disabled', async () => {
-    test.skip(true, disabledTypeReason);
   });
 
   test('TC_006: Verify the system process the attachment without subject reference.', async ({ mailService, page }, testInfo) => {
@@ -152,8 +129,8 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
     ]);
     await showWaitingForReply(page, [poSent, quoteSent], 'Waiting for both RiverStream replies');
     const [poReply, quoteReply] = await Promise.all([
-      mailService.waitForReply({ token: poToken, since: poSent.sentAt, timeoutMs: REPLY_WAIT_MS }),
-      mailService.waitForReply({ token: quoteToken, since: quoteSent.sentAt, timeoutMs: REPLY_WAIT_MS }),
+      waitForResultReply(mailService, { token: poToken, since: poSent.sentAt, timeoutMs: REPLY_WAIT_MS }),
+      waitForResultReply(mailService, { token: quoteToken, since: quoteSent.sentAt, timeoutMs: REPLY_WAIT_MS }),
     ]);
     await attachReply(testInfo, 'po-reply', poReply);
     await attachReply(testInfo, 'quote-reply', quoteReply);
@@ -176,7 +153,7 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
       text: 'Type: Quotation/Estimation',
       attachments: [asAttachment(po, PDF)],
     });
-    const reply = await mailService.waitForReply({ token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
+    const reply = await waitForResultReply(mailService, { token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
     await attachReply(testInfo, 'reply', reply);
 
     expect(reply.fields.header).toMatch(HEADERS.typeMismatch);
@@ -198,7 +175,7 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
     test.setTimeout(scenarioTimeout(1));
     const token = newToken('E9');
     const sent = await sendAndShow(mailService, page, { subject: `AUTO no attachment ${token}`, text: 'Please process the attached order.' });
-    const reply = await mailService.waitForReply({ token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
+    const reply = await waitForResultReply(mailService, { token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
     await attachReply(testInfo, 'reply', reply);
 
     expect(reply.fields.header).toMatch(HEADERS.noAttachment);
@@ -210,7 +187,7 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
     test.setTimeout(scenarioTimeout(2));
     const token = newToken('E10');
     const first = await sendAndShow(mailService, page, { subject: `AUTO no attachment ${token}`, text: 'Order to follow.' });
-    const noAttachment = await mailService.waitForReply({ token, since: first.sentAt, timeoutMs: REPLY_WAIT_MS });
+    const noAttachment = await waitForResultReply(mailService, { token, since: first.sentAt, timeoutMs: REPLY_WAIT_MS });
     await attachReply(testInfo, 'no-attachment-reply', noAttachment);
     expect(noAttachment.fields.header).toMatch(HEADERS.noAttachment);
     await verifyReplyOnScreen(page, noAttachment, HEADERS.noAttachment, [], '1 - No Attachment Found reply');
@@ -223,7 +200,7 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
       references: [noAttachment.messageId],
       attachments: [asAttachment(po, PDF)],
     });
-    const processed = await mailService.waitForReply({
+    const processed = await waitForResultReply(mailService, {
       token,
       since: answer.sentAt,
       excludeMessageIds: [noAttachment.messageId],
@@ -284,16 +261,12 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
     await page.locator('canvas').first().waitFor({ state: 'visible', timeout: 45_000 });
   });
 
-  test('TC_013: Verify "Too Many Attachments" reply when more than two attachments are sent', async () => {
-    test.skip(true, 'Send only one file for email flow test cases as requested');
-  });
-
   test("TC_015: Verify \"Attachment Couldn't Be Read\" reply for unreadable attachment", async ({ mailService, page }, testInfo) => {
     test.setTimeout(scenarioTimeout(1));
     const token = newToken('E15');
     const image = await buildImageDisguisedAsPdf(testInfo, token);
     const sent = await sendAndShow(mailService, page, { subject: `AUTO unreadable attachment ${token}`, attachments: [asAttachment(image, PDF)] });
-    const reply = await mailService.waitForReply({ token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
+    const reply = await waitForResultReply(mailService, { token, since: sent.sentAt, timeoutMs: REPLY_WAIT_MS });
     await attachReply(testInfo, 'reply', reply);
 
     expect(reply.fields.header).toMatch(HEADERS.unreadable);
@@ -308,13 +281,13 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
     const po = await buildPurchaseOrderPdf(testInfo, token1);
 
     const sent1 = await sendAndShow(mailService, page, { subject: `AUTO first submission ${token1}`, attachments: [asAttachment(po, PDF)] });
-    const first = await mailService.waitForReply({ token: token1, since: sent1.sentAt, timeoutMs: REPLY_WAIT_MS });
+    const first = await waitForResultReply(mailService, { token: token1, since: sent1.sentAt, timeoutMs: REPLY_WAIT_MS });
     await attachReply(testInfo, 'first-reply', first);
     await expectSalesOrderReply(page, first, po.fileName, '1 - First submission reply');
 
     const token2 = newToken('E16B');
     const sent2 = await sendAndShow(mailService, page, { subject: `AUTO same file again ${token2}`, attachments: [asAttachment(po, PDF)] });
-    const second = await mailService.waitForReply({ token: token2, since: sent2.sentAt, timeoutMs: REPLY_WAIT_MS });
+    const second = await waitForResultReply(mailService, { token: token2, since: sent2.sentAt, timeoutMs: REPLY_WAIT_MS });
     await attachReply(testInfo, 'second-reply', second);
 
     expect(second.fields.header).toMatch(HEADERS.alreadyProcessed);
@@ -351,7 +324,7 @@ test.describe('River Stream - Email Flow Suite (16 Test Cases - Riverstone Org)'
     const sentB = await sendAndShow(mailService, page, { subject: `AUTO in-flight B ${tokenB}`, attachments: [file] });
 
     // 4. The second email gets the "Document Already in Processing" reply
-    const reply = await mailService.waitForReply({ token: tokenB, since: sentB.sentAt, timeoutMs: REPLY_WAIT_MS });
+    const reply = await waitForResultReply(mailService, { token: tokenB, since: sentB.sentAt, timeoutMs: REPLY_WAIT_MS });
     await attachReply(testInfo, 'reply', reply);
     expect(reply.fields.header).toMatch(HEADERS.alreadyInProcessing);
     expect(reply.plain).toContain(`already received ${fileName} and it is currently being processed`);
