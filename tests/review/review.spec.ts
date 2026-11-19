@@ -1,10 +1,12 @@
 import fs from 'fs';
+import { Page, TestInfo } from '@playwright/test';
 import { test, expect } from '../../src/fixtures/test.fixture';
-import { FIELD_LABELS, ReviewFieldKey } from '../../src/pages/review.page';
-import { addressRe, docId, ensureUploaded, escapeRe, LINES, openDoc, reviewPo } from './support/review-data';
+import { FIELD_LABELS, ReviewFieldKey, ReviewPage } from '../../src/pages/review.page';
+import { addressRe, attachEvidence, docId, ensureSifUploaded, ensureUploaded, escapeRe, LINES, openDoc, reviewPo } from './support/review-data';
 
 /*
- * Source: Test Cases/River Stream Test cases.xlsx, sheet "Review page" (TC_Review page_001 - 033).
+ * Source: Test Cases/River Stream Test cases.xlsx, sheet "Review page" (TC_Review page_001 - 035).
+ * TC_Review page_035 reviews a Riverstone SIF quote (Riverstone test SIF Files/..._QA8.sif) uploaded once per run.
  * The suite is split in two files: review.spec.ts (screenshot evidence) and review-recorded.spec.ts (screenshot + video of every test).
  * Every test reviews a document uploaded by this suite (see support/review-data.ts): a generated 2-page
  * purchase order with known values. Field and line-item edits stay in the browser (they are saved only by
@@ -205,4 +207,93 @@ test.describe('River Stream - Document Review Suite: screenshot evidence', () =>
     await expect(reviewPage.lineItemsRowCount).toHaveText(`${po.lines.length - 1} rows`);
     await expect(reviewPage.lineItemRows.locator('td:first-child'), 'remaining rows').toHaveText([po.lines[0].code, po.lines[2].code]);
   });
+
+  test('TC_Review page_034: Verify the extracted line-item data of an uploaded PDF matches the data shown after clicking Edit All', async ({ reviewPage, page }, testInfo) => {
+    await openDoc(reviewPage, 'main');
+    await expectEditAllMatchesExtracted(reviewPage, page, testInfo);
+  });
+
+  test(
+    'TC_Review page_035: Verify the extracted line-item data of an uploaded SIF matches the data shown after clicking Edit All',
+    { annotation: { type: 'issue', description: 'Known bug: after Edit All, the Options column of an uploaded SIF shows "[object Object]" in place of the extracted options (e.g. "B, Black, LEATHER COLOR OPTION, $10.00").' } },
+    async ({ reviewPage, page }, testInfo) => {
+      const id = await ensureSifUploaded(page, testInfo);
+      await reviewPage.open(id); // waits until extraction has finished
+      await expect(reviewPage.fileTypeLabel).toHaveText(/SIF/i);
+      await expectEditAllMatchesExtracted(reviewPage, page, testInfo);
+    },
+  );
 });
+
+/** Cell texts of every line-item row by column header (input values while editing); the Actions column left out. */
+async function lineItemsByColumn(reviewPage: ReviewPage): Promise<{ headers: string[]; rows: Record<string, string>[] }> {
+  const headers = (await reviewPage.lineItemColumns()).filter((h) => h !== 'Actions');
+  const cells = await reviewPage.lineItemRows.evaluateAll((rows) =>
+    rows.map((r) =>
+      [...(r as HTMLTableRowElement).cells].map((c) =>
+        ((c.querySelector('input, textarea') as HTMLInputElement | null)?.value ?? (c as HTMLElement).innerText).replace(/\s+/g, ' ').trim(),
+      ),
+    ),
+  );
+  return { headers, rows: cells.map((row) => Object.fromEntries(headers.map((h, i) => [h, row[i] ?? '']))) };
+}
+
+/**
+ * Order Line Items popup: reads every extracted cell, clicks Edit All, and checks each input holds the same value.
+ * Mismatched inputs are highlighted and listed in a note; matching tables get every input highlighted.
+ */
+async function expectEditAllMatchesExtracted(reviewPage: ReviewPage, page: Page, testInfo: TestInfo): Promise<void> {
+  await reviewPage.openLineItems();
+  const extracted = await lineItemsByColumn(reviewPage);
+  expect(extracted.rows.length, 'line items extracted').toBeGreaterThan(0);
+  await expect(reviewPage.lineItemRows, 'extracted rows').toHaveCount(extracted.rows.length);
+  await attachEvidence(page, testInfo, 'Extracted line items before Edit All');
+
+  await reviewPage.editAllButton.click();
+  // The rows outlined for the "before" screenshot are the same elements: clear them so the final screenshot shows only the inputs checked
+  await page.evaluate(() =>
+    document.querySelectorAll<HTMLElement>('[data-rs-tested]').forEach((el) => {
+      el.style.outline = el.style.outlineOffset = el.style.boxShadow = '';
+      el.removeAttribute('data-rs-tested');
+    }),
+  );
+  await expect(reviewPage.editingButton, 'Edit All mode').toBeVisible();
+  await reviewPage.lineItemInput(0, 0).waitFor();
+  const editing = await lineItemsByColumn(reviewPage);
+  expect(editing.rows.length, 'rows while editing').toBe(extracted.rows.length);
+
+  const mismatches: { row: number; column: string; extracted: string; editing: string }[] = [];
+  extracted.rows.forEach((row, r) =>
+    extracted.headers.forEach((column) => {
+      const value = editing.headers.includes(column) ? editing.rows[r][column] : '(column not shown)';
+      if (value !== row[column]) mismatches.push({ row: r + 1, column, extracted: row[column], editing: value });
+    }),
+  );
+  testInfo.annotations.push({
+    type: 'note',
+    description:
+      `Compared ${extracted.rows.length} rows x ${extracted.headers.length} columns (${extracted.headers.join(', ')}). ` +
+      (mismatches.length
+        ? `${mismatches.length} cells differ after Edit All: ` +
+          mismatches.slice(0, 15).map((m) => `row ${m.row} ${m.column}: extracted "${m.extracted}", Edit All "${m.editing}"`).join('; ') +
+          (mismatches.length > 15 ? '; ...' : '')
+        : 'Every Edit All input holds the extracted value.'),
+  });
+
+  if (mismatches.length) {
+    // Outline the inputs that differ (the first one scrolled into view for the screenshot)
+    for (const m of mismatches) {
+      const column = editing.headers.indexOf(m.column);
+      if (column >= 0) await expect(reviewPage.lineItemInput(m.row - 1, column), `row ${m.row} ${m.column}`).toBeVisible();
+    }
+    const first = editing.headers.indexOf(mismatches[0].column);
+    if (first >= 0) await reviewPage.lineItemInput(mismatches[0].row - 1, first).scrollIntoViewIfNeeded();
+  } else {
+    const inputs = reviewPage.lineItemsModal.locator('tbody input, tbody textarea');
+    await expect(inputs, 'Edit All inputs').toHaveCount(await inputs.count());
+  }
+  expect(
+    mismatches.map((m) => `row ${m.row} ${m.column}: extracted "${m.extracted}" / Edit All "${m.editing}"`),
+    'every Edit All input shows the extracted value',
+  ).toEqual([]);
+}

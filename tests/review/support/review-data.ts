@@ -135,7 +135,8 @@ async function renderPdf(html: string, out: string): Promise<void> {
 // Per-run state: uploaded document ids
 // ---------------------------------------------------------------------------------------------
 
-type State = Partial<Record<DocKey, { id: string; fileName: string }>>;
+// DocKey: the generated POs; 'sif': the Riverstone SIF quote uploaded by TC_Review page_035
+type State = Partial<Record<DocKey | 'sif', { id: string; fileName: string }>>;
 const stateFile = () => path.join(os.tmpdir(), `riverstream-review-suite-${runId()}.json`);
 
 function readState(): State {
@@ -146,7 +147,7 @@ function readState(): State {
   }
 }
 
-function record(key: DocKey, id: string, fileName: string): void {
+function record(key: DocKey | 'sif', id: string, fileName: string): void {
   const s = readState();
   s[key] = { id, fileName };
   fs.writeFileSync(stateFile(), JSON.stringify(s, null, 2));
@@ -171,6 +172,35 @@ export async function ensureUploaded(page: Page, testInfo: TestInfo, keys: DocKe
   }
   const s = readState();
   return Object.fromEntries((Object.keys(DOCS) as DocKey[]).map((k) => [k, s[k]?.id])) as Record<DocKey, string>;
+}
+
+/**
+ * Riverstone SIF quote with option lines (LEATHER COLOR OPTION Black/B, LAMINATE COLOR OPTION Noce/N, ...): 13 line
+ * items whose Options column holds a list of options.
+ */
+export const REVIEW_SIF = path.resolve(__dirname, '../../../Riverstone test SIF Files/CDF_Carolina OS_Young Conway Furniture_SIF_260520_QA8.sif');
+/** Client Name is required for SIF uploads */
+export const SIF_CLIENT = process.env.UPLOAD_CLIENT || 'Riverstone Corp';
+
+/** Uploads (once per run) a copy of REVIEW_SIF as a Quote Request from the Documents page; returns its document id. */
+export async function ensureSifUploaded(page: Page, testInfo: TestInfo): Promise<string> {
+  const done = readState().sif;
+  if (done) return done.id;
+  const fileName = `AUTO_REVIEW_RVW${runId().slice(-8)}SIF.sif`;
+  const file = testInfo.outputPath(fileName);
+  fs.copyFileSync(REVIEW_SIF, file);
+  const upload = new UploadPage(page);
+  await upload.navigate('documents');
+  await upload.selectDocumentType('Quote Request');
+  await upload.attachFile(file);
+  await expect(upload.selectedFileName(fileName)).toBeVisible();
+  await upload.selectClient(SIF_CLIENT);
+  const result = await upload.submitUpload();
+  expect(result.status, `uploadDocument response: ${JSON.stringify(result.body).slice(0, 300)}`).toBe(202);
+  const id = result.body?.table_entity?._id;
+  expect(id, `uploadDocument returned the id of ${fileName}`).toBeTruthy();
+  record('sif', id, fileName);
+  return id;
 }
 
 export function docId(key: DocKey): string {

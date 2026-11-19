@@ -10,7 +10,7 @@ on:
         default: 'test:po-quote'
         type: choice
         options:
-          - 'test:po-quote'          # Complete PO & Quote Suite (148 tests: 146 + ERP Fail 2, last)
+          - 'test:po-quote'          # Complete PO & Quote Suite (150 tests: 148 + ERP Fail 2, last)
           - 'test:left-side'         # Left Side: Dashboard (40 tests)
           - 'test:documents'         # Left Side: Documents Library (32 tests)
           - 'test:upload'            # Upload Module (31 tests)

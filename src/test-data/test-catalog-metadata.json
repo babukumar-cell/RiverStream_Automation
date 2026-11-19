@@ -5092,5 +5092,21 @@
     "steps": "1. Navigate to the Review page.\n2. Click on any source page number link.\n3. Observe the PDF.",
     "testData": "",
     "expectedResult": "The citation should work for the matching PDf data."
+  },
+  "TC_Review page_034": {
+    "tcId": "TC_Review page_034",
+    "module": "review",
+    "description": "Verify the extracted line-item data of an uploaded PDF matches the data shown after clicking Edit All",
+    "steps": "1. Upload a PDF purchase order.\n2. Open its Review page.\n3. Click on Expand icon of Order Line Items and note every cell.\n4. Click on Edit All button.\n5. Compare every input with the extracted value.",
+    "testData": "Generated 2-page PDF purchase order (3 line items)",
+    "expectedResult": "After clicking Edit All, every line-item input shows the same value as the extracted data."
+  },
+  "TC_Review page_035": {
+    "tcId": "TC_Review page_035",
+    "module": "review",
+    "description": "Verify the extracted line-item data of an uploaded SIF matches the data shown after clicking Edit All",
+    "steps": "1. Upload a SIF file as Quote Request (Client Name: Riverstone Corp).\n2. Open its Review page.\n3. Click on Expand icon of Order Line Items and note every cell (including Options).\n4. Click on Edit All button.\n5. Compare every input with the extracted value.",
+    "testData": "CDF_Carolina OS_Young Conway Furniture_SIF_260520_QA8.sif (13 line items with options)",
+    "expectedResult": "After clicking Edit All, every line-item input (including Options, e.g. \"B, Black, LEATHER COLOR OPTION, $10.00\") shows the same value as the extracted data."
   }
 }
