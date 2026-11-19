@@ -87,6 +87,13 @@ export class StripePaymentElement {
   readonly cvc: Locator;
   readonly country: Locator;
   readonly postalCode: Locator;
+  /**
+   * Stripe Link ("save my information for faster checkout"). Stripe shows it only in some countries, by the
+   * browser's IP address: not from India (local runs), but from the US (GitHub's runners). When its opt-in is
+   * ticked, Stripe asks for a mobile number ("Your phone number is incomplete.") and the payment cannot be sent.
+   */
+  readonly linkOptIn: Locator;
+  readonly linkPhone: Locator;
 
   constructor(page: Page, iframeSelector = 'iframe[src*="elements-inner-payment"]') {
     this.page = page;
@@ -97,6 +104,11 @@ export class StripePaymentElement {
     this.cvc = this.frame.locator('input[name="cvc"]');
     this.country = this.frame.locator('select[name="country"]');
     this.postalCode = this.frame.locator('input[name="postalCode"]');
+    this.linkOptIn = this.frame
+      .getByRole('checkbox', { name: /save my (information|info)|faster checkout|1-click checkout|link/i })
+      .or(this.frame.locator('input[type="checkbox"][name*="link" i], input[type="checkbox"][id*="link" i]'))
+      .first();
+    this.linkPhone = this.frame.locator('input[type="tel"], input[name="phoneNumber"], input[autocomplete="tel"], input[autocomplete="tel-national"]').first();
   }
 
   async selectCard(): Promise<void> {
@@ -113,6 +125,24 @@ export class StripePaymentElement {
     // A ZIP code is only asked for some countries (e.g. United States)
     if (await this.postalCode.isVisible().catch(() => false)) await this.postalCode.fill('10001');
     await expect(this.cardNumber).toHaveValue(card.number.replace(/\s+/g, '').replace(/(\d{4})(?=\d)/g, '$1 '));
+    await this.skipLink();
+  }
+
+  /**
+   * Stripe Link (shown when the browser is in the US, e.g. on GitHub's runners): the "save my information" opt-in is
+   * unticked so no phone number is needed; if Stripe still asks for the mobile number, Stripe's sample US number
+   * (the field's own placeholder) completes the form. Nothing happens where Link is not shown (local runs from India).
+   */
+  async skipLink(): Promise<void> {
+    // the Link section opens once the card is complete
+    await this.page.waitForTimeout(1000);
+    if ((await this.linkOptIn.isVisible().catch(() => false)) && (await this.linkOptIn.isChecked().catch(() => false))) {
+      await this.linkOptIn.uncheck({ force: true }).catch(() => this.linkOptIn.click({ force: true }));
+      await this.page.waitForTimeout(500);
+    }
+    if (await this.linkPhone.isVisible().catch(() => false)) {
+      if (!(await this.linkPhone.inputValue().catch(() => ''))) await this.linkPhone.pressSequentially('2015550123', { delay: 30 });
+    }
   }
 }
 
